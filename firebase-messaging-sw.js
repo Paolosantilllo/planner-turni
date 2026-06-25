@@ -88,7 +88,7 @@ const body =
 
 
 
-      data:data,
+     const data = payload.data || {};
 
 
       vibrate:[
