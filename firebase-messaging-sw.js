@@ -50,16 +50,9 @@ messaging.onBackgroundMessage((payload) => {
 
 
   // 🔴 NUMERETTO ICONA APP
-  if(
-    self.navigator &&
-    self.navigator.setAppBadge
-  ){
-
-    self.navigator.setAppBadge(
-      badgeCount
-    );
-
-  }
+if ("setAppBadge" in self.navigator && badgeCount > 0) {
+  self.navigator.setAppBadge(badgeCount);
+}
 
 
 
