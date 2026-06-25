@@ -56,25 +56,18 @@ if ("setAppBadge" in self.navigator && badgeCount > 0) {
 
 
 
-  const title =
-  payload.notification?.title ||
+ const notification = payload.notification || {};
+const data = payload.data || {};
+
+const title =
+  notification.title ||
   payload.data?.title ||
   "Planner REP";
 
 const body =
-  payload.notification?.body ||
+  notification.body ||
   payload.data?.body ||
   "";
-
-
-  const title =
-    notification.title ||
-    "Planner REP";
-
-
-  const body =
-    notification.body ||
-    "";
 
 
 
