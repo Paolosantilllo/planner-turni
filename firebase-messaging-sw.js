@@ -16,6 +16,15 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+
+/* ======================
+   CONTATORE BADGE
+====================== */
+
+let badgeCount = 0;
+
+
+
 self.addEventListener("push", event => {
 
   console.log("🔥 PUSH RAW ARRIVATO", event);
@@ -30,79 +39,201 @@ self.addEventListener("push", event => {
 
 messaging.onBackgroundMessage((payload) => {
 
-  console.log("📩 Background message ricevuto:", payload);
 
-  const notification = payload.notification || {};
-  const data = payload.data || {};
+  console.log(
+    "📩 Background message ricevuto:",
+    payload
+  );
 
-  const title = notification.title || "Planner REP";
-  const body = notification.body || "";
 
-  console.log("🚀 SHOW NOTIFICATION");
-   self.registration.showNotification(title, {
+  badgeCount++;
 
-    body: body,
-    icon: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg",
-badge: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg",
 
-    // 🔥 IMPORTANTISSIMO: dati per click
-    data: data,
+  // 🔴 NUMERETTO ICONA APP
+  if(
+    self.navigator &&
+    self.navigator.setAppBadge
+  ){
 
-    vibrate: [200, 100, 200],
+    self.navigator.setAppBadge(
+      badgeCount
+    );
 
-    actions: [
-      {
-        action: "open",
-        title: "Apri"
-      }
-    ]
-  });
+  }
+
+
+
+  const notification =
+    payload.notification || {};
+
+
+  const data =
+    payload.data || {};
+
+
+  const title =
+    notification.title ||
+    "Planner REP";
+
+
+  const body =
+    notification.body ||
+    "";
+
+
+
+  self.registration.showNotification(
+    title,
+    {
+
+
+      body: body,
+
+
+      icon:
+      "/icon-192.png",
+
+
+      badge:
+      "/icon-192.png",
+
+
+
+      data:data,
+
+
+      vibrate:[
+        200,
+        100,
+        200
+      ],
+
+
+
+      actions:[
+        {
+          action:"open",
+          title:"Apri"
+        }
+      ]
+
+    }
+
+  );
+
 
 });
 
-self.addEventListener("notificationclick", (event) => {
 
-  console.log("🔔 NOTIFICA CLICCATA:", event);
 
-  event.notification.close();
 
-  const data = event.notification.data || {};
-  const requestId = data.requestId || "";
 
-  event.waitUntil(
+/* ======================
+   CLICK NOTIFICA
+====================== */
 
-    clients.matchAll({
-      type: "window",
-      includeUncontrolled: true
-    }).then((clientList) => {
+self.addEventListener(
+"notificationclick",
+(event)=>{
 
-      // 🔥 1. SE APP GIÀ APERTA
-      for (const client of clientList) {
 
-        if (client.url.includes("index.html") && "focus" in client) {
+console.log(
+"🔔 NOTIFICA CLICCATA:",
+event
+);
 
-          client.focus();
 
-          client.postMessage({
-            type: "OPEN_REQUEST",
-            requestId: requestId
-          });
 
-          return;
-        }
+event.notification.close();
 
-      }
 
-      // 🔥 2. SE APP CHIUSA → APRI NUOVA FINESTRA
-      if (clients.openWindow) {
 
-        return clients.openWindow(
-          "/index.html?requestId=" + requestId
-        );
-      }
+const data =
+event.notification.data || {};
 
-    })
 
-  );
+
+const requestId =
+data.requestId || "";
+
+
+
+event.waitUntil(
+
+
+clients.matchAll({
+
+type:"window",
+
+includeUncontrolled:true
+
+})
+
+
+.then((clientList)=>{
+
+
+
+for(
+const client of clientList
+){
+
+
+if(
+client.url.includes("index.html")
+&&
+"focus" in client
+){
+
+
+client.focus();
+
+
+
+client.postMessage({
+
+type:"OPEN_REQUEST",
+
+requestId:requestId
+
+});
+
+
+
+return;
+
+}
+
+
+}
+
+
+
+
+
+if(
+clients.openWindow
+){
+
+
+return clients.openWindow(
+
+"/index.html?requestId="
++
+requestId
+
+);
+
+
+}
+
+
+
+})
+
+
+);
+
+
 
 });
