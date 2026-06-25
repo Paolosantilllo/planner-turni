@@ -15,7 +15,7 @@ export const EMPLOYEES = {
 
   B: {
     name: "S.M.MANUNTA",
-    email: "andreamanunta1982@gmail.com",
+    email: "dipb.planner@gmail.com",
     color: "dipendente-b",
     role: "USER"
   },
@@ -23,7 +23,7 @@ export const EMPLOYEES = {
 
   C: {
     name: "LGT PERCACCIOLI",
-    email: "EMAIL_DIP_C",
+    email: "dipc.planner@gmail.com",
     color: "dipendente-c",
     role: "USER"
   },
@@ -31,7 +31,7 @@ export const EMPLOYEES = {
 
   D: {
     name: "",
-    email: "EMAIL_DIP_D",
+    email: "dipd.planner@gmail.com",
     color: "dipendente-d",
     role: "USER"
   }
