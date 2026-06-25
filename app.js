@@ -45,6 +45,9 @@ initAuth((user) => {
 let currentDate = new Date();
 let savedEvents = [];
 
+let unsubscribeEvents = null;
+let eventsByDate = {};
+
 const calendar = document.getElementById("calendar");
 const monthTitle = document.getElementById("monthTitle");
 const employeeFilter = document.getElementById("employeeFilter");
@@ -294,23 +297,22 @@ function isHoliday(dateStr){
 
 function loadEvents() {
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  // chiude il vecchio listener
+  if (unsubscribeEvents) {
+    unsubscribeEvents();
+  }
 
-
-  // MOSTRA SUBITO IL CALENDARIO
+  // mostra subito il calendario
   renderCalendar();
 
-
-  firestore.onSnapshot(
+  unsubscribeEvents = firestore.onSnapshot(
 
     firestore.collection(db, "events"),
 
     (snap) => {
 
-
       savedEvents = [];
-
+      eventsByDate = {};
 
       snap.forEach(doc => {
 
@@ -319,26 +321,29 @@ function loadEvents() {
           ...doc.data()
         };
 
-
         savedEvents.push(ev);
 
-      });
+        // indicizzazione per data
+        if (!eventsByDate[ev.date]) {
+          eventsByDate[ev.date] = [];
+        }
 
+        eventsByDate[ev.date].push(ev);
+
+      });
 
       console.log(
         "EVENTI CARICATI:",
         savedEvents.length
       );
 
-
-      // aggiorna quando arrivano i dati
       renderCalendar();
-
 
     }
 
   );
 
+}
 }// ======================
 // 🔔 CARICA RICHIESTE CAMBIO
 // ======================
