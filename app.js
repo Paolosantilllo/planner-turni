@@ -13,7 +13,13 @@ initAuth((user) => {
 
   window.CURRENT_USER = user;
 
-  populateEmployeeSelects();
+ window.CURRENT_EMPLOYEE = user.email === EMPLOYEES.A.email
+ ? "A"
+ : Object.keys(EMPLOYEES).find(
+    id => EMPLOYEES[id].email === user.email
+   );
+   
+   populateEmployeeSelects();
 
   setDefaultFilter();
 
