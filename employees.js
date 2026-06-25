@@ -15,7 +15,7 @@ export const EMPLOYEES = {
 
   B: {
     name: "S.M.MANUNTA",
-    email: "dipb.planner@gmail.com",
+    email: "andreamanunta1982@gmail.com",
     color: "dipendente-b",
     role: "USER"
   },
