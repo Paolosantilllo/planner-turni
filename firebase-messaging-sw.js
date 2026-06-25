@@ -63,12 +63,15 @@ messaging.onBackgroundMessage((payload) => {
 
 
 
-  const notification =
-    payload.notification || {};
+  const title =
+  payload.notification?.title ||
+  payload.data?.title ||
+  "Planner REP";
 
-
-  const data =
-    payload.data || {};
+const body =
+  payload.notification?.body ||
+  payload.data?.body ||
+  "";
 
 
   const title =
