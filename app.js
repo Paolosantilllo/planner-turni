@@ -113,12 +113,12 @@ employeeFilter.addEventListener("change", () => {
 function setDefaultFilter() {
 
   const role =
-    EMPLOYEES[CURRENT_EMPLOYEE]?.role;
+    EMPLOYEES[window.CURRENT_EMPLOYEE]?.role;
 
   // Admin e Santillo vedono tutti
   if (
     role === "ADMIN" ||
-    CURRENT_EMPLOYEE === "A"
+    window.CURRENT_EMPLOYEE === "A"
   ) {
 
     employeeFilter.value = "ALL";
