@@ -5,8 +5,10 @@
 import { initAuth, logout, CURRENT_EMPLOYEE } from "./auth.js";
 import { db, firestore } from "./firebase.js";
 import { EMPLOYEES, SHIFT_COLORS } from "./employees.js";
-import { initPush } from "./push.js";
-
+import {
+  initPush,
+  listenForegroundNotifications
+} from "./push.js";
 window.logout = logout;
 
 initAuth((user) => {
@@ -33,6 +35,7 @@ initAuth((user) => {
 
   initPush(user);
 
+   listenForegroundNotifications();
 });
 
 /* ======================
