@@ -520,14 +520,14 @@ for (let day = 1; day <= daysInMonth; day++) {
 
   const selectedEmployee = employeeFilter.value;
 
-let events = savedEvents.filter(e => {
-  if (e.date !== date) return false;
+let events = (eventsByDate[date] || []).filter(e => {
 
   if (selectedEmployee === "ALL") {
     return true;
   }
 
   return e.employee === selectedEmployee;
+
 });
 
 const box = document.createElement("div");
