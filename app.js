@@ -2300,12 +2300,18 @@ const message =
 
 await firestore.addDoc(
  firestore.collection(db,"notifications"),
- {
-  employee:req.fromEmployee,
-  message: message,
-  read:false,
-  createdAt:new Date()
- }
+{
+ employee:req.fromEmployee,
+
+ email:
+ EMPLOYEES[req.fromEmployee].email,
+
+ message: message,
+
+ read:false,
+
+ createdAt:new Date()
+}
 );
 
 
@@ -2322,16 +2328,18 @@ await firestore.addDoc(
  firestore.collection(db,"notifications"),
 
  {
-  employee:req.toEmployee,
+ employee:req.toEmployee,
 
-  message:
-  `✅ L'Admin ha approvato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`,
+ email:
+ EMPLOYEES[req.toEmployee].email,
 
-  read:false,
+ message:
+ `✅ L'Admin ha approvato...`,
 
-  createdAt:new Date()
+ read:false,
 
- }
+ createdAt:new Date()
+}
 
 );
 
