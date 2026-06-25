@@ -71,35 +71,25 @@ const body =
 
 
 
-  self.registration.showNotification(
-    title,
-    {
+ self.registration.showNotification(
+  title,
+  {
 
+    body: body,
 
-      body: body,
+    icon: "/icon-192.png",
 
+    badge: "/icon-192.png",
 
-      icon:
-      "/icon-192.png",
+    data: data,   // 👈 QUESTO è giusto
 
+    vibrate: [
+      200,
+      100,
+      200
+    ],
 
-      badge:
-      "/icon-192.png",
-
-
-
-     const data = payload.data || {};
-
-
-      vibrate:[
-        200,
-        100,
-        200
-      ],
-
-
-
-      actions:[
+    actions:[
         {
           action:"open",
           title:"Apri"
