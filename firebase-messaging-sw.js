@@ -40,22 +40,14 @@ self.addEventListener("push", event => {
 messaging.onBackgroundMessage((payload) => {
 
 
-  console.log(
-    "📩 Background message ricevuto:",
-    payload
-  );
+console.log("📩 Background message ricevuto:", payload);
 
+badgeCount = (badgeCount || 0) + 1;
 
-  badgeCount++;
-
-
-  // 🔴 NUMERETTO ICONA APP
-if ("setAppBadge" in self.navigator && badgeCount > 0) {
+// 🔴 NUMERETTO ICONA APP
+if (self.navigator && "setAppBadge" in self.navigator) {
   self.navigator.setAppBadge(badgeCount);
 }
-
-
-
  const notification = payload.notification || {};
 const data = payload.data || {};
 
