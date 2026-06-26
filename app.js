@@ -536,6 +536,19 @@ box.classList.add("day");
 box.style.cursor = "pointer";
    
 // ======================
+// 📅 EVIDENZIA IL GIORNO ODIERNO
+// ======================
+
+const today = new Date();
+
+const todayString =
+`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+
+if (date === todayString) {
+  box.classList.add("today");
+}
+   
+   // ======================
 // 🟣 CONTROLLO COPERTURA
 // ======================
 
