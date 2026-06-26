@@ -1246,8 +1246,8 @@ button:disabled{
 
 .floating-stats{
 
-  width:18px;
-  height:18px;
+  width:14px;
+  height:14px;
 
   border-radius:50%;
 
@@ -1255,7 +1255,7 @@ button:disabled{
 
   background:white;
 
-  font-size:10px;
+  font-size:8px;
 
   display:flex;
   align-items:center;
@@ -1268,7 +1268,7 @@ button:disabled{
   position:absolute;
 
   right:9px;
-  bottom:36px;
+  bottom:28px;
 
   z-index:10;
 
