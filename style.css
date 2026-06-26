@@ -1242,3 +1242,24 @@ button:disabled{
   border-radius:20px;
   box-sizing:border-box;
 }
+
+#statsBtn{
+    position: fixed;
+    right: 20px;
+    bottom: 90px;      /* sopra al pulsante + */
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    font-size: 24px;
+    cursor: pointer;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    z-index:999;
+}
+
