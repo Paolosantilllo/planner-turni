@@ -1263,3 +1263,33 @@ button:disabled{
     z-index:999;
 }
 
+.floating-stats{
+
+  width:48px;
+  height:48px;
+
+  border-radius:50%;
+
+  border:none;
+
+  background:#fff;
+
+  font-size:22px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+
+  box-shadow:0 4px 10px rgba(0,0,0,.18);
+
+  margin-bottom:10px;
+
+  transition:.2s;
+
+}
+
+.floating-stats:hover{
+  transform:scale(1.08);
+}
