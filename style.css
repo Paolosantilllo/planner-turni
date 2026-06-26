@@ -137,15 +137,15 @@ body{
 
 /* TOOLBAR BOTTONI */
 
+/* TOOLBAR BOTTONI */
+
 .toolbar-actions{
 
   display:flex;
-  flex-direction:column;
   align-items:center;
-  gap:4px;
+  gap:6px;
 
 }
-
 
 
 /* AGGIUNGI */
