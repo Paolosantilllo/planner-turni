@@ -1236,3 +1236,9 @@ button:disabled{
   height:56px;
   padding:0;
 }
+
+.today{
+  outline:3px solid #007aff;
+  outline-offset:-3px;
+  border-radius:10px;
+}
