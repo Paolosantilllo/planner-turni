@@ -25,6 +25,7 @@
 
   <div class="app-logo">
   </div>
+ 
 
   <!-- HEADER -->
 <header class="topbar">
@@ -39,7 +40,12 @@
 
 </header>
 
-
+<!-- 📤 PDF EXPORT -->
+<div class="monthly-send">
+  <button class="monthly-send-btn" id="pdfBtn">
+    📤
+  </button>
+</div>
 
   <!-- TOOLBAR -->
   <div class="toolbar">
@@ -49,44 +55,29 @@
 
   <div class="toolbar-actions">
 
-
     
     <button class="change-btn" onclick="openChangePopup()">
-  🔁
-</button>
-
-<button class="notify-btn" onclick="openRequestsPopup()">
-  📋 <span id="requestBadge"></span>
-</button>
-
-<button class="notify-btn" onclick="openNotificationsPopup()">
-  🔔 <span id="notifBadge"></span>
-</button>
-
-<div class="plus-group">
-
-  <div class="top-icons">
-
-    <button class="monthly-send-btn" id="pdfBtn">
-      📤
-    </button>
-
-    <button id="statsBtn" class="floating-stats" onclick="openStatsPopup()">
-      📊
-    </button>
-
-  </div>
-
-  <button
-    id="addBtn"
-    class="add-btn"
-    onclick="openPopup()">
-    +
+    🔁
   </button>
 
-</div>
+  <button class="notify-btn" onclick="openRequestsPopup()">
+    📋 <span id="requestBadge"></span>
+  </button>
 
-  </div>
+  <button class="notify-btn" onclick="openNotificationsPopup()">
+    🔔 <span id="notifBadge"></span>
+  </button>
+
+    <button id="statsBtn" class="floating-stats" onclick="openStatsPopup()">
+    📊
+</button>
+
+  <button
+  id="addBtn"
+  class="add-btn"
+  onclick="openPopup()">
+  +
+  </button>
 
   <!-- GIORNI -->
   <div class="weekdays">
