@@ -1271,8 +1271,8 @@ button:disabled{
 
   position:relative;
   top:-14px;
+  left:-8px;
 }
-
 
 .top-icons{
   display:flex;
@@ -1281,7 +1281,6 @@ button:disabled{
   position:relative;
   left:-8px;
 }
-
 
 .monthly-send-btn,
 .floating-stats{
