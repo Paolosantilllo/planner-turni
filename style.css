@@ -1285,8 +1285,8 @@ button:disabled{
 .monthly-send-btn,
 .floating-stats{
 
-  width:20px;
-  height:20px;
+  width:24px;
+  height:24px;
 
   border-radius:50%;
 
@@ -1294,7 +1294,7 @@ button:disabled{
 
   background:white;
 
-  font-size:10px;
+  font-size:12px;
 
   display:flex;
   align-items:center;
