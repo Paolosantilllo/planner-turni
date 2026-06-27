@@ -1270,7 +1270,7 @@ button:disabled{
   gap:5px;
 
   position:relative;
-  top:-10px;
+  top:-12px;
 }
 
 
@@ -1285,8 +1285,8 @@ button:disabled{
 .monthly-send-btn,
 .floating-stats{
 
-  width:18px;
-  height:18px;
+  width:20px;
+  height:20px;
 
   border-radius:50%;
 
