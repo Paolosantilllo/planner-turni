@@ -39,12 +39,7 @@
 
 </header>
 
-<!-- 📤 PDF EXPORT -->
-<div class="monthly-send">
-  <button class="monthly-send-btn" id="pdfBtn">
-    📤
-  </button>
-</div>
+
 
   <!-- TOOLBAR -->
   <div class="toolbar">
@@ -56,33 +51,38 @@
 
 
     
-    <button class="change-btn" onclick="openChangePopup()">
-    🔁
-  </button>
-
-
-  <button class="notify-btn" onclick="openRequestsPopup()">
-    📋 <span id="requestBadge"></span>
-  </button>
-
-
-  <button class="notify-btn" onclick="openNotificationsPopup()">
-    🔔 <span id="notifBadge"></span>
-  </button>
-
-
-
-    <button id="statsBtn" class="floating-stats" onclick="openStatsPopup()">
-    📊
+    <<button class="change-btn" onclick="openChangePopup()">
+  🔁
 </button>
 
-  <button
-  id="addBtn"
-  class="add-btn"
-  onclick="openPopup()">
-  +
-  </button>
+<button class="notify-btn" onclick="openRequestsPopup()">
+  📋 <span id="requestBadge"></span>
+</button>
 
+<button class="notify-btn" onclick="openNotificationsPopup()">
+  🔔 <span id="notifBadge"></span>
+</button>
+
+<div class="plus-group">
+
+  <div class="top-icons">
+
+    <button class="monthly-send-btn" id="pdfBtn">
+      📤
+    </button>
+
+    <button id="statsBtn" class="floating-stats" onclick="openStatsPopup()">
+      📊
+    </button>
+
+  </div>
+
+  <button
+    id="addBtn"
+    class="add-btn"
+    onclick="openPopup()">
+    +
+  </button>
 
 </div>
 
