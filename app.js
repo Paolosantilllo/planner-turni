@@ -545,7 +545,22 @@ const todayString =
 `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
 
 if (date === todayString) {
+
   box.classList.add("today");
+
+  const day = new Date(date);
+  const dayNumber = day.getDay();
+
+  // Domenica
+  if(dayNumber === 0){
+    box.classList.add("sunday");
+  }
+
+  // Sabato
+  if(dayNumber === 6){
+    box.classList.add("saturday");
+  }
+
 }
    
    // ======================
