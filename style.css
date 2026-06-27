@@ -1275,10 +1275,11 @@ button:disabled{
 
 
 .top-icons{
-
   display:flex;
   gap:6px;
 
+  position:relative;
+  left:-8px;
 }
 
 
