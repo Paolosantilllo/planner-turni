@@ -1238,10 +1238,29 @@ button:disabled{
   padding:0;
 }
 
+/* GIORNO OGGI */
 .today{
   border:3px solid #007aff;
   border-radius:20px;
   box-sizing:border-box;
+}
+
+
+/* SABATO */
+.today.saturday{
+  border-color:#ff9500;
+}
+
+
+/* DOMENICA */
+.today.sunday{
+  border-color:#ff3b30;
+}
+
+
+/* FESTIVI */
+.today.holiday-day{
+  border-color:#ff3b30;
 }
 
 .plus-group{
