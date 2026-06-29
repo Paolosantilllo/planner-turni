@@ -98,9 +98,9 @@ async function getPdfVersion(pdfKey) {
 
 }
 
-async function savePdfVersion(pdfKey) {
+async function savePdfVersion() {
 
-  const ref = doc(db, "pdfVersions", pdfKey);
+  const ref = doc(db, "pdfVersions", window.currentPdfKey);
 
   const snap = await getDoc(ref);
 
