@@ -1635,32 +1635,42 @@ closePdfPopup();
 
 window.addEventListener("DOMContentLoaded", () => {
 
-  const btn = document.getElementById("pdfBtn");
+const btn = document.getElementById("pdfBtn");
 
-  if (!btn) {
-    console.error("pdfBtn non trovato");
-    return;
-  }
 
- btn.addEventListener("click", async () => {
+btn.addEventListener("click",()=>{
 
-  const select = document.getElementById("monthsRange");
+document.getElementById("monthsPopup").style.display="flex";
 
-  console.log(select);
-
-  if (!select) {
-    alert("monthsRange NON trovato");
-    return;
-  }
-
-  const months = parseInt(select.value);
-
-  window.currentPdfMonths = months;
-
-  await generatePDF(months);
 
 });
+
+
 });
+
+
+window.closeMonthsPopup = function(){
+
+document.getElementById("monthsPopup").style.display="none";
+
+};
+
+
+
+window.confirmPdfExport = function(){
+
+const months = parseInt(
+document.getElementById("monthsRange").value
+);
+
+
+closeMonthsPopup();
+
+
+generatePDF(months);
+
+
+};
 // ======================
 // 🔁 CAMBIO REPERIBILITA'
 // ======================
