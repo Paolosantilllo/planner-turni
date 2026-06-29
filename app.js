@@ -1626,9 +1626,10 @@ closePdfPopup();
 
   closePdfPopup();
 
-  generatePDF(months);
+  generatePDF(months); 
 };
 
+}
 
 // ======================
 // BOTTONE PDF
