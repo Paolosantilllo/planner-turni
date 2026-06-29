@@ -1535,29 +1535,31 @@ const blobUrl = pdf.output("bloburl");
 
 window.open(blobUrl, "_blank");
 
+}
 // ======================
 // BOTTONE PDF
 // ======================
 
 window.addEventListener("DOMContentLoaded", () => {
 
-const btn = document.getElementById("pdfBtn");
+  const btn = document.getElementById("pdfBtn");
 
+  if(btn){
 
-btn.addEventListener("click",()=>{
+    btn.addEventListener("click",()=>{
 
-document.getElementById("monthsPopup").style.display="flex";
+      document.getElementById("monthsPopup").style.display="flex";
 
+    });
 
-});
-
+  }
 
 });
 
 
 window.closeMonthsPopup = function(){
 
-document.getElementById("monthsPopup").style.display="none";
+  document.getElementById("monthsPopup").style.display="none";
 
 };
 
@@ -1565,16 +1567,15 @@ document.getElementById("monthsPopup").style.display="none";
 
 window.confirmPdfExport = function(){
 
-const months = parseInt(
-document.getElementById("monthsRange").value
-);
+  const months = parseInt(
+    document.getElementById("monthsRange").value
+  );
 
 
-closeMonthsPopup();
+  closeMonthsPopup();
 
 
-generatePDF(months);
-
+  generatePDF(months);
 
 };
 // ======================
