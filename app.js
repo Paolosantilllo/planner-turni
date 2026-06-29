@@ -1057,14 +1057,21 @@ window.deleteShift = async function () {
   }
 };
 
+// ======================
+// PDF CORRENTE
+// ======================
+
+window.currentPdfBlob = null;
+window.currentPdfMonths = 1;
 
 // ======================
 //  📤 PDF EXPORT
 // ======================
 
-function generatePDF(months = 1) {
-
-  const missingMessages = [];
+function generatePDF(months = 1, version = "1/1") {
+  
+   window.currentPdfMonths = months;
+   const missingMessages = [];
 
   const baseYear = currentDate.getFullYear();
   const baseMonth = currentDate.getMonth();
@@ -1201,7 +1208,7 @@ pdf.text(
 
 
 pdf.text(
-  `Versione: 1/1`,
+  `Versione: ${version}`,
   285,
   startY + 2,
   { align:"right" }
@@ -1443,12 +1450,17 @@ if (value === "REP" || value === "FREP") {
     }
   }
 
-  // ======================
-  // 📤 OUTPUT (DEVE STARE QUI)
-  // ======================
-  const blobUrl = pdf.output("bloburl");
-  window.open(blobUrl, "_blank");
-}
+// ======================
+// 📤 ANTEPRIMA PDF
+// ======================
+
+window.currentPdfBlob = pdf.output("blob");
+
+const blobUrl = URL.createObjectURL(window.currentPdfBlob);
+
+document.getElementById("pdfFrame").src = blobUrl;
+
+openPdfPopup();
 
  // ======================
 // 📤 PDF POPUP CONTROL
@@ -1461,7 +1473,61 @@ window.closePdfPopup = function () {
   document.getElementById("pdfPopup").style.display = "none";
 };
 
-window.confirmPdfExport = function () {
+window.sharePdf = async function () {
+
+  if (!window.currentPdfBlob) {
+    alert("Nessun PDF da condividere.");
+    return;
+  }
+
+  const file = new File(
+    [window.currentPdfBlob],
+    "Reperibilita.pdf",
+    {
+      type: "application/pdf"
+    }
+  );
+
+  // Condivisione mobile
+  if (navigator.share && navigator.canShare?.({ files: [file] })) {
+
+    try {
+
+      await navigator.share({
+        files: [file],
+        title: "Reperibilità",
+        text: "Piano reperibilità"
+      });
+
+      closePdfPopup();
+
+    } catch (err) {
+
+      console.log("Condivisione annullata");
+
+    }
+
+    return;
+
+  }
+
+  // Desktop: download del PDF
+  const url = URL.createObjectURL(file);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = file.name;
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  closePdfPopup();
+
+};
+   
+   window.confirmPdfExport = function () {
 
   const months = parseInt(
     document.getElementById("monthsRange").value
