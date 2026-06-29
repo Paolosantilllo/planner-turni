@@ -4,6 +4,14 @@
 
 import { initAuth, logout, CURRENT_EMPLOYEE } from "./auth.js";
 import { db, firestore } from "./firebase.js";
+
+import {
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
 import { EMPLOYEES, SHIFT_COLORS } from "./employees.js";
 import {
   initPush,
