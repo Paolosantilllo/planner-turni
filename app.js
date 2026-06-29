@@ -1645,9 +1645,17 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  btn.addEventListener("click", () => {
-    document.getElementById("pdfPopup").style.display = "flex";
-  });
+  btn.addEventListener("click", async () => {
+
+  const months = parseInt(
+    document.getElementById("monthsRange").value
+  );
+
+  window.currentPdfMonths = months;
+
+  await generatePDF(months);
+
+});
 
 });
 // ======================
