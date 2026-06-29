@@ -1531,9 +1531,11 @@ if (value === "REP" || value === "FREP") {
 // 📤 ANTEPRIMA PDF
 // ======================
 
-const blobUrl = pdf.output("bloburl");
+const blob = pdf.output("blob");
 
-window.open(blobUrl, "_blank");
+const url = URL.createObjectURL(blob);
+
+window.location.href = url;
 
 }
 // ======================
