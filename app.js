@@ -1579,9 +1579,11 @@ window.sharePdf = async function () {
   text: "Piano reperibilità"
 });
 
-// qui dopo inseriremo il salvataggio della versione
+await savePdfVersion(window.currentPdfKey);
 
-await savePdfVersion();
+window.pdfVersion = await getPdfVersion(window.currentPdfKey);
+
+await generatePDF(window.currentPdfMonths);
 
 closePdfPopup();
 
@@ -1603,14 +1605,17 @@ closePdfPopup();
   a.href = url;
   a.download = file.name;
 
- a.click();
+a.click();
 
-await savePdfVersion();
+await savePdfVersion(window.currentPdfKey);
+
+window.pdfVersion = await getPdfVersion(window.currentPdfKey);
+
+await generatePDF(window.currentPdfMonths);
 
 URL.revokeObjectURL(url);
 
 closePdfPopup();
-
 };
    
    window.confirmPdfExport = function () {
