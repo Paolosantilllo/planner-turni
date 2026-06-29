@@ -56,10 +56,13 @@ let eventsByDate = {};
 window.pdfVersion = "1/1";
 window.currentPdfKey = "";
 
+window.currentPdfBlob = null;
+window.currentPdfHash = null;
+window.currentPdfMonths = 1;
+
 const calendar = document.getElementById("calendar");
 const monthTitle = document.getElementById("monthTitle");
 const employeeFilter = document.getElementById("employeeFilter");
-
 // ======================
 // FORMATTAZIONE DATE
 // ======================
