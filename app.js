@@ -1602,6 +1602,22 @@ window.confirmPdfExport = function(){
   generatePDF(months);
 
 };
+
+
+// ======================
+// ❌ CHIUDI PDF POPUP
+// ======================
+
+window.closePdfPopup = function(){
+
+  const popup =
+  document.getElementById("pdfPopup");
+
+  if(popup){
+    popup.style.display = "none";
+  }
+
+};
 // ======================
 // 🔁 CAMBIO REPERIBILITA'
 // ======================
