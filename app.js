@@ -1536,7 +1536,8 @@ const blobUrl = pdf.output("bloburl");
 window.open(blobUrl, "_blank");
 
 
-// salvo PDF per futura condivisione
+// salvo PDF per condivisione dopo
+
 window.currentPdfBlob = pdf.output("blob");
 
 window.currentPdfName =
