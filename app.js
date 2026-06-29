@@ -1118,12 +1118,6 @@ window.deleteShift = async function () {
   }
 };
 
-// ======================
-// PDF CORRENTE
-// ======================
-
-window.currentPdfBlob = null;
-window.currentPdfMonths = 1;
 
 // ======================
 //  📤 PDF EXPORT
