@@ -77,6 +77,49 @@ function formatDateIT(date){
 }
 
 // ======================
+// 📄 VERSIONE PDF
+// ======================
+
+async function getPdfVersion(pdfKey) {
+
+  const ref = doc(db, "pdfVersions", pdfKey);
+
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    return "1/1";
+  }
+
+  const data = snap.data();
+
+  const version = data.version || 1;
+
+  return `1/${version}`;
+
+}
+
+async function savePdfVersion(pdfKey) {
+
+  const ref = doc(db, "pdfVersions", pdfKey);
+
+  const snap = await getDoc(ref);
+
+  let version = 1;
+
+  if (snap.exists()) {
+    version = (snap.data().version || 1) + 1;
+  }
+
+  await setDoc(ref, {
+    version,
+    updatedAt: serverTimestamp()
+  });
+
+  window.pdfVersion = `1/${version}`;
+
+}
+
+// ======================
 // CARICA DIPENDENTI
 // ======================
 
