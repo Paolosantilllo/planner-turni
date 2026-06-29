@@ -1531,20 +1531,24 @@ if (value === "REP" || value === "FREP") {
 // 📤 ANTEPRIMA PDF
 // ======================
 
-const blobUrl = pdf.output("bloburl");
+const blob = pdf.output("blob");
 
-window.open(blobUrl, "_blank");
+const url = URL.createObjectURL(blob);
 
 
-// salvo PDF per condivisione dopo
+// salvo per il pulsante condividi dopo
 
-window.currentPdfBlob = pdf.output("blob");
+window.currentPdfBlob = blob;
 
 window.currentPdfName =
 `Reperibilita_${baseYear}_${String(baseMonth+1).padStart(2,"0")}.pdf`;
 
-}
- 
+
+// apertura anteprima PDF a schermo intero
+
+window.location.href = url;
+
+ }
 
 // ======================
 // BOTTONE PDF
