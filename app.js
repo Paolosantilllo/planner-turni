@@ -1200,7 +1200,11 @@ window.pdfVersion = await getPdfVersion(pdfKey);
   // 📄 PDF INIT
   // ======================
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("landscape", "mm", "a4");
+  const pdf = new jsPDF({
+  orientation: "landscape",
+  unit: "mm",
+  format: "a4"
+});
 
   const monthNames = [
     "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
