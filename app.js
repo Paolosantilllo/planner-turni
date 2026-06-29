@@ -1533,26 +1533,17 @@ if (value === "REP" || value === "FREP") {
 
 const blobUrl = pdf.output("bloburl");
 
-// apro anteprima PDF
 window.open(blobUrl, "_blank");
 
 
-// salvo anche il PDF per il futuro tasto condividi
+// salvo PDF per futura condivisione
 window.currentPdfBlob = pdf.output("blob");
 
 window.currentPdfName =
 `Reperibilita_${baseYear}_${String(baseMonth+1).padStart(2,"0")}.pdf`;
 
-
-// mostra pulsante condividi
-const shareBtn =
-document.getElementById("sharePdfBtn");
-
-if(shareBtn){
-  shareBtn.style.display = "block";
 }
  
-}
 
 // ======================
 // BOTTONE PDF
