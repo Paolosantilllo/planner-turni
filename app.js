@@ -3251,4 +3251,42 @@ function setupAdminUI() {
   hide("logoutBtn"); 
 }
 
+// ======================
+// 📤 CONDIVIDI PDF
+// ======================
 
+window.sharePdf = async function(){
+
+  if(!window.currentPdfBlob){
+    alert("Nessun PDF disponibile");
+    return;
+  }
+
+
+  const file = new File(
+    [window.currentPdfBlob],
+    window.currentPdfName,
+    {
+      type:"application/pdf"
+    }
+  );
+
+
+  if(navigator.share && navigator.canShare({ files:[file] })){
+
+    await navigator.share({
+
+      title:"Reperibilità PDF",
+
+      files:[file]
+
+    });
+
+
+  }else{
+
+    alert("Condivisione non supportata");
+
+  }
+
+}
