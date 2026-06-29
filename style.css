@@ -1320,3 +1320,11 @@ button:disabled{
   display: block;
 }
 
+.pdf-container {
+
+  height: 75vh;
+  width: 100%;
+  overflow: hidden;
+
+}
+
