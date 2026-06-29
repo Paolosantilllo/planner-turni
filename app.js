@@ -1531,34 +1531,29 @@ if (value === "REP" || value === "FREP") {
 // 📤 ANTEPRIMA PDF
 // ======================
 
-const pdfBlob = pdf.output("blob");
+const blobUrl = pdf.output("bloburl");
 
-// salvo PDF per condivisione successiva
-window.currentPdfBlob = pdfBlob;
+// apro anteprima PDF
+window.open(blobUrl, "_blank");
 
 
-// salvo nome file
+// salvo anche il PDF per il futuro tasto condividi
+window.currentPdfBlob = pdf.output("blob");
+
 window.currentPdfName =
 `Reperibilita_${baseYear}_${String(baseMonth+1).padStart(2,"0")}.pdf`;
 
 
-// creo anteprima
-const blobUrl = URL.createObjectURL(pdfBlob);
-
-window.open(blobUrl, "_blank");
-
-
-// abilito pulsante condividi
+// mostra pulsante condividi
 const shareBtn =
 document.getElementById("sharePdfBtn");
 
 if(shareBtn){
-
   shareBtn.style.display = "block";
-
+}
+ 
 }
 
-}
 // ======================
 // BOTTONE PDF
 // ======================
