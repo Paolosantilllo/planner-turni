@@ -49,6 +49,13 @@ let savedEvents = [];
 let unsubscribeEvents = null;
 let eventsByDate = {};
 
+// ======================
+// 📄 VERSIONI PDF
+// ======================
+
+window.pdfVersion = "1/1";
+window.currentPdfKey = "";
+
 const calendar = document.getElementById("calendar");
 const monthTitle = document.getElementById("monthTitle");
 const employeeFilter = document.getElementById("employeeFilter");
