@@ -1531,11 +1531,32 @@ if (value === "REP" || value === "FREP") {
 // 📤 ANTEPRIMA PDF
 // ======================
 
-const blob = pdf.output("blob");
+const pdfBlob = pdf.output("blob");
 
-const url = URL.createObjectURL(blob);
+// salvo PDF per condivisione successiva
+window.currentPdfBlob = pdfBlob;
 
-window.location.href = url;
+
+// salvo nome file
+window.currentPdfName =
+`Reperibilita_${baseYear}_${String(baseMonth+1).padStart(2,"0")}.pdf`;
+
+
+// creo anteprima
+const blobUrl = URL.createObjectURL(pdfBlob);
+
+window.open(blobUrl, "_blank");
+
+
+// abilito pulsante condividi
+const shareBtn =
+document.getElementById("sharePdfBtn");
+
+if(shareBtn){
+
+  shareBtn.style.display = "block";
+
+}
 
 }
 // ======================
