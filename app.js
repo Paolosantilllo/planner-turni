@@ -1542,6 +1542,8 @@ document.getElementById("pdfFrame").src = blobUrl;
 
 openPdfPopup();
 
+   }
+
  // ======================
 // 📤 PDF POPUP CONTROL
 // ======================
@@ -1629,7 +1631,6 @@ closePdfPopup();
   generatePDF(months); 
 };
 
-}
 
 // ======================
 // BOTTONE PDF
