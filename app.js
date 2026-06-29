@@ -1544,10 +1544,20 @@ window.currentPdfName =
 `Reperibilita_${baseYear}_${String(baseMonth+1).padStart(2,"0")}.pdf`;
 
 
-// apertura anteprima PDF a schermo intero
+// mostra anteprima nel popup della PWA
 
-window.location.href = url;
+const pdfFrame = document.getElementById("pdfFrame");
 
+if(pdfFrame){
+  pdfFrame.src = url;
+}
+
+
+const pdfPopup = document.getElementById("pdfPopup");
+
+if(pdfPopup){
+  pdfPopup.style.display = "flex";
+}
  }
 
 // ======================
