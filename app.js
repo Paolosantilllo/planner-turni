@@ -1493,13 +1493,17 @@ window.sharePdf = async function () {
 
     try {
 
-      await navigator.share({
-        files: [file],
-        title: "Reperibilità",
-        text: "Piano reperibilità"
-      });
+     await navigator.share({
+  files: [file],
+  title: "Reperibilità",
+  text: "Piano reperibilità"
+});
 
-      closePdfPopup();
+// qui dopo inseriremo il salvataggio della versione
+
+await savePdfVersion();
+
+closePdfPopup();
 
     } catch (err) {
 
@@ -1519,11 +1523,13 @@ window.sharePdf = async function () {
   a.href = url;
   a.download = file.name;
 
-  a.click();
+ a.click();
 
-  URL.revokeObjectURL(url);
+await savePdfVersion();
 
-  closePdfPopup();
+URL.revokeObjectURL(url);
+
+closePdfPopup();
 
 };
    
