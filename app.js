@@ -9,33 +9,26 @@ import {
   initPush,
   listenForegroundNotifications
 } from "./push.js";
+
 window.logout = logout;
 
 initAuth((user) => {
 
   window.CURRENT_USER = user;
 
- window.CURRENT_EMPLOYEE = user.email === EMPLOYEES.A.email
- ? "A"
- : Object.keys(EMPLOYEES).find(
-    id => EMPLOYEES[id].email === user.email
-   );
-   
-   populateEmployeeSelects();
+  // 🔥 USIAMO QUELLO GIÀ CALCOLATO DA auth.js
+  window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
 
+  populateEmployeeSelects();
   setDefaultFilter();
-
   loadEvents();
-
   loadChangeRequests();
-
   loadNotificationBadge();
-
   setupAdminUI();
 
   initPush(user);
+  listenForegroundNotifications();
 
-   listenForegroundNotifications();
 });
 
 /* ======================
