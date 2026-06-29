@@ -1642,18 +1642,24 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  btn.addEventListener("click", async () => {
+ btn.addEventListener("click", async () => {
 
-  const months = parseInt(
-    document.getElementById("monthsRange").value
-  );
+  const select = document.getElementById("monthsRange");
+
+  console.log(select);
+
+  if (!select) {
+    alert("monthsRange NON trovato");
+    return;
+  }
+
+  const months = parseInt(select.value);
 
   window.currentPdfMonths = months;
 
   await generatePDF(months);
 
 });
-
 });
 // ======================
 // 🔁 CAMBIO REPERIBILITA'
