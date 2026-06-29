@@ -1126,7 +1126,7 @@ window.currentPdfMonths = 1;
 //  📤 PDF EXPORT
 // ======================
 
-function generatePDF(months = 1, version = "1/1") {
+async function generatePDF(months = 1) {
   
    window.currentPdfMonths = months;
    const missingMessages = [];
@@ -1134,7 +1134,29 @@ function generatePDF(months = 1, version = "1/1") {
   const baseYear = currentDate.getFullYear();
   const baseMonth = currentDate.getMonth();
 
-  const daysInMonth =
+  // ======================
+// 📄 CHIAVE VERSIONE PDF
+// ======================
+
+const snapshot = [];
+
+for (let m = 0; m < months; m++) {
+
+  const monthDate = new Date(baseYear, baseMonth + m, 1);
+
+  snapshot.push(
+    `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, "0")}`
+  );
+
+}
+
+const pdfKey = snapshot.join("_");
+
+window.currentPdfKey = pdfKey;
+
+window.pdfVersion = await getPdfVersion(pdfKey);
+   
+   const daysInMonth =
     new Date(baseYear, baseMonth + 1, 0).getDate();
 
   // ======================
@@ -1266,7 +1288,7 @@ pdf.text(
 
 
 pdf.text(
-  `Versione: ${version}`,
+  `Versione: ${window.pdfVersion}`,
   285,
   startY + 2,
   { align:"right" }
