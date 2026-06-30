@@ -3336,7 +3336,8 @@ function getCalendarSignature() {
 
       return (
         d >= new Date(baseYear, baseMonth, 1) &&
-        d <= endDate;
+        d <= endDate
+      );
 
     })
     .sort((a, b) => {
