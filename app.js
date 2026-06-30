@@ -1546,7 +1546,61 @@ if (pdfPopup) {
 }
 
 await renderPdfPreview(blob);
- }
+
+}
+
+
+// ======================
+// 📤 CONDIVIDI PDF
+// ======================
+
+window.sharePdf = async function(){
+
+  if(!window.currentPdfBlob){
+    alert("PDF non disponibile");
+    return;
+  }
+
+
+  const file = new File(
+    [window.currentPdfBlob],
+    window.currentPdfName,
+    {
+      type:"application/pdf"
+    }
+  );
+
+
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+
+    try{
+
+      await navigator.share({
+
+        files:[file],
+
+        title:"Reperibilità",
+
+        text:"PDF reperibilità"
+
+      });
+
+
+    }catch(err){
+
+      console.log("Condivisione annullata",err);
+
+    }
+
+  }else{
+
+    alert(
+      "Condivisione file non supportata"
+    );
+
+  }
+
+};
 
 // ======================
 // BOTTONE PDF
