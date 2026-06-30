@@ -3374,8 +3374,6 @@ console.log("FIRMA CALENDARIO:", signature);
 
 let pdfVersions = JSON.parse(localStorage.getItem("pdfVersions")) || {};
 
-const signature = getCalendarSignature();
-
 let version;
 
 if (pdfVersions[signature]) {
@@ -3386,8 +3384,8 @@ if (pdfVersions[signature]) {
 }
 
 localStorage.setItem("pdfVersions", JSON.stringify(pdfVersions));
-const now = new Date();
 
+const now = new Date();
 const dataInvio =
   now.toLocaleDateString("it-IT")
   + " "
