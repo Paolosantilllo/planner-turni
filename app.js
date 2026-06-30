@@ -3427,7 +3427,20 @@ window.sharePdf = async function(){
   }
 
 
-  const signature = getCalendarSignature();
+  const signature = JSON.stringify(
+  savedEvents
+    .map(e => ({
+      employee:e.employee,
+      date:e.date,
+      shift:e.shift
+    }))
+    .sort((a,b)=>
+      (a.date+a.employee+a.shift)
+      .localeCompare(
+        b.date+b.employee+b.shift
+      )
+    )
+);
    
    console.log("FIRMA PDF:", signature);
 
