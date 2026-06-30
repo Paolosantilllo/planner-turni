@@ -120,6 +120,9 @@ async function savePdfVersion() {
 
   window.pdfVersion = `1/${version}`;
 
+await generatePDF(window.currentPdfMonths);
+return;
+
 }
 
 // ======================
@@ -3444,7 +3447,11 @@ window.sharePdf = async function(){
   );
 
    window.currentPdfVersion = version;
-   window.currentPdfData = dataInvio;
+window.currentPdfData = dataInvio;
+
+
+// aggiorna versione mostrata nel PDF
+window.pdfVersion = `1/${version}`;
 
   const file = new File(
 
