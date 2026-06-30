@@ -1127,6 +1127,9 @@ window.deleteShift = async function () {
 // ======================
 
 async function generatePDF(months = 1) {
+
+   // attende aggiornamento dati Firebase
+await new Promise(resolve => setTimeout(resolve, 500));
   
    window.currentPdfMonths = months;
    const missingMessages = [];
