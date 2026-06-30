@@ -3299,11 +3299,17 @@ async function renderPdfPreview(blob) {
 
   const viewport = page.getViewport({ scale: 1 });
 
-  const scale =
-    container.clientWidth / viewport.width;
+const scale =
+  container.clientWidth / viewport.width;
 
-  const scaledViewport =
-    page.getViewport({ scale });
+
+// aumenta qualità PDF
+const qualityScale = 2;
+
+const scaledViewport =
+  page.getViewport({
+    scale: scale * qualityScale
+  });
 
 
 const dpr = window.devicePixelRatio || 1;
@@ -3316,12 +3322,10 @@ canvas.height = scaledViewport.height * dpr;
 
 
 canvas.style.width =
-  scaledViewport.width + "px";
+  (scaledViewport.width / qualityScale) + "px";
 
 canvas.style.height =
-  scaledViewport.height + "px";
-
-
+  (scaledViewport.height / qualityScale) + "px";
 ctx.setTransform(
   dpr,
   0,
