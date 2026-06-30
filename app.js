@@ -3368,100 +3368,69 @@ window.sharePdf = async function(){
   }
 
 
-  const signature = await getPdfSignature(
-    window.currentPdfBlob
-  );
+const signature = getCalendarSignature();
 
-   console.log("FIRMA PDF:", signature);
+console.log("FIRMA CALENDARIO:", signature);
 
-  let pdfInfo = JSON.parse(
-    localStorage.getItem("ultimoPdf")
-  );
+let pdfInfo = JSON.parse(
+  localStorage.getItem("ultimoPdf")
+);
 
+let version = 1;
 
-  let version = 1;
+if (pdfInfo) {
 
+  if (pdfInfo.signature === signature) {
 
-  if(pdfInfo){
+    // stesso calendario → stessa versione
+    version = pdfInfo.version;
 
-    if(pdfInfo.signature === signature){
+  } else {
 
-      // stesso PDF
-      version = pdfInfo.version;
-
-    }else{
-
-      // PDF modificato
-      version = pdfInfo.version + 1;
-
-    }
+    // calendario modificato → nuova versione
+    version = pdfInfo.version + 1;
 
   }
 
+}
 
-  const now = new Date();
+const now = new Date();
 
+const dataInvio =
+  now.toLocaleDateString("it-IT")
+  + " "
+  +
+  now.toLocaleTimeString("it-IT");
 
-  const dataInvio =
-    now.toLocaleDateString("it-IT")
-    + " "
-    +
-    now.toLocaleTimeString("it-IT");
+localStorage.setItem(
+  "ultimoPdf",
+  JSON.stringify({
+    signature,
+    version,
+    dataInvio
+  })
+);
 
-
-
-  localStorage.setItem(
-    "ultimoPdf",
-    JSON.stringify({
-
-      signature,
-
-      version,
-
-      dataInvio
-
-    })
-  );
-
-
-
-  const file = new File(
-
-    [
-      window.currentPdfBlob
-    ],
-
-    "Reperibilita_V" + version + ".pdf",
-
-    {
-      type:"application/pdf"
-    }
-
-  );
-
-
-
-  if(
-    navigator.share &&
-    navigator.canShare({
-      files:[file]
-    })
-  ){
-
-    await navigator.share({
-
-      title:
-      "Reperibilità PDF V" + version,
-
-      files:[file]
-
-    });
-
-
-  }else{
-
-    alert("Condivisione non supportata");
-
+const file = new File(
+  [window.currentPdfBlob],
+  "Reperibilita_V" + version + ".pdf",
+  {
+    type: "application/pdf"
   }
+);
+
+if (
+  navigator.share &&
+  navigator.canShare({ files: [file] })
+) {
+
+  await navigator.share({
+    title: "Reperibilità PDF V" + version,
+    files: [file]
+  });
+
+} else {
+
+  alert("Condivisione non supportata");
 
 }
