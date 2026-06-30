@@ -3356,71 +3356,77 @@ function getScheduleSignature(months = 1) {
 // 📤 CONDIVIDI PDF
 // ======================
 
-window.sharePdf = async function(){
+window.sharePdf = async function () {
 
   console.log("sharePdf chiamata");
 
-  if(!window.currentPdfBlob){
-
+  if (!window.currentPdfBlob) {
     alert("Nessun PDF disponibile");
-
     return;
   }
 
+  // 🔑 firma basata sugli eventi del calendario
+  const signature = getCalendarSignature();
 
-const signature = getCalendarSignature();
+  console.log("FIRMA CALENDARIO:", signature);
 
-console.log("FIRMA CALENDARIO:", signature);
+  // 📦 recupero versioni salvate
+  let pdfVersions = JSON.parse(localStorage.getItem("pdfVersions")) || {};
 
-let pdfVersions = JSON.parse(localStorage.getItem("pdfVersions")) || {};
+  let version;
 
-let version;
-
-if (pdfVersions[signature]) {
-  version = pdfVersions[signature];
-} else {
-  version = Object.keys(pdfVersions).length + 1;
-  pdfVersions[signature] = version;
-}
-
-localStorage.setItem("pdfVersions", JSON.stringify(pdfVersions));
-
-const now = new Date();
-const dataInvio =
-  now.toLocaleDateString("it-IT")
-  + " "
-  +
-  now.toLocaleTimeString("it-IT");
-
-localStorage.setItem(
-  "ultimoPdf",
-  JSON.stringify({
-    signature,
-    version,
-    dataInvio
-  })
-);
-
-const file = new File(
-  [window.currentPdfBlob],
-  "Reperibilita_V" + version + ".pdf",
-  {
-    type: "application/pdf"
+  // 📌 se esiste già questa firma → stessa versione
+  if (pdfVersions[signature]) {
+    version = pdfVersions[signature];
+  } else {
+    // 📌 nuova combinazione eventi → nuova versione
+    version = Object.keys(pdfVersions).length + 1;
+    pdfVersions[signature] = version;
   }
-);
 
-if (
-  navigator.share &&
-  navigator.canShare({ files: [file] })
-) {
+  // 💾 salva mappa versioni
+  localStorage.setItem("pdfVersions", JSON.stringify(pdfVersions));
 
-  await navigator.share({
-    title: "Reperibilità PDF V" + version,
-    files: [file]
-  });
+  // 📅 data invio
+  const now = new Date();
 
-} else {
+  const dataInvio =
+    now.toLocaleDateString("it-IT") +
+    " " +
+    now.toLocaleTimeString("it-IT");
 
-  alert("Condivisione non supportata");
+  // 💾 salva ultimo PDF inviato
+  localStorage.setItem(
+    "ultimoPdf",
+    JSON.stringify({
+      signature,
+      version,
+      dataInvio
+    })
+  );
 
-}
+  // 📄 crea file PDF
+  const file = new File(
+    [window.currentPdfBlob],
+    "Reperibilita_V" + version + ".pdf",
+    {
+      type: "application/pdf"
+    }
+  );
+
+  // 📤 condivisione
+  if (navigator.share && navigator.canShare({ files: [file] })) {
+
+    await navigator.share({
+      title: "Reperibilità PDF V" + version,
+      files: [file]
+    });
+
+  } else {
+
+    alert("Condivisione non supportata");
+
+  }
+
+};
+
