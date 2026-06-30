@@ -3388,20 +3388,89 @@ window.sharePdf = async function(){
   }
 
 
-  const file = new File(
-    [window.currentPdfBlob],
-    window.currentPdfName,
-    {
-      type:"application/pdf"
-    }
+  const signature = await getPdfSignature(
+    window.currentPdfBlob
   );
 
 
-  if(navigator.share && navigator.canShare({ files:[file] })){
+  let pdfInfo = JSON.parse(
+    localStorage.getItem("ultimoPdf")
+  );
+
+
+  let version = 1;
+
+
+  if(pdfInfo){
+
+    if(pdfInfo.signature === signature){
+
+      // stesso PDF
+      version = pdfInfo.version;
+
+    }else{
+
+      // PDF modificato
+      version = pdfInfo.version + 1;
+
+    }
+
+  }
+
+
+  const now = new Date();
+
+
+  const dataInvio =
+    now.toLocaleDateString("it-IT")
+    + " "
+    +
+    now.toLocaleTimeString("it-IT");
+
+
+
+  localStorage.setItem(
+    "ultimoPdf",
+    JSON.stringify({
+
+      signature,
+
+      version,
+
+      dataInvio
+
+    })
+  );
+
+
+
+  const file = new File(
+
+    [
+      window.currentPdfBlob
+    ],
+
+    "Reperibilita_V" + version + ".pdf",
+
+    {
+      type:"application/pdf"
+    }
+
+  );
+
+
+
+  if(
+    navigator.share &&
+    navigator.canShare({
+      files:[file]
+    })
+  ){
 
     await navigator.share({
 
-      title:"Reperibilità PDF",
+      title:
+      "Reperibilità PDF V" + version,
 
       files:[file]
 
