@@ -55,6 +55,7 @@ let eventsByDate = {};
 
 window.pdfVersion = "1/1";
 window.currentPdfKey = "";
+window.lastPdfSignature = "";
 
 window.currentPdfBlob = null;
 window.currentPdfHash = null;
@@ -1137,7 +1138,7 @@ const pdfKey = snapshot.join("_");
 
 window.currentPdfKey = pdfKey;
 
-
+await updatePdfVersion(pdfKey);
 
    
    const daysInMonth =
