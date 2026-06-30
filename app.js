@@ -90,38 +90,36 @@ async function getPdfVersion(pdfKey) {
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    return "1/1";
+    return {
+      version: 1,
+      signature: null
+    };
   }
 
   const data = snap.data();
 
-  const version = data.version || 1;
-
-  return `1/${version}`;
+  return {
+    version: data.version || 1,
+    signature: data.signature || null
+  };
 
 }
 
-async function savePdfVersion() {
+async function savePdfVersion(version, signature) {
 
   const ref = doc(db, "pdfVersions", window.currentPdfKey);
 
-  const snap = await getDoc(ref);
-
-  let version = 1;
-
-  if (snap.exists()) {
-    version = (snap.data().version || 1) + 1;
-  }
-
   await setDoc(ref, {
+
     version,
+
+    signature,
+
     updatedAt: serverTimestamp()
+
   });
 
-  window.pdfVersion = `1/${version}`;
-
 }
-
 // ======================
 // CARICA DIPENDENTI
 // ======================
