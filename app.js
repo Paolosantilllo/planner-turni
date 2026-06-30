@@ -3364,9 +3364,37 @@ function getPdfSignature(blob){
 
 }
 
-function getCalendarSignature(){
+function getCalendarSignature(months){
 
-  const data = savedEvents.map(e => {
+  const baseYear = currentDate.getFullYear();
+  const baseMonth = currentDate.getMonth();
+
+
+  const data = savedEvents.filter(e=>{
+
+    const d = new Date(e.date);
+
+    for(let i=0;i<months;i++){
+
+      const check = new Date(
+        baseYear,
+        baseMonth+i,
+        1
+      );
+
+      if(
+        d.getFullYear() === check.getFullYear() &&
+        d.getMonth() === check.getMonth()
+      ){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  })
+  .map(e=>{
 
     return {
       employee:e.employee,
@@ -3377,17 +3405,23 @@ function getCalendarSignature(){
   });
 
 
-  return JSON.stringify(data.sort(
-    (a,b)=>
-    (a.date+a.employee)
-    .localeCompare(b.date+b.employee)
-  ));
+return JSON.stringify(
+ data.sort(
+  (a,b)=>
+  (a.date+a.employee)
+  .localeCompare(
+   b.date+b.employee
+  )
+ )
+);
 
 }
 
 async function updatePdfVersion(pdfKey){
 
-  const signature = getCalendarSignature();
+  const signature = getCalendarSignature(
+  window.currentPdfMonths
+);
 
   const ref = doc(db,"pdfVersions",pdfKey);
 
