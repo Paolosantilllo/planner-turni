@@ -3358,8 +3358,12 @@ function getScheduleSignature(months = 1) {
 
 window.sharePdf = async function(){
 
+  console.log("sharePdf chiamata");
+
   if(!window.currentPdfBlob){
+
     alert("Nessun PDF disponibile");
+
     return;
   }
 
