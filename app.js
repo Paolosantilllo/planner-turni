@@ -3352,7 +3352,9 @@ function getCalendarSignature() {
 
     });
 
-  return JSON.stringify(
+  
+   
+   return JSON.stringify(
     events.map(e => ({
       date: e.date,
       employee: e.employee,
@@ -3369,73 +3371,139 @@ window.sharePdf = async function () {
 
   console.log("sharePdf chiamata");
 
+
   if (!window.currentPdfBlob) {
+
     alert("Nessun PDF disponibile");
+
     return;
+
   }
 
-  // 🔑 firma basata sugli eventi del calendario
+
+  // 🔑 firma del calendario del PDF generato
   const signature = getCalendarSignature();
 
-  console.log("FIRMA CALENDARIO:", signature);
 
-  // 📦 recupero versioni salvate
-  let pdfVersions = JSON.parse(localStorage.getItem("pdfVersions")) || {};
+  console.log(
+    "FIRMA CALENDARIO:",
+    signature
+  );
 
-  let version;
 
-  // 📌 se esiste già questa firma → stessa versione
-  if (pdfVersions[signature]) {
-    version = pdfVersions[signature];
-  } else {
-    // 📌 nuova combinazione eventi → nuova versione
-    version = Object.keys(pdfVersions).length + 1;
-    pdfVersions[signature] = version;
+  // ======================
+  // 📄 VERSIONE FIREBASE
+  // ======================
+
+  const pdfInfo =
+    await getPdfVersion(window.currentPdfKey);
+
+
+  let version =
+    pdfInfo.version;
+
+
+  // Se il contenuto è cambiato
+  if (
+    pdfInfo.signature &&
+    pdfInfo.signature !== signature
+  ) {
+
+    version++;
+
+
   }
 
-  // 💾 salva mappa versioni
-  localStorage.setItem("pdfVersions", JSON.stringify(pdfVersions));
 
-  // 📅 data invio
+  // salva sempre la situazione attuale
+
+  await savePdfVersion(
+    version,
+    signature
+  );
+
+
+  window.pdfVersion =
+    `1/${version}`;
+
+
+  console.log(
+    "VERSIONE PDF:",
+    window.pdfVersion
+  );
+
+
+  // ======================
+  // 📅 DATA INVIO
+  // ======================
+
   const now = new Date();
 
+
   const dataInvio =
-    now.toLocaleDateString("it-IT") +
-    " " +
+    now.toLocaleDateString("it-IT")
+    +
+    " "
+    +
     now.toLocaleTimeString("it-IT");
 
-  // 💾 salva ultimo PDF inviato
-  localStorage.setItem(
-    "ultimoPdf",
-    JSON.stringify({
-      signature,
-      version,
-      dataInvio
+
+  window.pdfSendDate =
+    dataInvio;
+
+
+
+  // ======================
+  // 📄 CREA FILE
+  // ======================
+
+  const file =
+    new File(
+
+      [window.currentPdfBlob],
+
+      "Reperibilità PLF.pdf",
+
+      {
+        type:"application/pdf"
+      }
+
+    );
+
+
+
+  // ======================
+  // 📤 CONDIVIDI
+  // ======================
+
+  if (
+    navigator.share &&
+    navigator.canShare({
+      files:[file]
     })
-  );
 
-  // 📄 crea file PDF
-  const file = new File(
-    [window.currentPdfBlob],
-    "Reperibilita_V" + version + ".pdf",
-    {
-      type: "application/pdf"
-    }
-  );
+  ) {
 
-  // 📤 condivisione
-  if (navigator.share && navigator.canShare({ files: [file] })) {
 
     await navigator.share({
-      title: "Reperibilità PDF V" + version,
-      files: [file]
+
+      title:
+      "Reperibilità PLF",
+
+      files:[file]
+
     });
+
 
   } else {
 
-    alert("Condivisione non supportata");
+
+    alert(
+      "Condivisione non supportata"
+    );
+
 
   }
 
-};
 
+};
