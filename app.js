@@ -55,7 +55,6 @@ let eventsByDate = {};
 
 window.pdfVersion = "1/1";
 window.currentPdfKey = "";
-window.lastPdfSignature = "";
 
 window.currentPdfBlob = null;
 window.currentPdfHash = null;
@@ -102,6 +101,26 @@ async function getPdfVersion(pdfKey) {
 
 }
 
+async function savePdfVersion() {
+
+  const ref = doc(db, "pdfVersions", window.currentPdfKey);
+
+  const snap = await getDoc(ref);
+
+  let version = 1;
+
+  if (snap.exists()) {
+    version = (snap.data().version || 1) + 1;
+  }
+
+  await setDoc(ref, {
+    version,
+    updatedAt: serverTimestamp()
+  });
+
+  window.pdfVersion = `1/${version}`;
+
+}
 
 // ======================
 // CARICA DIPENDENTI
@@ -1035,10 +1054,7 @@ if (finalShift === "FREP") {
 }
     await Promise.all(writes);
 
-     await new Promise(resolve => setTimeout(resolve, 300));
-renderCalendar();
-   
-     closePopup();
+    closePopup();
     console.log("✔ Salvataggio completato");
 
   } catch (err) {
@@ -1108,9 +1124,6 @@ window.deleteShift = async function () {
 // ======================
 
 async function generatePDF(months = 1) {
-
-   // attende aggiornamento dati Firebase
-await new Promise(resolve => setTimeout(resolve, 500));
   
    window.currentPdfMonths = months;
    const missingMessages = [];
@@ -1138,8 +1151,7 @@ const pdfKey = snapshot.join("_");
 
 window.currentPdfKey = pdfKey;
 
-await updatePdfVersion(pdfKey);
-
+window.pdfVersion = await getPdfVersion(pdfKey);
    
    const daysInMonth =
     new Date(baseYear, baseMonth + 1, 0).getDate();
@@ -1546,61 +1558,7 @@ if (pdfPopup) {
 }
 
 await renderPdfPreview(blob);
-
-}
-
-
-// ======================
-// 📤 CONDIVIDI PDF
-// ======================
-
-window.sharePdf = async function(){
-
-  if(!window.currentPdfBlob){
-    alert("PDF non disponibile");
-    return;
-  }
-
-
-  const file = new File(
-    [window.currentPdfBlob],
-    window.currentPdfName,
-    {
-      type:"application/pdf"
-    }
-  );
-
-
-  if(navigator.canShare && navigator.canShare({files:[file]})){
-
-    try{
-
-      await navigator.share({
-
-        files:[file],
-
-        title:"Reperibilità",
-
-        text:"PDF reperibilità"
-
-      });
-
-
-    }catch(err){
-
-      console.log("Condivisione annullata",err);
-
-    }
-
-  }else{
-
-    alert(
-      "Condivisione file non supportata"
-    );
-
-  }
-
-};
+ }
 
 // ======================
 // BOTTONE PDF
@@ -3418,116 +3376,112 @@ function getPdfSignature(blob){
 
 }
 
-function getCalendarSignature(months){
+// ======================
+// 📤 CONDIVIDI PDF
+// ======================
 
-  const baseYear = currentDate.getFullYear();
-  const baseMonth = currentDate.getMonth();
+window.sharePdf = async function(){
 
-
-  const data = savedEvents.filter(e=>{
-
-    const d = new Date(e.date);
-
-    for(let i=0;i<months;i++){
-
-      const check = new Date(
-        baseYear,
-        baseMonth+i,
-        1
-      );
-
-      if(
-        d.getFullYear() === check.getFullYear() &&
-        d.getMonth() === check.getMonth()
-      ){
-        return true;
-      }
-
-    }
-
-    return false;
-
-  })
-  .map(e=>{
-
-    return {
-      employee:e.employee,
-      date:e.date,
-      shift:e.shift
-    };
-
-  });
-
-
-return JSON.stringify(
- data.sort(
-  (a,b)=>
-  (a.date+a.employee)
-  .localeCompare(
-   b.date+b.employee
-  )
- )
-);
-
-}
-
-async function updatePdfVersion(pdfKey){
-
-  const signature = getCalendarSignature(
-  window.currentPdfMonths
-);
-
-  const ref = doc(db,"pdfVersions",pdfKey);
-
-  const snap = await getDoc(ref);
-
-
-  if(!snap.exists()){
-
-    await setDoc(ref,{
-      version:1,
-      signature:signature,
-      updatedAt:serverTimestamp()
-    });
-
-    window.pdfVersion = "1/1";
-
+  if(!window.currentPdfBlob){
+    alert("Nessun PDF disponibile");
     return;
   }
 
 
-  const data = snap.data();
+  const signature = await getPdfSignature(
+    window.currentPdfBlob
+  );
+
+   console.log("FIRMA PDF:", signature);
+
+  let pdfInfo = JSON.parse(
+    localStorage.getItem("ultimoPdf")
+  );
 
 
-  if(data.signature !== signature){
-
-    const newVersion =
-      (data.version || 1) + 1;
+  let version = 1;
 
 
-    await setDoc(ref,{
+  if(pdfInfo){
 
-      version:newVersion,
+    if(pdfInfo.signature === signature){
 
-      signature:signature,
+      // stesso PDF
+      version = pdfInfo.version;
 
-      updatedAt:serverTimestamp()
+    }else{
+
+      // PDF modificato
+      version = pdfInfo.version + 1;
+
+    }
+
+  }
+
+
+  const now = new Date();
+
+
+  const dataInvio =
+    now.toLocaleDateString("it-IT")
+    + " "
+    +
+    now.toLocaleTimeString("it-IT");
+
+
+
+  localStorage.setItem(
+    "ultimoPdf",
+    JSON.stringify({
+
+      signature,
+
+      version,
+
+      dataInvio
+
+    })
+  );
+
+
+
+  const file = new File(
+
+    [
+      window.currentPdfBlob
+    ],
+
+    "Reperibilita_V" + version + ".pdf",
+
+    {
+      type:"application/pdf"
+    }
+
+  );
+
+
+
+  if(
+    navigator.share &&
+    navigator.canShare({
+      files:[file]
+    })
+  ){
+
+    await navigator.share({
+
+      title:
+      "Reperibilità PDF V" + version,
+
+      files:[file]
 
     });
 
 
-    window.pdfVersion =
-      `1/${newVersion}`;
-
-
   }else{
 
-
-    window.pdfVersion =
-      `1/${data.version || 1}`;
-
+    alert("Condivisione non supportata");
 
   }
-
 
 }
