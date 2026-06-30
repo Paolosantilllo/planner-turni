@@ -1269,7 +1269,45 @@ pdf.text(
   { align: "center" }
 );
 
-    // ======================
+   // ======================
+// 📌 INFO INVIO PDF
+// ======================
+
+pdf.setFontSize(8);
+pdf.setFont("helvetica", "normal");
+
+
+const now = new Date();
+
+
+const dataInvio =
+now.toLocaleDateString("it-IT")
++
+" "
++
+now.toLocaleTimeString("it-IT");
+
+
+pdf.text(
+  `Data invio: ${dataInvio}`,
+  285,
+  8,
+  {
+    align:"right"
+  }
+);
+
+
+pdf.text(
+  `Versione: ${window.pdfVersion || "1/1"}`,
+  285,
+  13,
+  {
+    align:"right"
+  }
+);
+     
+     // ======================
     // 📊 TABELLA
     // ======================
     const head = [
