@@ -3317,7 +3317,7 @@ await page.render({
 
 }
 
-function getScheduleSignature(months = 1) {
+const signature = getScheduleSignature(window.currentPdfMonths || 1);
 
   const baseYear = currentDate.getFullYear();
   const baseMonth = currentDate.getMonth();
@@ -3347,10 +3347,13 @@ function getScheduleSignature(months = 1) {
 
     });
 
-  return JSON.stringify(events);
-
-}
-
+ return JSON.stringify(
+  events.map(e => ({
+    date: e.date,
+    employee: e.employee,
+    shift: e.shift
+  }))
+);
 
 // ======================
 // 📤 CONDIVIDI PDF
