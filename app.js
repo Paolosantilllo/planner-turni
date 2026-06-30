@@ -1057,7 +1057,10 @@ if (finalShift === "FREP") {
 }
     await Promise.all(writes);
 
-    closePopup();
+     await new Promise(resolve => setTimeout(resolve, 300));
+renderCalendar();
+   
+     closePopup();
     console.log("✔ Salvataggio completato");
 
   } catch (err) {
