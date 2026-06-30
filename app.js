@@ -3443,7 +3443,8 @@ window.sharePdf = async function(){
     })
   );
 
-
+   window.currentPdfVersion = version;
+   window.currentPdfData = dataInvio;
 
   const file = new File(
 
