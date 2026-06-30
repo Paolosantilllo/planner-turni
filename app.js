@@ -3459,7 +3459,7 @@ window.pdfVersion = `1/${version}`;
       window.currentPdfBlob
     ],
 
-    "Reperibilita_V" + version + ".pdf",
+    "Reperibilita.pdf",
 
     {
       type:"application/pdf"
@@ -3477,9 +3477,6 @@ window.pdfVersion = `1/${version}`;
   ){
 
     await navigator.share({
-
-      title:
-      "Reperibilità PDF V" + version,
 
       files:[file]
 
