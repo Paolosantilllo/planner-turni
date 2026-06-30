@@ -102,11 +102,6 @@ async function getPdfVersion(pdfKey) {
 }
 
 
-await generatePDF(window.currentPdfMonths);
-return;
-
-}
-
 // ======================
 // CARICA DIPENDENTI
 // ======================
