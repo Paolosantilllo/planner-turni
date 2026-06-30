@@ -1334,7 +1334,7 @@ startY += 5;
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const nameColWidth = 28;
+    const nameColWidth = 22;
     const usableWidth = pageWidth - nameColWidth - 10;
     const dayColWidth = usableWidth / daysInMonthLoop;
 
@@ -1357,13 +1357,14 @@ headStyles: {
   lineWidth: 0.1
 },
        
-      tableWidth: "wrap",
+      tableWidth: "auto",
       margin: { left: 3, right: 3 },
       styles: {
-        fontSize: 4.5,
-        cellPadding: 0.4,
+        fontSize: 3.8,
+        cellPadding: 0.15,
         halign: "center",
-        valign: "middle"
+        valign: "middle",
+         overflow: "hidden"
       },
       columnStyles,
 
