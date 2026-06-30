@@ -3388,6 +3388,27 @@ function getPdfSignature(blob){
 
 }
 
+function getCalendarSignature(){
+
+  const data = savedEvents.map(e => {
+
+    return {
+      employee:e.employee,
+      date:e.date,
+      shift:e.shift
+    };
+
+  });
+
+
+  return JSON.stringify(data.sort(
+    (a,b)=>
+    (a.date+a.employee)
+    .localeCompare(b.date+b.employee)
+  ));
+
+}
+
 // ======================
 // 📤 CONDIVIDI PDF
 // ======================
@@ -3400,10 +3421,8 @@ window.sharePdf = async function(){
   }
 
 
-  const signature = await getPdfSignature(
-    window.currentPdfBlob
-  );
-
+  const signature = getCalendarSignature();
+   
    console.log("FIRMA PDF:", signature);
 
   let pdfInfo = JSON.parse(
