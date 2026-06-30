@@ -1269,40 +1269,6 @@ pdf.text(
   { align: "center" }
 );
 
-
-// ======================
-// 📅 DATA INVIO + VERSIONE
-// ======================
-
-const today = new Date();
-
-const sendDate =
-  `${String(today.getDate()).padStart(2,"0")}/` +
-  `${String(today.getMonth()+1).padStart(2,"0")}/` +
-  `${today.getFullYear()}`;
-
-
-pdf.setFontSize(8);
-pdf.setFont("helvetica", "normal");
-
-pdf.text(
-  `Data invio: ${sendDate}`,
-  285,
-  startY - 3,
-  { align:"right" }
-);
-
-
-pdf.text(
-  `Versione: ${window.pdfVersion}`,
-  285,
-  startY + 2,
-  { align:"right" }
-);
-
-
-startY += 5;
-
     // ======================
     // 📊 TABELLA
     // ======================
@@ -3351,35 +3317,40 @@ await page.render({
 
 }
 
-function getPdfSignature(blob){
+function getScheduleSignature(months = 1) {
 
-  return new Promise((resolve)=>{
+  const baseYear = currentDate.getFullYear();
+  const baseMonth = currentDate.getMonth();
 
-    const reader = new FileReader();
+  const endDate = new Date(baseYear, baseMonth + months, 0);
 
-    reader.onload = function(){
+  const events = savedEvents
+    .filter(ev => {
 
-      let binary = reader.result;
+      const d = new Date(ev.date);
 
-      let hash = 0;
+      return (
+        d >= new Date(baseYear, baseMonth, 1) &&
+        d <= endDate
+      );
 
-      for(let i = 0; i < binary.length; i++){
+    })
+    .sort((a, b) => {
 
-        hash = ((hash << 5) - hash) + binary.charCodeAt(i);
+      if (a.date !== b.date)
+        return a.date.localeCompare(b.date);
 
-        hash |= 0;
+      if (a.employee !== b.employee)
+        return a.employee.localeCompare(b.employee);
 
-      }
+      return a.shift.localeCompare(b.shift);
 
-      resolve(hash.toString());
+    });
 
-    };
-
-    reader.readAsBinaryString(blob);
-
-  });
+  return JSON.stringify(events);
 
 }
+
 
 // ======================
 // 📤 CONDIVIDI PDF
