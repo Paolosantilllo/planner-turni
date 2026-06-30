@@ -3372,28 +3372,20 @@ const signature = getCalendarSignature();
 
 console.log("FIRMA CALENDARIO:", signature);
 
-let pdfInfo = JSON.parse(
-  localStorage.getItem("ultimoPdf")
-);
+let pdfVersions = JSON.parse(localStorage.getItem("pdfVersions")) || {};
 
-let version = 1;
+const signature = getCalendarSignature();
 
-if (pdfInfo) {
+let version;
 
-  if (pdfInfo.signature === signature) {
-
-    // stesso calendario → stessa versione
-    version = pdfInfo.version;
-
-  } else {
-
-    // calendario modificato → nuova versione
-    version = pdfInfo.version + 1;
-
-  }
-
+if (pdfVersions[signature]) {
+  version = pdfVersions[signature];
+} else {
+  version = Object.keys(pdfVersions).length + 1;
+  pdfVersions[signature] = version;
 }
 
+localStorage.setItem("pdfVersions", JSON.stringify(pdfVersions));
 const now = new Date();
 
 const dataInvio =
