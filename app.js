@@ -3385,3 +3385,61 @@ function getCalendarSignature(){
 
 }
 
+async function updatePdfVersion(pdfKey){
+
+  const signature = getCalendarSignature();
+
+  const ref = doc(db,"pdfVersions",pdfKey);
+
+  const snap = await getDoc(ref);
+
+
+  if(!snap.exists()){
+
+    await setDoc(ref,{
+      version:1,
+      signature:signature,
+      updatedAt:serverTimestamp()
+    });
+
+    window.pdfVersion = "1/1";
+
+    return;
+  }
+
+
+  const data = snap.data();
+
+
+  if(data.signature !== signature){
+
+    const newVersion =
+      (data.version || 1) + 1;
+
+
+    await setDoc(ref,{
+
+      version:newVersion,
+
+      signature:signature,
+
+      updatedAt:serverTimestamp()
+
+    });
+
+
+    window.pdfVersion =
+      `1/${newVersion}`;
+
+
+  }else{
+
+
+    window.pdfVersion =
+      `1/${data.version || 1}`;
+
+
+  }
+
+
+}
