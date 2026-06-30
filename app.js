@@ -1551,18 +1551,13 @@ window.currentPdfName =
 
 // mostra anteprima nel popup della PWA
 
-const pdfFrame = document.getElementById("pdfFrame");
-
-if(pdfFrame){
-  pdfFrame.src = url;
-}
-
-
 const pdfPopup = document.getElementById("pdfPopup");
 
-if(pdfPopup){
+if (pdfPopup) {
   pdfPopup.style.display = "flex";
 }
+
+await renderPdfPreview(blob);
  }
 
 // ======================
@@ -3280,6 +3275,44 @@ function setupAdminUI() {
   hide("statsBtn");
   hide("addBtn");
   hide("logoutBtn"); 
+}
+
+async function renderPdfPreview(blob) {
+
+  const canvas = document.getElementById("pdfCanvas");
+  const ctx = canvas.getContext("2d");
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js";
+
+  const buffer = await blob.arrayBuffer();
+
+  const pdf = await pdfjsLib.getDocument({
+    data: buffer
+  }).promise;
+
+  // Mostra la prima pagina (nel tuo PDF è sufficiente se è di un mese)
+  const page = await pdf.getPage(1);
+
+  const container =
+    document.querySelector("#pdfPopup .pdf-container");
+
+  const viewport = page.getViewport({ scale: 1 });
+
+  const scale =
+    container.clientWidth / viewport.width;
+
+  const scaledViewport =
+    page.getViewport({ scale });
+
+  canvas.width = scaledViewport.width;
+  canvas.height = scaledViewport.height;
+
+  await page.render({
+    canvasContext: ctx,
+    viewport: scaledViewport
+  }).promise;
+
 }
 
 // ======================
