@@ -3444,7 +3444,17 @@ window.sharePdf = async function(){
    
    console.log("FIRMA PDF:", signature);
 
-  let pdfInfo = JSON.parse(
+console.log(
+ "CHIAVE PDF:",
+ window.currentPdfKey
+);
+
+console.log(
+ "DATI SALVATI:",
+ localStorage.getItem(window.currentPdfKey)
+);
+   
+   let pdfInfo = JSON.parse(
     localStorage.getItem(window.currentPdfKey)
   );
 
