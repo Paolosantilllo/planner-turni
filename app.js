@@ -3432,7 +3432,7 @@ window.sharePdf = async function(){
    console.log("FIRMA PDF:", signature);
 
   let pdfInfo = JSON.parse(
-    localStorage.getItem("ultimoPdf")
+    localStorage.getItem(window.currentPdfKey)
   );
 
 
@@ -3468,7 +3468,8 @@ window.sharePdf = async function(){
 
 
   localStorage.setItem(
-    "ultimoPdf",
+    window.currentPdfKey,
+     
     JSON.stringify({
 
       signature,
