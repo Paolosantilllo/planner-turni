@@ -3317,10 +3317,15 @@ await page.render({
 
 }
 
-const signature = getScheduleSignature(window.currentPdfMonths || 1);
+// ======================
+// 🔑 FIRMA CALENDARIO PDF
+// ======================
+
+function getCalendarSignature() {
 
   const baseYear = currentDate.getFullYear();
   const baseMonth = currentDate.getMonth();
+  const months = window.currentPdfMonths || 1;
 
   const endDate = new Date(baseYear, baseMonth + months, 0);
 
@@ -3331,8 +3336,7 @@ const signature = getScheduleSignature(window.currentPdfMonths || 1);
 
       return (
         d >= new Date(baseYear, baseMonth, 1) &&
-        d <= endDate
-      );
+        d <= endDate;
 
     })
     .sort((a, b) => {
@@ -3347,14 +3351,15 @@ const signature = getScheduleSignature(window.currentPdfMonths || 1);
 
     });
 
- return JSON.stringify(
-  events.map(e => ({
-    date: e.date,
-    employee: e.employee,
-    shift: e.shift
-  }))
-);
+  return JSON.stringify(
+    events.map(e => ({
+      date: e.date,
+      employee: e.employee,
+      shift: e.shift
+    }))
+  );
 
+}
 // ======================
 // 📤 CONDIVIDI PDF
 // ======================
