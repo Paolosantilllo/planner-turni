@@ -1154,7 +1154,16 @@ const pdfKey = snapshot.join("_");
 
 window.currentPdfKey = pdfKey;
 
-window.pdfVersion = await getPdfVersion(pdfKey);
+
+// leggo ultima versione salvata
+const savedPdf =
+  JSON.parse(localStorage.getItem("ultimoPdf"));
+
+
+window.pdfVersion =
+savedPdf?.version
+? `1/${savedPdf.version}`
+: "1/1";
    
    const daysInMonth =
     new Date(baseYear, baseMonth + 1, 0).getDate();
@@ -3446,8 +3455,7 @@ window.sharePdf = async function(){
     })
   );
 
-   window.currentPdfVersion = version;
-window.currentPdfData = dataInvio;
+   
 
 
 // aggiorna versione mostrata nel PDF
