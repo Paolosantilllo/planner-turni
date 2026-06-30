@@ -3305,9 +3305,6 @@ async function renderPdfPreview(blob) {
   const scaledViewport =
     page.getViewport({ scale });
 
-  const scaledViewport =
-    page.getViewport({ scale });
-
 
 const dpr = window.devicePixelRatio || 1;
 
