@@ -3346,6 +3346,36 @@ await page.render({
 
 }
 
+function getPdfSignature(blob){
+
+  return new Promise((resolve)=>{
+
+    const reader = new FileReader();
+
+    reader.onload = function(){
+
+      let binary = reader.result;
+
+      let hash = 0;
+
+      for(let i = 0; i < binary.length; i++){
+
+        hash = ((hash << 5) - hash) + binary.charCodeAt(i);
+
+        hash |= 0;
+
+      }
+
+      resolve(hash.toString());
+
+    };
+
+    reader.readAsBinaryString(blob);
+
+  });
+
+}
+
 // ======================
 // 📤 CONDIVIDI PDF
 // ======================
