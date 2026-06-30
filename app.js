@@ -3365,39 +3365,46 @@ function getCalendarSignature() {
   const baseMonth = currentDate.getMonth();
   const months = window.currentPdfMonths || 1;
 
-  const endDate = new Date(baseYear, baseMonth + months, 0);
+  const start = new Date(baseYear, baseMonth, 1);
+
+  const end = new Date(
+    baseYear,
+    baseMonth + months,
+    0
+  );
+
 
   const events = savedEvents
     .filter(ev => {
 
       const d = new Date(ev.date);
 
-      return (
-        d >= new Date(baseYear, baseMonth, 1) &&
-        d <= endDate
-      );
+      return d >= start && d <= end;
 
     })
-    .sort((a, b) => {
+    .sort((a,b)=>{
 
-      if (a.date !== b.date)
+      if(a.date !== b.date)
         return a.date.localeCompare(b.date);
 
-      if (a.employee !== b.employee)
+      if(a.employee !== b.employee)
         return a.employee.localeCompare(b.employee);
 
       return a.shift.localeCompare(b.shift);
 
     });
 
-  
-   
-   return JSON.stringify(
-    events.map(e => ({
-      date: e.date,
-      employee: e.employee,
-      shift: e.shift
+
+  return JSON.stringify(
+
+    events.map(e=>({
+
+      date:e.date,
+      employee:e.employee,
+      shift:e.shift
+
     }))
+
   );
 
 }
