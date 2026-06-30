@@ -1149,7 +1149,14 @@ const pdfKey = snapshot.join("_");
 
 window.currentPdfKey = pdfKey;
 
-window.pdfVersion = await getPdfVersion(pdfKey);
+// Recupera informazioni versione
+const pdfInfo = await getPdfVersion(pdfKey);
+
+// La versione da stampare nel PDF
+window.pdfVersion = `1/${pdfInfo.version}`;
+
+// Salva anche le informazioni complete per usarle in sharePdf()
+window.currentPdfInfo = pdfInfo;
    
    const daysInMonth =
     new Date(baseYear, baseMonth + 1, 0).getDate();
