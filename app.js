@@ -3553,4 +3553,5 @@ window.closeAdminPage = function () {
 
 };
 
+   };
 
