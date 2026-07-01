@@ -1887,76 +1887,41 @@ window.sendChangeRequest = async function(){
 // ======================
 
 const today = new Date();
-
 today.setHours(0,0,0,0);
 
-
-const fromDateObj = new Date(window.selectedFromDate);
-const toDateObj = new Date(window.selectedToDate);
-
-
-if (
-  fromDateObj < today ||
-  toDateObj < today
-) {
-
-  alert(
-    "❌ Non puoi richiedere un cambio con date già trascorse"
-  );
-
+if (!window.selectedFromDate || !window.selectedToDate) {
+  alert("Seleziona giorno da dare e giorno da ricevere");
   return;
-
 }
 
-   
-   if(!window.selectedFromDate || !window.selectedToDate){
+const fromDateObj = new Date(window.selectedFromDate + "T00:00:00");
+const toDateObj = new Date(window.selectedToDate + "T00:00:00");
 
-    alert("Seleziona giorno da dare e giorno da ricevere");
-    return;
+if (fromDateObj < today || toDateObj < today) {
+  alert("❌ Non puoi richiedere un cambio con date già trascorse");
+  return;
+}
 
-  }
+try {
+  await firestore.addDoc(
+    firestore.collection(db, "changeRequests"),
+    {
+      fromEmployee: CURRENT_EMPLOYEE,
+      toEmployee: toEmployee,
+      fromDate: window.selectedFromDate,
+      toDate: window.selectedToDate,
+      shift: shift,
+      status: "PENDING_USER",
+      createdAt: new Date()
+    }
+  );
 
+  alert("✅ Richiesta inviata");
+  closeChangePopup();
 
-  try {
-
-
-    await firestore.addDoc(
-      firestore.collection(db,"changeRequests"),
-      {
-
-        fromEmployee: CURRENT_EMPLOYEE,
-
-        toEmployee: toEmployee,
-
-        fromDate: window.selectedFromDate,
-
-        toDate: window.selectedToDate,
-
-        shift: shift,
-
-        status:"PENDING_USER",
-
-        createdAt: new Date()
-
-      }
-    );
-
-
-    alert("✅ Richiesta inviata");
-
-
-    closeChangePopup();
-
-  } catch(err){
-
-    console.error(
-      "Errore invio richiesta:",
-      err
-    );
-
-  }
-
-};
+} catch (err) {
+  console.error("Errore invio richiesta:", err);
+}
 
 // ======================
 // 🔔 APRI POPUP NOTIFICHE
