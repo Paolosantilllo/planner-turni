@@ -162,9 +162,15 @@ body{
 
   color:white;
 
-  font-size:26px;
+  font-size:28px;
 
   cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  line-height:1;
 
   box-shadow:0 8px 20px rgba(0,122,255,0.25);
 
