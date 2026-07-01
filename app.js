@@ -1919,9 +1919,15 @@ try {
   alert("✅ Richiesta inviata");
   closeChangePopup();
 
-} catch (err) {
-  console.error("Errore invio richiesta:", err);
+}catch(err){
+
+console.error(
+"Errore invio richiesta:",
+err
+);
+
 }
+};
 
 // ======================
 // 🔔 APRI POPUP NOTIFICHE
