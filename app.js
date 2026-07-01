@@ -48,9 +48,7 @@ initAuth((user) => {
   loadChangeRequests();
   loadNotificationBadge();
 
- window.addEventListener("authReady", () => {
-  setupAdminUI();
-});
+setupAdminUI();
 
   initPush(user);
   listenForegroundNotifications();
