@@ -1488,3 +1488,13 @@ button:disabled{
   z-index:99999;
 
 }
+
+/* NASCONDE TUTTA L'APP FINO AL LOGIN */
+
+#app{
+  display:none;
+}
+
+#app.show{
+  display:block;
+}
