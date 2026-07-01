@@ -3262,86 +3262,30 @@ pdf.save(
 
 function setupAdminUI() {
 
-  if (window.IS_ADMIN) return;
+  const isAdmin = window.IS_ADMIN === true;
 
-  const hide = (id) => {
+  const toggle = (id, visible) => {
     const el = document.getElementById(id);
-    if (el) el.style.display = "none";
+    if (el) el.style.display = visible ? "inline-flex" : "none";
   };
 
-  hide("pdfBtn");
-  hide("statsBtn");
-  hide("addBtn");
-  hide("logoutBtn"); 
-}
+  // ======================
+  // BOTTONI ADMIN ONLY
+  // ======================
 
-async function renderPdfPreview(blob) {
+  toggle("adminOnlyBtn", isAdmin);
+  toggle("adminBtn", isAdmin); // ⚙️ se vuoi nascondere anche questo
 
-  const canvas = document.getElementById("pdfCanvas");
-  const ctx = canvas.getContext("2d");
+  // ======================
+  // BOTTONI PRINCIPALI
+  // ======================
 
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  toggle("pdfBtn", isAdmin);
+  toggle("statsBtn", isAdmin);
+  toggle("addBtn", isAdmin);
 
-  const buffer = await blob.arrayBuffer();
-
-  const pdf = await pdfjsLib.getDocument({
-    data: buffer
-  }).promise;
-
-  // Mostra la prima pagina (nel tuo PDF è sufficiente se è di un mese)
-  const page = await pdf.getPage(1);
-
-  const container =
-    document.querySelector("#pdfPopup .pdf-container");
-
-  const viewport = page.getViewport({ scale: 1 });
-
-const scale =
-  container.clientWidth / viewport.width;
-
-
-// aumenta qualità PDF
-const qualityScale = 2;
-
-const scaledViewport =
-  page.getViewport({
-    scale: scale * qualityScale
-  });
-
-
-const dpr = window.devicePixelRatio || 1;
-
-
-// alta risoluzione per iPhone Retina
-
-canvas.width = scaledViewport.width * dpr;
-canvas.height = scaledViewport.height * dpr;
-
-
-canvas.style.width =
-  (scaledViewport.width / qualityScale) + "px";
-
-canvas.style.height =
-  (scaledViewport.height / qualityScale) + "px";
-ctx.setTransform(
-  dpr,
-  0,
-  0,
-  dpr,
-  0,
-  0
-);
-
-
-await page.render({
-
-  canvasContext: ctx,
-
-  viewport: scaledViewport
-
-}).promise;
-
+  // logout: di solito meglio sempre visibile
+  toggle("logoutBtn", true);
 }
 
 // ======================
