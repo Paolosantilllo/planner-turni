@@ -333,29 +333,21 @@ body{
 .event{
 
   display:flex;
-
   justify-content:center;
-
   align-items:center;
 
+  width:100%;          /* AGGIUNGI */
+  min-width:100%;      /* AGGIUNGI */
+
   color:black;
-
   padding:4px 6px;
-
   border-radius:8px;
-
   font-size:8px;
-
   margin-top:3px;
-
   font-weight:700;
-
   line-height:1;
-
   text-align:center;
-
   white-space:nowrap;
-
 }
 
 /* SOLO TURNO */
@@ -1240,9 +1232,10 @@ button:disabled{
 
 /* GIORNO OGGI */
 .today{
-  border:3px solid #007aff;
+  outline:3px solid #007aff;
+  outline-offset:-3px;
+  border:none;
   border-radius:20px;
-  box-sizing:border-box;
 }
 
 
