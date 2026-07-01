@@ -3552,6 +3552,3 @@ window.closeAdminPage = function () {
   document.getElementById("app").style.display = "block";
 
 };
-
-   };
-
