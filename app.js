@@ -1,3 +1,4 @@
+
 /* ======================
    IMPORT MODULI
 ====================== */
@@ -20,19 +21,34 @@ import {
 
 window.logout = logout;
 
+/* ======================
+   INIT AUTH
+====================== */
+
 initAuth((user) => {
 
   window.CURRENT_USER = user;
 
-  // 🔥 USIAMO QUELLO GIÀ CALCOLATO DA auth.js
+  // 🔥 dipendente corrente
   window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
 
+  // ======================
+  // 🔐 RUOLO ADMIN
+  // ======================
+  window.IS_ADMIN =
+    EMPLOYEES[CURRENT_EMPLOYEE]?.role === "ADMIN"
+    || CURRENT_EMPLOYEE === "A";
+
+  // ======================
+  // UI INIT
+  // ======================
   populateEmployeeSelects();
   setDefaultFilter();
   loadEvents();
   loadChangeRequests();
   loadNotificationBadge();
-  setupAdminUI();
+
+  setupAdminUI(); // ora funziona correttamente
 
   initPush(user);
   listenForegroundNotifications();
