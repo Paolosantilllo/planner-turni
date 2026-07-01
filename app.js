@@ -1475,37 +1475,39 @@ headStyles: {
     `${year}-${String(month + 1).padStart(2,"0")}-${String(dayNumber).padStart(2,"0")}`
   );
 
-  // ======================
-  // 🟠🔴 WEEKEND (SOLO SE CELLA VUOTA)
-  // ======================
-  if (!value || value === "") {
+ // ======================
+// 🟣 GIORNI SCOPERTI (PRIORITÀ MASSIMA)
+// ======================
 
-    // 🔴 Domenica / festivi
-    if (weekday === 0 || info.isHoliday) {
-      data.cell.styles.fillColor = [255,59,48];
-      data.cell.styles.textColor = [255,255,255];
-      return;
-    }
+if ((!value || value === "") && uncoveredDays.has(dayNumber)) {
 
-    // 🟠 Sabato
-    if (weekday === 6) {
-      data.cell.styles.fillColor = [255,149,0];
-      data.cell.styles.textColor = [255,255,255];
-      return;
-    }
+  data.cell.styles.fillColor = [180,120,255];
+  data.cell.styles.textColor = [255,255,255];
+  return;
+
+}
+
+// ======================
+// 🟠🔴 WEEKEND (SOLO SE CELLA VUOTA)
+// ======================
+
+if (!value || value === "") {
+
+  // 🔴 Domenica / festivi
+  if (weekday === 0 || info.isHoliday) {
+    data.cell.styles.fillColor = [255,59,48];
+    data.cell.styles.textColor = [255,255,255];
+    return;
   }
 
-  // ======================
-  // 🟣 GIORNI SCOPERTI (SOLO SE CELLA VUOTA)
-  // ======================
-  if (uncoveredDays.has(dayNumber)) {
-
-    if (!value || value === "") {
-      data.cell.styles.fillColor = [180,120,255];
-      data.cell.styles.textColor = [255,255,255];
-      return;
-    }
+  // 🟠 Sabato
+  if (weekday === 6) {
+    data.cell.styles.fillColor = [255,149,0];
+    data.cell.styles.textColor = [255,255,255];
+    return;
   }
+
+}
 
   // ======================
   // 🟢 CFI
