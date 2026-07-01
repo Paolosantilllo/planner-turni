@@ -78,20 +78,6 @@
 
     <div class="plus-group">
 
-  <div class="top-icons">
-
-
-
-<button class="monthly-send-btn" id="pdfBtn">
-  📤
-</button>
-
-    <button id="statsBtn" class="floating-stats" onclick="openStatsPopup()">
-      📊
-    </button>
-
-  </div>
-
   <button
     id="addBtn"
     class="add-btn"
@@ -543,8 +529,7 @@ onclick="showCfiStats()">
 
 </div>
   
- <!-- PAGINA AMMINISTRAZIONE -->
-
+<!-- PAGINA AMMINISTRAZIONE -->
 <div id="adminPage" class="admin-page" style="display:none;">
 
   <div class="admin-header">
@@ -559,23 +544,27 @@ onclick="showCfiStats()">
 
   <div class="admin-menu">
 
+    <!-- 👥 GESTIONE DIPENDENTI -->
     <button class="save-btn">
       👥 Gestione dipendenti
     </button>
 
+    <!-- 📊 STATISTICHE -->
     <button class="save-btn" onclick="openStatsPopup()">
       📊 Statistiche
     </button>
 
-    <button class="save-btn"
-            onclick="document.getElementById('monthsPopup').style.display='flex'">
+    <!-- 📄 PDF EXPORT -->
+    <button class="save-btn" onclick="document.getElementById('monthsPopup').style.display='flex'">
       📄 Esporta PDF
     </button>
 
+    <!-- 📢 NOTIFICHE -->
     <button class="save-btn">
       📢 Notifiche
     </button>
 
+    <!-- ⚙️ IMPOSTAZIONI -->
     <button class="save-btn">
       ⚙️ Impostazioni
     </button>
