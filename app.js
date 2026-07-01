@@ -3533,5 +3533,22 @@ window.sharePdf = async function () {
 
   }
 
+   // ======================
+// ⚙️ PAGINA AMMINISTRAZIONE
+// ======================
+
+window.openAdminPage = function () {
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("adminPage").style.display = "block";
+
+};
+
+window.closeAdminPage = function () {
+
+  document.getElementById("adminPage").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+};
 
 };
