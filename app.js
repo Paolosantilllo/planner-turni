@@ -1017,7 +1017,7 @@ if (finalShift === "REP") {
   new Date(e.date).getFullYear() === d.getFullYear()
 ).length + addedREP;
 
-if (monthly > 6) {
+if (monthly >= 6) {
   alert("Max 6 REP al mese");
   return;
 }
@@ -1040,7 +1040,7 @@ if (finalShift === "FREP") {
   new Date(e.date).getFullYear() === d.getFullYear()
 ).length + addedFREP;
 
-  if (monthly > 2) {
+  if (monthly >=2) {
     alert("Max 2 FREP al mese");
     return;
   }
