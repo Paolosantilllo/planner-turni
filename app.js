@@ -855,10 +855,13 @@ window.saveShift = async function () {
 
   try {
 
-    const writes = [];
+const writes = [];
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+// Contatori dei turni aggiunti in questa operazione
+let addedREP = 0;
+let addedFREP = 0;
 
+for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
   const dateStr = d.toISOString().split("T")[0];
 
   const month = d.getMonth();   // 👈 QUI VA MESSO
@@ -1007,16 +1010,17 @@ if (info.isSunday || info.isHoliday) {
 ====================== */
 if (finalShift === "REP") {
 
-  const monthly = savedEvents.filter(e =>
-    e.employee === employee &&
-    e.shift === "REP" &&
-    new Date(e.date).getMonth() === d.getMonth()
-  ).length;
+ const monthly = savedEvents.filter(e =>
+  e.employee === employee &&
+  e.shift === "REP" &&
+  new Date(e.date).getMonth() === d.getMonth() &&
+  new Date(e.date).getFullYear() === d.getFullYear()
+).length + addedREP;
 
-  if (monthly >= 6) {
-    alert("Max 6 REP al mese");
-    return;
-  }
+if (monthly > 6) {
+  alert("Max 6 REP al mese");
+  return;
+}
 }
 
 /* ======================
@@ -1030,17 +1034,27 @@ if (finalShift === "FREP") {
   }
 
   const monthly = savedEvents.filter(e =>
-    e.employee === employee &&
-    e.shift === "FREP" &&
-    new Date(e.date).getMonth() === d.getMonth()
-  ).length;
+  e.employee === employee &&
+  e.shift === "FREP" &&
+  new Date(e.date).getMonth() === d.getMonth() &&
+  new Date(e.date).getFullYear() === d.getFullYear()
+).length + addedFREP;
 
-  if (monthly >= 2) {
+  if (monthly > 2) {
     alert("Max 2 FREP al mese");
     return;
   }
 }
-  writes.push(
+
+   if (finalShift === "REP") {
+  addedREP++;
+}
+
+if (finalShift === "FREP") {
+  addedFREP++;
+}
+   
+   writes.push(
     firestore.addDoc(
       firestore.collection(db, "events"),
       {
