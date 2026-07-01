@@ -3533,7 +3533,9 @@ window.sharePdf = async function () {
 
   }
 
-   // ======================
+   };
+   
+// ======================
 // ⚙️ PAGINA AMMINISTRAZIONE
 // ======================
 
