@@ -31,7 +31,8 @@ initAuth((user) => {
 
   // 🔥 dipendente corrente
   window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
-
+document.getElementById("app").classList.add("show");
+   
   // ======================
   // 🔐 RUOLO ADMIN
   // ======================
