@@ -1263,7 +1263,7 @@ button:disabled{
   gap:5px;
 
   position:relative;
-  top:-14px;
+  top:0;
   left:-6px;
 }
 
