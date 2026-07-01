@@ -1447,3 +1447,38 @@ button:disabled{
   overflow:auto;
 
 }
+
+/* ======================
+   ADMIN BUTTON FLOATING
+====================== */
+
+.admin-floating-btn{
+
+  position:fixed !important;
+
+  right:20px !important;
+  bottom:20px !important;
+
+  width:52px !important;
+  height:52px !important;
+
+  border:none !important;
+  border-radius:16px !important;
+
+  background:#007aff !important;
+
+  color:white !important;
+
+  font-size:26px !important;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+
+  box-shadow:0 8px 20px rgba(0,122,255,0.25);
+
+  z-index:99999;
+
+}
