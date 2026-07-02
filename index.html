@@ -565,9 +565,14 @@ onclick="showCfiStats()">
     </button>
 
     <!-- 📄 PDF EXPORT -->
-    <button class="save-btn" onclick="document.getElementById('monthsPopup').style.display='flex'">
-      📄 Esporta PDF
-    </button>
+  <button
+  class="save-btn"
+  onclick="
+    closeAdminPage();
+    document.getElementById('monthsPopup').style.display='flex';
+  ">
+  📄 Esporta PDF
+</button>
 
     <!-- 📢 NOTIFICHE -->
     <button class="save-btn">
