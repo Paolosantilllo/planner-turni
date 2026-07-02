@@ -2958,10 +2958,12 @@ err
 // 📊 POPUP STATISTICHE
 // ======================
 
-
 window.openStatsPopup = function(){
 
-document.getElementById("statsPopup").style.display="flex";
+document.getElementById("statsPopup").style.display = "flex";
+
+// mostra sempre il menu
+document.getElementById("statsMenu").style.display = "block";
 
 document.getElementById("statsContent").innerHTML =
 "Seleziona una statistica";
@@ -2970,13 +2972,18 @@ document.getElementById("statsExport").innerHTML = "";
 
 };
 
-
 // ======================
 // 🎉 TURNI FESTIVI
 // ======================
 
 window.showFestiviStats = async function(){
 
+   openStatsPopup();
+
+// nasconde il menu dei pulsanti
+document.getElementById("statsMenu").style.display = "none";
+
+   
 const container =
 document.getElementById("statsContent");
 
