@@ -1149,19 +1149,6 @@ window.deleteShift = async function () {
   }
 };
 
-
-// ======================
-//  📤 PDF EXPORT
-// ======================
-
-async function generatePDF(months = 1) {
-  
-   window.currentPdfMonths = months;
-   const missingMessages = [];
-
-  const baseYear = currentDate.getFullYear();
-  const baseMonth = currentDate.getMonth();
-
   // ======================
 // 🖼️ RENDER ANTEPRIMA PDF
 // ======================
@@ -1198,7 +1185,40 @@ async function renderPdfPreview(blob) {
     viewport
   }).promise;
 }
-   
+
+// ======================
+// 📄 APRE ANTEPRIMA PDF
+// ======================
+
+async function openPdfPreview(pdf, fileName){
+
+  const blob = pdf.output("blob");
+
+  window.currentPdfBlob = blob;
+  window.currentPdfName = fileName;
+
+  const pdfPopup = document.getElementById("pdfPopup");
+
+  if(pdfPopup){
+    pdfPopup.style.display = "flex";
+  }
+
+  await renderPdfPreview(blob);
+
+}
+// ======================
+//  📤 PDF EXPORT
+// ======================
+
+async function generatePDF(months = 1) {
+  
+   window.currentPdfMonths = months;
+   const missingMessages = [];
+
+  const baseYear = currentDate.getFullYear();
+  const baseMonth = currentDate.getMonth();
+
+
    
 // ======================
 // 📄 CHIAVE VERSIONE PDF
@@ -1618,28 +1638,10 @@ if (value === "REP" || value === "FREP") {
 // 📤 ANTEPRIMA PDF
 // ======================
 
-const blob = pdf.output("blob");
-
-const url = URL.createObjectURL(blob);
-
-
-// salvo per il pulsante condividi dopo
-
-window.currentPdfBlob = blob;
-
-window.currentPdfName =
-`Reperibilita_${baseYear}_${String(baseMonth+1).padStart(2,"0")}.pdf`;
-
-
-// mostra anteprima nel popup della PWA
-
-const pdfPopup = document.getElementById("pdfPopup");
-
-if (pdfPopup) {
-  pdfPopup.style.display = "flex";
-}
-
-await renderPdfPreview(blob);
+await openPdfPreview(
+  pdf,
+  `Reperibilita_${baseYear}_${String(baseMonth + 1).padStart(2, "0")}.pdf`
+);
  }
 
 // ======================
