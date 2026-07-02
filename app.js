@@ -3012,7 +3012,8 @@ window.exportCfiPdf = async function(){
 
 const { jsPDF } = window.jspdf;
 const pdf = new jsPDF();
-
+window.lastPdf = pdf;
+   
 pdf.setFontSize(16);
 pdf.text("Totale CFI / CFI-REP", 14, 15);
 
@@ -3056,10 +3057,13 @@ if (stats[ev.employee]) {
   // TOT ANNUALE
   stats[ev.employee].cfiA += weight;
 
-  // TOT FINO AD OGGI
-  if (d <= today) {
-    stats[ev.employee].cfiF += weight;
-  }
+const today = new Date();
+today.setHours(23, 59, 59, 999);
+
+// dentro snapshot.forEach
+if (d <= today) {
+  stats[ev.employee].cfiF += weight;
+}
 
 }
 
@@ -3080,6 +3084,25 @@ pdf.autoTable({
 // 👉 usa lo stesso sistema PDF con anteprima
 await openPdfPreview(pdf, "Totale_CFI_CFI-REP.pdf");
 
+};
+
+window.sharePdf = async function () {
+  if (!window.lastPdf) return;
+
+  const pdfBlob = window.lastPdf.output("blob");
+
+  const file = new File([pdfBlob], "CFI.pdf", {
+    type: "application/pdf",
+  });
+
+  if (navigator.share) {
+    await navigator.share({
+      files: [file],
+      title: "Totale CFI",
+    });
+  } else {
+    alert("Condivisione non supportata su questo dispositivo");
+  }
 };
 
 function setupAdminUI() {
