@@ -3347,3 +3347,30 @@ window.closeAdminPage = function () {
   document.getElementById("app").style.display = "block";
 
 };
+
+// ======================
+// GESTIONE NOMINATIVI
+// ======================
+
+window.openEmployeesPage = function () {
+
+  document.getElementById("adminPage").style.display = "none";
+  document.getElementById("employeesPage").style.display = "block";
+
+  loadEmployeesList();
+
+};
+
+window.closeEmployeesPage = function () {
+
+  document.getElementById("employeesPage").style.display = "none";
+  document.getElementById("adminPage").style.display = "block";
+
+};
+
+window.loadEmployeesList = function () {
+
+  document.getElementById("employeesList").innerHTML =
+    "<p>Caricamento...</p>";
+
+};
