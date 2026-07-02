@@ -1498,3 +1498,24 @@ button:disabled{
 #app.show{
   display:block;
 }
+.employee-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid #ddd;
+}
+
+.employee-actions{
+    display:flex;
+    gap:8px;
+}
+
+.employee-actions button{
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:18px;
+}
