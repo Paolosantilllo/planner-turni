@@ -3019,10 +3019,11 @@ pdf.text("Totale CFI / CFI-REP", 14, 15);
 const stats = {};
 
 Object.keys(EMPLOYEES).forEach(id => {
-  stats[id] = {
-    name: EMPLOYEES[id].name,
-    total: 0
-  };
+ stats[id] = {
+  name: EMPLOYEES[id].name,
+  cfiF: 0,
+  cfiA: 0
+};
 });
 
 const snapshot = await firestore.getDocs(
@@ -3035,28 +3036,43 @@ snapshot.forEach(doc => {
 
   if (ev.shift !== "CFI" && ev.shift !== "CFI/REP") return;
 
-  const d = new Date(ev.date);
+ const d = new Date(ev.date);
+const today = new Date();
+const year = today.getFullYear();
 
-  const weight =
-    (d.getDay() === 0 ||
-     d.getDay() === 6 ||
-     isHoliday(ev.date))
-    ? 2
-    : 1;
+// SOLO ANNO CORRENTE
+if (d.getFullYear() !== year) return;
 
-  if (stats[ev.employee]) {
-    stats[ev.employee].total += weight;
+// peso come prima
+const weight =
+  (d.getDay() === 0 ||
+   d.getDay() === 6 ||
+   isHoliday(ev.date))
+  ? 2
+  : 1;
+
+if (stats[ev.employee]) {
+
+  // TOT ANNUALE
+  stats[ev.employee].cfiA += weight;
+
+  // TOT FINO AD OGGI
+  if (d <= today) {
+    stats[ev.employee].cfiF += weight;
   }
+
+}
 
 });
 
 const rows = Object.values(stats).map(emp => [
   emp.name,
-  emp.total
+  emp.cfiF,
+  emp.cfiA
 ]);
 
 pdf.autoTable({
-  head: [["Nominativi", "TOT"]],
+  head: [["Nominativi", "TOT. CFI/F", "TOT. CFI/A"]],
   body: rows,
   startY: 25
 });
