@@ -138,7 +138,7 @@ async function savePdfVersion(version, signature) {
 
 }
 // ======================
-// CARICA DIPENDENTI
+// CARICA NOMINATIVI
 // ======================
 
 function populateEmployeeSelects() {
@@ -684,7 +684,7 @@ box.appendChild(num);
 
 
 // ======================
-// ORDINA DIPENDENTI A-B-C-D
+// ORDINA NOMINATIVI A-B-C-D
 // ======================
 
 events.sort((a,b)=>{
@@ -1413,9 +1413,9 @@ pdf.text(
       })
     ];
 
-    const dipendenti = Object.keys(EMPLOYEES);
+    const nominativi = Object.keys(EMPLOYEES);
 
-    const body = dipendenti.map(nome => {
+    const body = nominativi.map(nome => {
       const row = [EMPLOYEES[nome].name];
 
       for (let d = 1; d <= daysInMonthLoop; d++) {
@@ -1546,7 +1546,7 @@ headStyles: {
   }
 
   // ======================
-  // RIGHE DIPENDENTI
+  // RIGHE NOMINATIVI
   // ======================
   if (data.section === "body") {
 
@@ -3056,7 +3056,7 @@ const rows = Object.values(stats).map(emp => [
 ]);
 
 pdf.autoTable({
-  head: [["Dipendente", "TOT"]],
+  head: [["Nominativi", "TOT"]],
   body: rows,
   startY: 25
 });
