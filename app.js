@@ -2962,11 +2962,7 @@ window.openStatsPopup = function(){
 
 document.getElementById("statsPopup").style.display = "flex";
 
-// mostra sempre il menu
-document.getElementById("statsMenu").style.display = "block";
-
-document.getElementById("statsContent").innerHTML =
-"Seleziona una statistica";
+document.getElementById("statsContent").innerHTML = "";
 
 document.getElementById("statsExport").innerHTML = "";
 
@@ -2979,10 +2975,6 @@ document.getElementById("statsExport").innerHTML = "";
 window.showFestiviStats = async function(){
 
    openStatsPopup();
-
-// nasconde il menu dei pulsanti
-document.getElementById("statsMenu").style.display = "none";
-
    
 const container =
 document.getElementById("statsContent");
