@@ -3370,7 +3370,46 @@ window.closeEmployeesPage = function () {
 
 window.loadEmployeesList = function () {
 
-  document.getElementById("employeesList").innerHTML =
-    "<p>Caricamento...</p>";
+  const container = document.getElementById("employeesList");
+
+  container.innerHTML = "";
+
+  Object.keys(EMPLOYEES).forEach(id => {
+
+    const emp = EMPLOYEES[id];
+
+    container.innerHTML += `
+      <div class="employee-row">
+
+        <span>${emp.name}</span>
+
+        <div>
+
+          <button onclick="editEmployee('${id}')">
+            ✏️
+          </button>
+
+          <button onclick="deleteEmployee('${id}')">
+            🗑️
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  });
+
+};
+
+window.editEmployee = function(id){
+
+  alert("Modifica: " + EMPLOYEES[id].name);
+
+};
+
+window.deleteEmployee = function(id){
+
+  alert("Elimina: " + EMPLOYEES[id].name);
 
 };
