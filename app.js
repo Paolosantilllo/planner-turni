@@ -3378,25 +3378,25 @@ window.loadEmployeesList = function () {
 
     const emp = EMPLOYEES[id];
 
-    container.innerHTML += `
-      <div class="employee-row">
+   container.innerHTML += `
+<div class="employee-row">
 
-        <span>${emp.name}</span>
+  <span>${emp.name}</span>
 
-        <div>
+  <div class="employee-actions">
 
-          <button onclick="editEmployee('${id}')">
-            ✏️
-          </button>
+    <button onclick="editEmployee('${id}')">
+      ✏️
+    </button>
 
-          <button onclick="deleteEmployee('${id}')">
-            🗑️
-          </button>
+    <button onclick="deleteEmployee('${id}')">
+      🗑️
+    </button>
 
-        </div>
+  </div>
 
-      </div>
-    `;
+</div>
+`;
 
   });
 
