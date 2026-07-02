@@ -3138,33 +3138,43 @@ document.getElementById("statsPopup").style.display="none";
 // PDF FESTIVI
 // ======================
 
-window.exportFestiviPdf = function(){
+window.exportFestiviPdf = async function(){
 
-const {jsPDF}=window.jspdf;
-
+const { jsPDF } = window.jspdf;
 const pdf = new jsPDF();
 
 pdf.setFontSize(16);
-pdf.text(
-"Turnazione Festivi",
-14,
-15
+pdf.text("Turnazione Festivi", 14, 15);
+
+const snapshot = await firestore.getDocs(
+  firestore.collection(db, "events")
 );
 
+let rows = [];
 
-pdf.autoTable({
+snapshot.forEach(doc => {
 
-html:"#statsContent table",
+  const ev = doc.data();
 
-startY:25
+  if (ev.shift !== "FREP" && ev.shift !== "CFI/REP") return;
+  if (!isHoliday(ev.date)) return;
+
+  rows.push([
+    formatDateIT(ev.date),
+    EMPLOYEES[ev.employee]?.name || "",
+    ev.shift
+  ]);
 
 });
 
+pdf.autoTable({
+  head: [["Data", "Dipendente", "Turno"]],
+  body: rows,
+  startY: 25
+});
 
-pdf.save(
-"Turnazione_Festivi.pdf"
-);
-
+// 👉 apre direttamente il tuo sistema PDF (quello già funzionante)
+await openPdfPreview(pdf, "Turnazione_Festivi.pdf");
 
 };
 
@@ -3175,36 +3185,61 @@ pdf.save(
 // ======================
 
 
-window.exportCfiPdf = function(){
+window.exportCfiPdf = async function(){
 
-
-const {jsPDF}=window.jspdf;
-
-
+const { jsPDF } = window.jspdf;
 const pdf = new jsPDF();
 
 pdf.setFontSize(16);
-pdf.text(
-"Totale CFI / CFI-REP",
-14,
-15
+pdf.text("Totale CFI / CFI-REP", 14, 15);
+
+const stats = {};
+
+Object.keys(EMPLOYEES).forEach(id => {
+  stats[id] = {
+    name: EMPLOYEES[id].name,
+    total: 0
+  };
+});
+
+const snapshot = await firestore.getDocs(
+  firestore.collection(db, "events")
 );
 
+snapshot.forEach(doc => {
 
+  const ev = doc.data();
 
-pdf.autoTable({
+  if (ev.shift !== "CFI" && ev.shift !== "CFI/REP") return;
 
-html:"#statsContent table",
+  const d = new Date(ev.date);
 
-startY:25
+  const weight =
+    (d.getDay() === 0 ||
+     d.getDay() === 6 ||
+     isHoliday(ev.date))
+    ? 2
+    : 1;
+
+  if (stats[ev.employee]) {
+    stats[ev.employee].total += weight;
+  }
 
 });
 
+const rows = Object.values(stats).map(emp => [
+  emp.name,
+  emp.total
+]);
 
-pdf.save(
-"Totale_CFI_CFI-REP.pdf"
-);
+pdf.autoTable({
+  head: [["Dipendente", "TOT"]],
+  body: rows,
+  startY: 25
+});
 
+// 👉 usa lo stesso sistema PDF con anteprima
+await openPdfPreview(pdf, "Totale_CFI_CFI-REP.pdf");
 
 };
 
