@@ -3445,7 +3445,9 @@ window.editEmployee = function(id) {
 
 window.deleteEmployee = async function(id) {
 
-  if (!confirm("Eliminare questo nominativo?")) return;
+  const emp = employeesData[id];
+
+  if (!confirm("Vuoi eliminare " + emp.name + "?")) return;
 
   try {
 
@@ -3458,7 +3460,7 @@ window.deleteEmployee = async function(id) {
 
   } catch (err) {
     console.error(err);
-    alert("Errore eliminazione");
+    alert("Errore eliminazione nominativo");
   }
 };
 
