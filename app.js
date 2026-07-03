@@ -3382,7 +3382,7 @@ window.openEmployeesPage = async function () {
   document.getElementById("employeesPage").style.display = "block";
 
   await loadEmployeesFromFirestore();
-loadEmployeesList();
+  loadEmployeesList();
 
 };
 
@@ -3393,55 +3393,53 @@ window.closeEmployeesPage = function () {
 
 };
 
+// ======================
+// LISTA NOMINATIVI
+// ======================
+
 window.loadEmployeesList = function () {
 
   const container = document.getElementById("employeesList");
-
   container.innerHTML = "";
 
   Object.keys(employeesData).forEach(id => {
 
-   const emp = employeesData[id];
+    const emp = employeesData[id];
 
-   container.innerHTML += `
-<div class="employee-row">
+    container.innerHTML += `
+      <div class="employee-row">
 
-  <span>${emp.name}</span>
+        <span>${emp.name}</span>
 
-  <div class="employee-actions">
+        <div class="employee-actions">
 
-    <button onclick="editEmployee('${id}')">
-      ✏️
-    </button>
+          <button onclick="editEmployee('${id}')">✏️</button>
+          <button onclick="deleteEmployee('${id}')">🗑️</button>
 
-    <button onclick="deleteEmployee('${id}')">
-      🗑️
-    </button>
+        </div>
 
-  </div>
-
-</div>
-`;
-
+      </div>
+    `;
   });
 
 };
 
-window.editEmployee = function(id){
+// ======================
+// EDIT / DELETE
+// ======================
 
- alert("Modifica: " + employeesData[id].name);
-
+window.editEmployee = function (id) {
+  alert("Modifica: " + employeesData[id].name);
 };
 
-window.deleteEmployee = function(id){
-
- alert("Elimina: " + employeesData[id].name);
-
+window.deleteEmployee = function (id) {
+  alert("Elimina: " + employeesData[id].name);
 };
+
+// ======================
+// ➕ NUOVO NOMINATIVO (FIX IMPORTANTE)
+// ======================
 
 window.openEmployeeEditor = function () {
-
   alert("Editor Nuovo Nominativo");
-
 };
-console.log("ARRIVATO QUI");
