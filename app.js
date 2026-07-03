@@ -3360,9 +3360,9 @@ async function loadEmployeesFromFirestore() {
     delete employeesData[key];
   });
 
-  const snapshot = await firestore.getDocs(
-    firestore.collection(db, "employees")
-  );
+ const snapshot = await getDocs(
+  collection(db, "employees")
+);
 
   snapshot.forEach(doc => {
     employeesData[doc.id] = doc.data();
