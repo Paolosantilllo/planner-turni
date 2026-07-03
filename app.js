@@ -3442,5 +3442,15 @@ window.deleteEmployee = function (id) {
 // ======================
 
 window.openEmployeeEditor = function () {
-  alert("Editor Nuovo Nominativo");
+
+  // reset campi
+  document.getElementById("empName").value = "";
+  document.getElementById("empColor").value = "#ffffff";
+  document.getElementById("empRole").value = "USER";
+
+  // apri popup
+  document.getElementById("employeePopup").style.display = "flex";
+};
+window.closeEmployeeEditor = function () {
+  document.getElementById("employeePopup").style.display = "none";
 };
