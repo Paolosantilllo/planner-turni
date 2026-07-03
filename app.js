@@ -3429,12 +3429,12 @@ window.loadEmployeesList = function () {
 
 window.editEmployee = function(id){
 
-  alert("Modifica: " + EMPLOYEES[id].name);
+ alert("Modifica: " + employeesData[id].name);
 
 };
 
 window.deleteEmployee = function(id){
 
-  alert("Elimina: " + EMPLOYEES[id].name);
+ alert("Elimina: " + employeesData[id].name);
 
 };
