@@ -537,7 +537,7 @@
    </div>
 
 </div>
-  <!-- PAGINA GESTIONE NOMINATIVI -->
+ <!-- PAGINA GESTIONE NOMINATIVI -->
 <div id="employeesPage" class="admin-page" style="display:none;">
 
   <div class="admin-header">
@@ -558,44 +558,46 @@
       ➕ Nuovo nominativo
     </button>
 
-<!-- POPUP EDIT NOMINATIVO -->
-<div id="employeePopup" class="popup" style="display:none;">
+    <div id="employeesList"></div>
 
-  <div class="popup-content">
+    <!-- POPUP EDIT NOMINATIVO -->
+    <div id="employeePopup" class="popup">
 
-    <div class="popup-header">
+      <div class="popup-content">
 
-      <h2>👤 Nuovo Nominativo</h2>
+        <div class="popup-header">
 
-      <button class="close-btn" onclick="closeEmployeeEditor()">
-        ✕
-      </button>
+          <h2>👤 Nuovo Nominativo</h2>
+
+          <button class="close-btn" onclick="closeEmployeeEditor()">
+            ✕
+          </button>
+
+        </div>
+
+        <label>Nome</label>
+        <input type="text" id="empName">
+
+        <label>Colore</label>
+        <input type="color" id="empColor">
+
+        <label>Ruolo</label>
+        <select id="empRole">
+          <option value="USER">USER</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+
+        <button class="save-btn" onclick="saveEmployee()">
+          💾 Salva
+        </button>
+
+      </div>
 
     </div>
-
-    <label>Nome</label>
-    <input type="text" id="empName">
-
-    <label>Colore</label>
-    <input type="color" id="empColor">
-
-    <label>Ruolo</label>
-    <select id="empRole">
-      <option value="USER">USER</option>
-      <option value="ADMIN">ADMIN</option>
-    </select>
-
-    <button class="save-btn" onclick="saveEmployee()">
-      💾 Salva
-    </button>
 
   </div>
 
 </div>
-
-
-</div>
-  
   <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
