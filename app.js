@@ -3429,12 +3429,37 @@ window.loadEmployeesList = function () {
 // EDIT / DELETE
 // ======================
 
-window.editEmployee = function (id) {
-  alert("Modifica: " + employeesData[id].name);
+window.editEmployee = function(id) {
+
+  const emp = employeesData[id];
+
+  document.getElementById("empName").value = emp.name;
+  document.getElementById("empColor").value = emp.color || "#ffffff";
+  document.getElementById("empRole").value = emp.role || "USER";
+
+  // salva id in modifica
+  window.editingEmployeeId = id;
+
+  document.getElementById("employeePopup").style.display = "flex";
 };
 
-window.deleteEmployee = function (id) {
-  alert("Elimina: " + employeesData[id].name);
+window.deleteEmployee = async function(id) {
+
+  if (!confirm("Eliminare questo nominativo?")) return;
+
+  try {
+
+    await firestore.deleteDoc(
+      firestore.doc(db, "employees", id)
+    );
+
+    await loadEmployeesFromFirestore();
+    loadEmployeesList();
+
+  } catch (err) {
+    console.error(err);
+    alert("Errore eliminazione");
+  }
 };
 
 // ======================
@@ -3466,10 +3491,15 @@ window.saveEmployee = async function () {
     return;
   }
 
-  // ID sicuro
-  const id = name.toUpperCase().replace(/\s+/g, "_");
-
   try {
+
+    // 👉 se sto modificando uso ID esistente
+    let id = window.editingEmployeeId;
+
+    // 👉 se è nuovo lo creo
+    if (!id) {
+      id = name.toUpperCase().replace(/\s+/g, "_");
+    }
 
     await firestore.setDoc(
       firestore.doc(db, "employees", id),
@@ -3480,6 +3510,9 @@ window.saveEmployee = async function () {
       },
       { merge: true }
     );
+
+    // reset stato modifica
+    window.editingEmployeeId = null;
 
     // chiudi popup
     document.getElementById("employeePopup").style.display = "none";
