@@ -3354,21 +3354,25 @@ window.closeAdminPage = function () {
 // ======================
 
 async function loadEmployeesFromFirestore() {
+  try {
 
-  Object.keys(employeesData).forEach(key => {
-    delete employeesData[key];
-  });
+    window.employeesData = window.employeesData || {};
 
- const snapshot = await getDocs(
-  collection(db, "employees")
-);
+    Object.keys(employeesData).forEach(key => {
+      delete employeesData[key];
+    });
 
-  snapshot.forEach(doc => {
-    employeesData[doc.id] = doc.data();
-  });
+    const snapshot = await getDocs(collection(db, "employees"));
 
-  console.log("👥 Nominativi caricati:", employeesData);
+    snapshot.forEach(doc => {
+      employeesData[doc.id] = doc.data();
+    });
 
+    console.log("👥 Nominativi caricati:", employeesData);
+
+  } catch (err) {
+    console.error("Errore caricamento employees:", err);
+  }
 }
 
 // ======================
