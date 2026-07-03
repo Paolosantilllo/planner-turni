@@ -576,3 +576,38 @@ console.log("🚀 INDEX HTML CARICATO NUOVO");
   
   <!-- APP -->
 <script type="module" src="app.js"></script>
+
+  <!-- POPUP EDIT NOMINATIVO -->
+<div id="employeePopup" class="popup" style="display:none;">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>👤 Nuovo Nominativo</h2>
+
+      <button class="close-btn" onclick="closeEmployeeEditor()">
+        ✕
+      </button>
+
+    </div>
+
+    <label>Nome</label>
+    <input type="text" id="empName">
+
+    <label>Colore</label>
+    <input type="color" id="empColor">
+
+    <label>Ruolo</label>
+    <select id="empRole">
+      <option value="USER">USER</option>
+      <option value="ADMIN">ADMIN</option>
+    </select>
+
+    <button class="save-btn" onclick="saveEmployee()">
+      💾 Salva
+    </button>
+
+  </div>
+
+</div>
