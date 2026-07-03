@@ -3438,3 +3438,9 @@ window.deleteEmployee = function(id){
  alert("Elimina: " + employeesData[id].name);
 
 };
+
+window.openEmployeeEditor = function () {
+
+  alert("Editor Nuovo Nominativo");
+
+};
