@@ -3399,9 +3399,9 @@ window.loadEmployeesList = function () {
 
   container.innerHTML = "";
 
-  Object.keys(EMPLOYEES).forEach(id => {
+  Object.keys(employeesData).forEach(id => {
 
-    const emp = EMPLOYEES[id];
+   const emp = employeesData[id];
 
    container.innerHTML += `
 <div class="employee-row">
