@@ -3380,9 +3380,11 @@ window.openEmployeesPage = async function () {
   document.getElementById("adminPage").style.display = "none";
   document.getElementById("employeesPage").style.display = "block";
 
+  const container = document.getElementById("employeesList");
+  container.innerHTML = "<p>Caricamento...</p>";
+
   await loadEmployeesFromFirestore();
   loadEmployeesList();
-
 };
 
 window.closeEmployeesPage = function () {
