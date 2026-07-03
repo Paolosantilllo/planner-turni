@@ -66,6 +66,8 @@ let savedEvents = [];
 let unsubscribeEvents = null;
 let eventsByDate = {};
 
+const employeesData = {};
+
 // ======================
 // 📄 VERSIONI PDF
 // ======================
