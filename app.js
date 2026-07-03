@@ -3454,3 +3454,42 @@ window.openEmployeeEditor = function () {
 window.closeEmployeeEditor = function () {
   document.getElementById("employeePopup").style.display = "none";
 };
+
+window.saveEmployee = async function () {
+
+  const name = document.getElementById("empName").value.trim();
+  const color = document.getElementById("empColor").value;
+  const role = document.getElementById("empRole").value;
+
+  if (!name) {
+    alert("Inserisci un nome");
+    return;
+  }
+
+  // ID sicuro
+  const id = name.toUpperCase().replace(/\s+/g, "_");
+
+  try {
+
+    await firestore.setDoc(
+      firestore.doc(db, "employees", id),
+      {
+        name,
+        color,
+        role
+      },
+      { merge: true }
+    );
+
+    // chiudi popup
+    document.getElementById("employeePopup").style.display = "none";
+
+    // ricarica lista
+    await loadEmployeesFromFirestore();
+    loadEmployeesList();
+
+  } catch (err) {
+    console.error(err);
+    alert("Errore salvataggio nominativo");
+  }
+};
