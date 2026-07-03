@@ -3351,15 +3351,38 @@ window.closeAdminPage = function () {
 };
 
 // ======================
+// CARICA NOMINATIVI FIRESTORE
+// ======================
+
+async function loadEmployeesFromFirestore() {
+
+  Object.keys(employeesData).forEach(key => {
+    delete employeesData[key];
+  });
+
+  const snapshot = await firestore.getDocs(
+    firestore.collection(db, "employees")
+  );
+
+  snapshot.forEach(doc => {
+    employeesData[doc.id] = doc.data();
+  });
+
+  console.log("👥 Nominativi caricati:", employeesData);
+
+}
+
+// ======================
 // GESTIONE NOMINATIVI
 // ======================
 
-window.openEmployeesPage = function () {
+window.openEmployeesPage = async function () {
 
   document.getElementById("adminPage").style.display = "none";
   document.getElementById("employeesPage").style.display = "block";
 
-  loadEmployeesList();
+  await loadEmployeesFromFirestore();
+loadEmployeesList();
 
 };
 
