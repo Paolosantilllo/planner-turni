@@ -15,6 +15,8 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+console.log("APP VERSIONE NUOVA");
+
 import { EMPLOYEES, SHIFT_COLORS } from "./employees.js";
 import {
   initPush,
