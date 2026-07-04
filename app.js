@@ -8,6 +8,8 @@ import { db, firestore } from "./firebase.js";
 import {
   doc,
   getDoc,
+  getDocs,
+  collection,
   setDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -3129,9 +3131,7 @@ function setupAdminUI() {
   toggle("pdfBtn", isAdmin);
   toggle("statsBtn", isAdmin);
   toggle("addBtn", isAdmin);
-
-  // logout: di solito meglio sempre visibile
-  toggle("logoutBtn", true);
+  toggle("logoutBtn", isAdmin);
 }
 
 // ======================
