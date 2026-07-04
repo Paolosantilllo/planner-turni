@@ -1235,35 +1235,27 @@ button:disabled{
   height:56px;
   padding:0;
 }
-
 /* GIORNO OGGI */
 .today{
   outline:3px solid #007aff;
   outline-offset:-3px;
-  border:none;
   border-radius:20px;
 }
 
-
 /* SABATO */
 .today.saturday{
-  border-color:#ff9500;
+  outline-color:#ff9500;
 }
-
 
 /* DOMENICA */
 .today.sunday{
-  border-color:#ff3b30;
+  outline-color:#ff3b30;
 }
-
 
 /* FESTIVI */
 .today.holiday-day{
-  border-color:#ff3b30;
+  outline-color:#ff3b30;
 }
-
-
-
 .monthly-send-btn,
 .floating-stats{
 
