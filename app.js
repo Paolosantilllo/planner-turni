@@ -3490,47 +3490,52 @@ window.saveEmployee = async function () {
     return;
   }
 
- if (editingEmployeeId) {
+  try {
 
-  // MODIFICA
-  await firestore.setDoc(
-    firestore.doc(db, "employees", editingEmployeeId),
-    {
-      name,
-      color,
-      role
-    },
-    { merge: true }
-  );
+    if (editingEmployeeId) {
 
-} else {
+      // ✏️ MODIFICA
+      await firestore.setDoc(
+        firestore.doc(db, "employees", editingEmployeeId),
+        {
+          name,
+          color,
+          role
+        },
+        { merge: true }
+      );
 
-  // NUOVO NOMINATIVO
-  await firestore.addDoc(
-    firestore.collection(db, "employees"),
-    {
-      name,
-      color,
-      role
+    } else {
+
+      // ➕ NUOVO NOMINATIVO
+      await firestore.addDoc(
+        firestore.collection(db, "employees"),
+        {
+          name,
+          color,
+          role
+        }
+      );
+
     }
-  );
 
-}
-
-   // chiudi popup
+    // Chiudi popup
     document.getElementById("employeePopup").style.display = "none";
 
-editingEmployeeId = null;
+    editingEmployeeId = null;
 
-document.querySelector("#employeePopup h2").textContent =
-  "👤 Nuovo Nominativo";
-     
-     // ricarica lista
+    document.querySelector("#employeePopup h2").textContent =
+      "👤 Nuovo Nominativo";
+
+    // Ricarica lista
     await loadEmployeesFromFirestore();
     loadEmployeesList();
 
   } catch (err) {
+
     console.error(err);
     alert("Errore salvataggio nominativo");
+
   }
+
 };
