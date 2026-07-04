@@ -12,10 +12,9 @@ import {
   getDocs,
   collection,
   setDoc,
+  deleteDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-console.log("APP VERSIONE NUOVA");
 
 import { EMPLOYEES, SHIFT_COLORS } from "./employees.js";
 import {
@@ -3457,8 +3456,32 @@ window.editEmployee = function (id) {
 
 };
 
-window.deleteEmployee = function (id) {
-  alert("Elimina: " + employeesData[id].name);
+window.deleteEmployee = async function (id) {
+
+  const emp = employeesData[id];
+
+  const ok = confirm(
+    `Vuoi eliminare "${emp.name}"?`
+  );
+
+  if (!ok) return;
+
+  try {
+
+    await firestore.deleteDoc(
+      firestore.doc(db, "employees", id)
+    );
+
+    await loadEmployeesFromFirestore();
+    loadEmployeesList();
+
+  } catch (err) {
+
+    console.error(err);
+    alert("Errore eliminazione nominativo");
+
+  }
+
 };
 
 // ======================
