@@ -3490,25 +3490,42 @@ window.saveEmployee = async function () {
     return;
   }
 
-  // ID sicuro
-  const id = name.toUpperCase().replace(/\s+/g, "_");
+ if (editingEmployeeId) {
 
-  try {
+  // MODIFICA
+  await firestore.setDoc(
+    firestore.doc(db, "employees", editingEmployeeId),
+    {
+      name,
+      color,
+      role
+    },
+    { merge: true }
+  );
 
-    await firestore.setDoc(
-      firestore.doc(db, "employees", id),
-      {
-        name,
-        color,
-        role
-      },
-      { merge: true }
-    );
+} else {
+
+  // NUOVO NOMINATIVO
+  await firestore.addDoc(
+    firestore.collection(db, "employees"),
+    {
+      name,
+      color,
+      role
+    }
+  );
+
+}
 
    // chiudi popup
     document.getElementById("employeePopup").style.display = "none";
 
-    // ricarica lista
+editingEmployeeId = null;
+
+document.querySelector("#employeePopup h2").textContent =
+  "👤 Nuovo Nominativo";
+     
+     // ricarica lista
     await loadEmployeesFromFirestore();
     loadEmployeesList();
 
