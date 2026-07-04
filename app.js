@@ -72,6 +72,8 @@ let eventsByDate = {};
 
 const employeesData = {};
 
+let editingEmployeeId = null;
+
 // ======================
 // 📄 VERSIONI PDF
 // ======================
@@ -3439,7 +3441,20 @@ window.loadEmployeesList = function () {
 // ======================
 
 window.editEmployee = function (id) {
-  alert("Modifica: " + employeesData[id].name);
+
+  editingEmployeeId = id;
+
+  const emp = employeesData[id];
+
+  document.getElementById("empName").value = emp.name || "";
+  document.getElementById("empColor").value = emp.color || "#ffffff";
+  document.getElementById("empRole").value = emp.role || "USER";
+
+  document.querySelector("#employeePopup h2").textContent =
+    "✏️ Modifica Nominativo";
+
+  document.getElementById("employeePopup").style.display = "flex";
+
 };
 
 window.deleteEmployee = function (id) {
