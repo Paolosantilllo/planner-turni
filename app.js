@@ -3447,6 +3447,11 @@ window.editEmployee = function (id) {
 
   const emp = employeesData[id];
 
+  // Codice dipendente
+  document.getElementById("empCode").value = id;
+  document.getElementById("empCode").disabled = true;
+
+  // Altri campi
   document.getElementById("empName").value = emp.name || "";
   document.getElementById("empColor").value = emp.color || "#ffffff";
   document.getElementById("empRole").value = emp.role || "USER";
@@ -3518,10 +3523,16 @@ window.closeEmployeeEditor = function () {
 
 window.saveEmployee = async function () {
 
-  const name = document.getElementById("empName").value.trim();
-  const color = document.getElementById("empColor").value;
-  const role = document.getElementById("empRole").value;
+  const code = document.getElementById("empCode").value.trim().toUpperCase();
+const name = document.getElementById("empName").value.trim();
+const color = document.getElementById("empColor").value;
+const role = document.getElementById("empRole").value;
 
+   if (!code) {
+  alert("Inserisci il codice dipendente");
+  return;
+}
+   
   if (!name) {
     alert("Inserisci un nome");
     return;
@@ -3544,16 +3555,15 @@ window.saveEmployee = async function () {
 
     } else {
 
-      // ➕ NUOVO NOMINATIVO
-      await firestore.addDoc(
-        firestore.collection(db, "employees"),
-        {
-          name,
-          color,
-          role
-        }
-      );
-
+     // ➕ NUOVO NOMINATIVO
+await firestore.setDoc(
+  firestore.doc(db, "employees", code),
+  {
+    name,
+    color,
+    role
+  }
+);
     }
 
     // Chiudi popup
