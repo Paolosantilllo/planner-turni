@@ -28,7 +28,7 @@ window.logout = logout;
    INIT AUTH
 ====================== */
 
-initAuth((user) => {
+initAuth(async (user) => {
 
   window.CURRENT_USER = user;
 
@@ -46,7 +46,8 @@ document.getElementById("app").classList.add("show");
   // ======================
   // UI INIT
   // ======================
-  populateEmployeeSelects();
+  await populateEmployeeSelects();
+
   setDefaultFilter();
   loadEvents();
   loadChangeRequests();
@@ -148,7 +149,9 @@ async function savePdfVersion(version, signature) {
 // CARICA NOMINATIVI
 // ======================
 
-function populateEmployeeSelects() {
+async function populateEmployeeSelects() {
+
+  await loadEmployeesFromFirestore();
 
   const filter =
     document.getElementById("employeeFilter");
@@ -161,7 +164,7 @@ function populateEmployeeSelects() {
     filter.innerHTML =
       '<option value="ALL">Tutti</option>';
 
-    Object.entries(EMPLOYEES).forEach(([id, emp]) => {
+    Object.entries(employeesData).forEach(([id, emp]) => {
 
       filter.innerHTML += `
         <option value="${id}">
@@ -177,7 +180,7 @@ function populateEmployeeSelects() {
 
     employee.innerHTML = "";
 
-    Object.entries(EMPLOYEES).forEach(([id, emp]) => {
+    Object.entries(employeesData).forEach(([id, emp]) => {
 
       employee.innerHTML += `
         <option value="${id}">
