@@ -726,8 +726,7 @@ events.forEach(ev => {
   el.classList.add("event");
 
 
-  const emp = EMPLOYEES[ev.employee];
-
+ const emp = employeesData[ev.employee];
 
   if (selectedEmployee === "ALL") {
 
