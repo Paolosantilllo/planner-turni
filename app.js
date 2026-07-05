@@ -3492,16 +3492,28 @@ window.deleteEmployee = async function (id) {
 
 window.openEmployeeEditor = function () {
 
+  editingEmployeeId = null;
+
   // reset campi
+  document.getElementById("empCode").value = "";
+  document.getElementById("empCode").disabled = false;
+
   document.getElementById("empName").value = "";
   document.getElementById("empColor").value = "#ffffff";
   document.getElementById("empRole").value = "USER";
 
+  // titolo popup
+  document.querySelector("#employeePopup h2").textContent =
+    "👤 Nuovo Nominativo";
+
   // apri popup
   document.getElementById("employeePopup").style.display = "flex";
 };
+
 window.closeEmployeeEditor = function () {
+
   document.getElementById("employeePopup").style.display = "none";
+
 };
 
 window.saveEmployee = async function () {
