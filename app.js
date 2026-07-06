@@ -1,5 +1,5 @@
 
-/* ======================
+ /* ======================
    IMPORT MODULI
 ====================== */
 
@@ -24,6 +24,11 @@ import {
   initPush,
   listenForegroundNotifications
 } from "./push.js";
+
+/* 🔥 AGGIUNTA FIREBASE AUTH (NUOVA PARTE) */
+import { auth } from "./firebase.js";
+import { createUserWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 window.logout = logout;
 
