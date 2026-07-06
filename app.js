@@ -2527,17 +2527,19 @@ const message =
 
 
 await firestore.addDoc(
- firestore.collection(db,"notifications"),
-{
- employee:req.fromEmployee,
-
-email:
-employeesData[req.fromEmployee].email,
-
+  firestore.collection(db, "notifications"),
+  {
+    employee: req.fromEmployee,
+    email: employeesData[req.fromEmployee]?.email,
+    message: message,
+    read: false,
+    createdAt: new Date()
+  }
+);
 
 console.log(
-"📨 Notifica creata per:",
-req.fromEmployee
+  "📨 Notifica creata per:",
+  req.fromEmployee
 );
 
 
@@ -2551,10 +2553,9 @@ await firestore.addDoc(
  employee:req.toEmployee,
 
  email:
-employeesData[req.toEmployee]?.email
- message:
- `✅ L'Admin ha approvato...`,
-
+employeesData[req.toEmployee]?.email,
+message:
+`✅ L'Admin ha approvato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`,
  read:false,
 
  createdAt:new Date()
@@ -2594,7 +2595,7 @@ await firestore.addDoc(
   employee:req.fromEmployee,
 
     email:
-employeesData[req.fromEmployee]?.email
+employeesData[req.fromEmployee]?.email,
  
     message:
   `❌ L'Admin ha rifiutato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`,
@@ -2614,8 +2615,11 @@ await firestore.addDoc(
 
  firestore.collection(db,"notifications"),
 
- {
+{
   employee:req.toEmployee,
+
+  email:
+  employeesData[req.toEmployee]?.email,
 
   message:
   `❌ L'Admin ha rifiutato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`,
@@ -2624,7 +2628,7 @@ await firestore.addDoc(
 
   createdAt:new Date()
 
- }
+}
 
 );
 
@@ -2747,12 +2751,13 @@ list.appendChild(div);
         // 👑 LIVELLO ADMIN
         // ======================
 
-        if(
-          EMPLOYEES[CURRENT_EMPLOYEE].role === "ADMIN" &&
-          req.status === "PENDING_ADMIN"
-        ){
-
-
+       if(
+    employeesData[CURRENT_EMPLOYEE]?.role === "ADMIN" &&
+    req.status === "PENDING_ADMIN"
+)
+        
+        {
+          
           const div =
           document.createElement("div");
 
