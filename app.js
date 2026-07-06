@@ -3580,8 +3580,17 @@ await firestore.setDoc(
       "👤 Nuovo Nominativo";
 
     // Ricarica lista
-    await loadEmployeesFromFirestore();
-    loadEmployeesList();
+ // 🔄 RICARICA COMPLETA DATI DOPO SALVATAGGIO
+await loadEmployeesFromFirestore();
+
+// aggiorna lista dipendenti a schermo
+loadEmployeesList();
+
+// aggiorna select (dropdown eventi, popup ecc.)
+await populateEmployeeSelects();
+
+// 🔥 IMPORTANTISSIMO: rigenera calendario DOPO che i dati sono pronti
+await renderCalendar();
 
   } catch (err) {
 
