@@ -840,7 +840,7 @@ window.closePopup = function(){
 window.openPopupWithDate = function(date, events = []) {
 
   document.getElementById("startDate").value = date;
-  document.getElementById("endDate").value = date;
+  document.getElementById("endDate").value = date
 
   const employeeSelect = document.getElementById("employee");
 
@@ -1423,10 +1423,10 @@ pdf.text(
       })
     ];
 
-    const nominativi = Object.keys(EMPLOYEES);
+   const nominativi = Object.keys(employeesData);
 
-    const body = nominativi.map(nome => {
-      const row = [EMPLOYEES[nome].name];
+const body = nominativi.map(id => {
+  const row = [employeesData[id].name];
 
       for (let d = 1; d <= daysInMonthLoop; d++) {
 
@@ -1921,14 +1921,14 @@ function loadChangeEmployees() {
 
   select.innerHTML = "";
 
-  Object.keys(EMPLOYEES).forEach(emp => {
+  Object.keys(employeesData).forEach(emp => {
 
     if (emp === CURRENT_EMPLOYEE) return;
 
     const option = document.createElement("option");
 
     option.value = emp;
-    option.textContent = EMPLOYEES[emp].name;
+    option.textContent = employeesData[emp].name;
 
     select.appendChild(option);
 
@@ -2531,16 +2531,8 @@ await firestore.addDoc(
 {
  employee:req.fromEmployee,
 
- email:
- EMPLOYEES[req.fromEmployee].email,
-
- message: message,
-
- read:false,
-
- createdAt:new Date()
-}
-);
+email:
+employeesData[req.fromEmployee].email,
 
 
 console.log(
@@ -2712,7 +2704,7 @@ Gestione richiesta
 </h2>
 
 <div class="request-employee-popup">
-${EMPLOYEES[req.fromEmployee].name}
+${employeesData[req.fromEmployee]?.name}
 </div>
 
 <div class="request-shift-popup">
@@ -2778,11 +2770,11 @@ Gestione richiesta
 </h2>
 
 <div class="request-employee-popup">
-Richiedente: ${EMPLOYEES[req.fromEmployee].name}
+Richiedente: ${employeesData[req.fromEmployee]?.name}
 </div>
 
 <div class="request-employee-popup">
-Ricevente: ${EMPLOYEES[req.toEmployee].name}
+Ricevente: ${employeesData[req.toEmployee]?.name}
 </div>
 
 <div class="request-shift-popup">
@@ -2877,7 +2869,7 @@ if(action === "ACCEPT"){
 
 
   notificationText =
-  `✅ La richiesta di cambio è stata accettata da ${EMPLOYEES[req.toEmployee].name} ed inoltrata all'Admin`;
+  `✅ La richiesta di cambio è stata accettata da ${employeesData[req.toEmployee]?.name}ed inoltrata all'Admin`;
 
 
 
@@ -2994,7 +2986,7 @@ snapshot.forEach(doc => {
 
   rows.push([
     formatDateIT(ev.date),
-    EMPLOYEES[ev.employee]?.name || "",
+    employeesData[ev.employee]?.name || "",
     ev.shift
   ]);
 
@@ -3016,7 +3008,6 @@ await openPdfPreview(pdf, "Turnazione_Festivi.pdf");
 // ======================
 // PDF CFI
 // ======================
-
 
 window.exportCfiPdf = async function(){
 
