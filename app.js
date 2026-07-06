@@ -13,6 +13,9 @@ import {
   collection,
   setDoc,
   deleteDoc,
+  addDoc,
+  updateDoc,
+  onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
@@ -37,12 +40,13 @@ initAuth(async (user) => {
 document.getElementById("app").classList.add("show");
    
   // ======================
-  // 🔐 RUOLO ADMIN
-  // ======================
-  window.IS_ADMIN =
-    EMPLOYEES[CURRENT_EMPLOYEE]?.role === "ADMIN"
-    || CURRENT_EMPLOYEE === "A";
+// 🔐 RUOLO ADMIN
+// ======================
 
+window.IS_ADMIN =
+  employeesData[CURRENT_EMPLOYEE]?.role === "ADMIN"
+  || CURRENT_EMPLOYEE === "A";
+   
   // ======================
   // UI INIT
   // ======================
@@ -1432,9 +1436,11 @@ const body = nominativi.map(id => {
         const dateStr =
           `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
-        const ev = savedEvents.find(e =>
-          e.date === dateStr && e.employee === nome
-        );
+       const employeeId = id;
+
+const ev = savedEvents.find(e =>
+  e.date === dateStr && e.employee === employeeId
+);
 
         row.push(ev ? ev.shift : "");
       }
