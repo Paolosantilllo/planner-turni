@@ -701,7 +701,7 @@ box.appendChild(num);
 // ORDINA NOMINATIVI A-B-C-D
 // ======================
 
-events.sort((a,b)=>{
+events.sort((a, b) => {
 
   const order = {
     A: 1,
@@ -710,10 +710,9 @@ events.sort((a,b)=>{
     D: 4
   };
 
-  return order[a.employee] - order[b.employee];
+  return (order[a.employee] || 999) - (order[b.employee] || 999);
 
 });
-
 
 // ======================
 // EVENTI DEL GIORNO
