@@ -3445,6 +3445,8 @@ window.editEmployee = function (id) {
 
   // Altri campi
   document.getElementById("empName").value = emp.name || "";
+  document.getElementById("empEmail").value =
+  emp.email || "";
   document.getElementById("empColor").value = emp.color || "#ffffff";
   document.getElementById("empRole").value = emp.role || "USER";
 
@@ -3496,6 +3498,7 @@ window.openEmployeeEditor = function () {
   document.getElementById("empCode").disabled = false;
 
   document.getElementById("empName").value = "";
+  document.getElementById("empEmail").value = "";
   document.getElementById("empColor").value = "#ffffff";
   document.getElementById("empRole").value = "USER";
 
@@ -3540,6 +3543,7 @@ const role = document.getElementById("empRole").value;
         firestore.doc(db, "employees", editingEmployeeId),
         {
           name,
+          email,
           color,
           role
         },
@@ -3553,6 +3557,7 @@ await firestore.setDoc(
   firestore.doc(db, "employees", code),
   {
     name,
+    email,
     color,
     role
   }
