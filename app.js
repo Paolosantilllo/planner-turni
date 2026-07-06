@@ -2551,8 +2551,7 @@ await firestore.addDoc(
  employee:req.toEmployee,
 
  email:
- EMPLOYEES[req.toEmployee].email,
-
+employeesData[req.toEmployee]?.email
  message:
  `✅ L'Admin ha approvato...`,
 
@@ -2595,7 +2594,7 @@ await firestore.addDoc(
   employee:req.fromEmployee,
 
     email:
-EMPLOYEES[req.fromEmployee].email,
+employeesData[req.fromEmployee]?.email
  
     message:
   `❌ L'Admin ha rifiutato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`,
