@@ -3402,7 +3402,11 @@ window.loadEmployeesList = function () {
     container.innerHTML += `
       <div class="employee-row">
 
-        <span>${emp.name}</span>
+        <div>
+          <strong>${emp.name}</strong><br>
+          <small>${emp.email || ""}</small><br>
+          <small>${emp.role}</small>
+        </div>
 
         <div class="employee-actions">
 
@@ -3506,17 +3510,24 @@ window.closeEmployeeEditor = function () {
 
 window.saveEmployee = async function () {
 
-  const email = document.getElementById("empEmail")?.value.trim() || "";
-  const password = document.getElementById("empPassword")?.value || "";
-  const name = document.getElementById("empName").value.trim();
-  const color = document.getElementById("empColor").value;
-  const role = document.getElementById("empRole").value;
+  const code = document.getElementById("empCode").value.trim().toUpperCase();
 
+const email = document.getElementById("empEmail")?.value.trim() || "";
+const password = document.getElementById("empPassword")?.value || "";
+const name = document.getElementById("empName").value.trim();
+const color = document.getElementById("empColor").value;
+const role = document.getElementById("empRole").value;
+ 
   if (!name) {
     alert("Inserisci un nome");
     return;
   }
 
+ if (!code) {
+  alert("Inserisci il codice dipendente");
+  return;
+}
+ 
   try {
 
     // ======================
@@ -3554,15 +3565,16 @@ window.saveEmployee = async function () {
 
       // 📦 salva su firestore con UID
       await firestore.setDoc(
-        firestore.doc(db, "employees", uid),
-        {
-          name,
-          email,
-          color,
-          role,
-          createdAt: new Date()
-        }
-      );
+  firestore.doc(db, "employees", uid),
+  {
+    code,
+    name,
+    email,
+    color,
+    role,
+    createdAt: new Date()
+  }
+);
     }
 
     // ======================
