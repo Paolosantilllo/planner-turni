@@ -3516,6 +3516,7 @@ window.closeEmployeeEditor = function () {
 window.saveEmployee = async function () {
 
   const code = document.getElementById("empCode").value.trim().toUpperCase();
+   const email = document.getElementById("empEmail")?.value.trim() || "";
 const name = document.getElementById("empName").value.trim();
 const color = document.getElementById("empColor").value;
 const role = document.getElementById("empRole").value;
