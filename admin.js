@@ -1,3 +1,17 @@
+import { db, auth } from "./firebase.js";
+
+import {
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+import {
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 // ======================
 // 🔙 HOME
@@ -135,8 +149,8 @@ async function addEmployee() {
 // ======================
 async function toggleRole(id, currentRole) {
 
-  const newRole =
-    currentRole.toUpperCase() === "ADMIN" ? "USER" : "ADMIN";
+ const newRole =
+  (currentRole || "").toUpperCase() === "ADMIN" ? "USER" : "ADMIN";
 
   await updateDoc(doc(db, "users", id), {
     role: newRole
@@ -155,3 +169,8 @@ async function deleteEmployee(id) {
 
   openEmployees();
 }
+
+window.showAddEmployee = showAddEmployee;
+window.addEmployee = addEmployee;
+window.toggleRole = toggleRole;
+window.deleteEmployee = deleteEmployee;
