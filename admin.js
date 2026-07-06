@@ -38,7 +38,7 @@ async function openEmployees() {
 
   container.innerHTML = "<h2>👥 Caricamento dipendenti...</h2>";
 
-  const snapshot = await getDocs(collection(db, "employees"));
+ const snapshot = await getDocs(collection(db, "users"));
 
   let html = `
     <h2>👥 Gestione Dipendenti</h2>
@@ -53,9 +53,9 @@ async function openEmployees() {
 
     html += `
       <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-        <strong>${data.nome || "Senza nome"}</strong><br>
-        ${data.email}<br>
-        Ruolo: <b>${data.ruolo}</b><br>
+        <strong>${data.employee || "Senza nome"}</strong><br>
+${data.email}<br>
+Ruolo: <b>${data.role}</b><br>
 
         <button onclick="toggleRole('${docSnap.id}', '${data.ruolo}')">
           Cambia ruolo
