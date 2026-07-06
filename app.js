@@ -3083,25 +3083,6 @@ await openPdfPreview(pdf, "Totale_CFI_CFI-REP.pdf");
 
 };
 
-window.sharePdf = async function () {
-  if (!window.lastPdf) return;
-
-  const pdfBlob = window.lastPdf.output("blob");
-
-  const file = new File([pdfBlob], "CFI.pdf", {
-    type: "application/pdf",
-  });
-
-  if (navigator.share) {
-    await navigator.share({
-      files: [file],
-      title: "Totale CFI",
-    });
-  } else {
-    alert("Condivisione non supportata su questo dispositivo");
-  }
-};
-
 function setupAdminUI() {
 
   const isAdmin = window.IS_ADMIN === true;
