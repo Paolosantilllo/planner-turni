@@ -45,8 +45,19 @@ initAuth(async (user) => {
   window.CURRENT_USER = user;
 
   // 🔥 prendo dipendente da UID Firebase
-  const empRef = doc(db, "employees", user.uid);
-  const empSnap = await getDoc(empRef);
+  const q = query(
+  collection(db, "employees"),
+  where("uid", "==", user.uid)
+);
+
+const snap = await getDocs(q);
+
+if (snap.empty) {
+  alert("Utente non registrato come dipendente");
+  return;
+}
+
+const employee = snap.docs[0].data();
 
   if (!empSnap.exists()) {
     alert("Utente non registrato come dipendente");
