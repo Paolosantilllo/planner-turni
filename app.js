@@ -35,18 +35,25 @@ initAuth(async (user) => {
 
   window.CURRENT_USER = user;
 
-  window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
+  // 🔥 prendo dipendente da UID Firebase
+  const empRef = doc(db, "employees", user.uid);
+  const empSnap = await getDoc(empRef);
 
-  await loadEmployeesFromFirestore(); // 🔥 PRIMA COSA
+  if (!empSnap.exists()) {
+    alert("Utente non registrato come dipendente");
+    return;
+  }
 
-  window.IS_ADMIN =
-    employeesData[CURRENT_EMPLOYEE]?.role === "ADMIN" ||
-    CURRENT_EMPLOYEE === "A";
+  const employee = empSnap.data();
+
+  window.CURRENT_EMPLOYEE = user.uid;
+  window.CURRENT_EMPLOYEE_DATA = employee;
+
+  window.IS_ADMIN = employee.role === "ADMIN";
 
   document.getElementById("app").classList.add("show");
 
   await populateEmployeeSelects();
-
   setDefaultFilter();
   loadEvents();
   loadChangeRequests();
