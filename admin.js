@@ -117,11 +117,11 @@ async function addEmployee() {
   const email = document.getElementById("empEmail").value;
   const ruolo = document.getElementById("empRole").value;
 
-  const password = "123456"; // temporanea (poi la miglioriamo)
+  const password = "123456"; // per ora semplice
 
   try {
 
-    // 1. CREA UTENTE LOGIN
+    // 1. CREA UTENTE AUTH (LOGIN REALE)
     const cred = await createUserWithEmailAndPassword(auth, email, password);
 
     const uid = cred.user.uid;
@@ -135,7 +135,7 @@ async function addEmployee() {
       fcmTokens: []
     });
 
-    alert("Dipendente creato ✔");
+    alert("Dipendente creato e può fare login ✔");
 
     openEmployees();
 
