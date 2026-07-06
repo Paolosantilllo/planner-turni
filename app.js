@@ -731,37 +731,26 @@ events.forEach(ev => {
 
  const emp = employeesData[ev.employee];
 
-  if (selectedEmployee === "ALL") {
+if (selectedEmployee === "ALL") {
 
-
-    // Colore dipendente
-
-    if (emp?.color) {
-
-      el.classList.add(emp.color);
-
-    }
-
-
-  } else {
-
-
-    // Colore turno
-
-    const shiftKey = (ev.shift || "").trim();
-
-    const color = SHIFT_COLORS[shiftKey];
-
-
-    if (color) {
-
-      el.style.backgroundColor = color;
-
-    }
-
-
-  el.style.color = "#000";
+  // Colore del dipendente
+  if (emp?.color) {
+    el.style.backgroundColor = emp.color;
   }
+
+} else {
+
+  // Colore del turno
+  const shiftKey = (ev.shift || "").trim();
+  const color = SHIFT_COLORS[shiftKey];
+
+  if (color) {
+    el.style.backgroundColor = color;
+  }
+
+}
+
+el.style.color = "#000";
 
 
 
