@@ -3515,33 +3515,34 @@ const role = document.getElementById("empRole").value;
 
   try {
 
-    if (editingEmployeeId) {
+   if (editingEmployeeId) {
 
-      // ✏️ MODIFICA
-      await firestore.setDoc(
-        firestore.doc(db, "employees", editingEmployeeId),
-        {
-          name,
-          email,
-          color,
-          role
-        },
-        { merge: true }
-      );
-
-    } else {
-
-     // ➕ NUOVO NOMINATIVO
-await firestore.setDoc(
-  firestore.doc(db, "employees", code),
-  {
-    name,
-    email,
-    color,
-    role
-  }
-);
+  await firestore.updateDoc(
+    firestore.doc(db, "employees", editingEmployeeId),
+    {
+      name,
+      email,
+      color,
+      role
     }
+  );
+
+} else {
+
+  // ⚠️ QUI devi avere UID (non code)
+  const uid = crypto.randomUUID(); // TEMP fallback
+
+  await firestore.setDoc(
+    firestore.doc(db, "employees", uid),
+    {
+      name,
+      email,
+      color,
+      role,
+      createdAt: new Date()
+    }
+  );
+}
 
     // Chiudi popup
     document.getElementById("employeePopup").style.display = "none";
