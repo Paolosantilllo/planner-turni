@@ -103,16 +103,33 @@ async function addEmployee() {
   const email = document.getElementById("empEmail").value;
   const ruolo = document.getElementById("empRole").value;
 
-  await addDoc(collection(db, "employees"), {
-    nome,
-    email,
-    ruolo
-  });
+  const password = "123456"; // temporanea (poi la miglioriamo)
 
-  alert("Dipendente aggiunto!");
-  openEmployees();
+  try {
+
+    // 1. CREA UTENTE LOGIN
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+    const uid = cred.user.uid;
+
+    // 2. CREA PROFILO FIRESTORE
+    await setDoc(doc(db, "users", uid), {
+      email,
+      employee: nome,
+      role: ruolo.toUpperCase(),
+      active: true,
+      fcmTokens: []
+    });
+
+    alert("Dipendente creato ✔");
+
+    openEmployees();
+
+  } catch (err) {
+    console.error(err);
+    alert("Errore: " + err.message);
+  }
 }
-
 // ======================
 // 🔄 CAMBIA RUOLO
 // ======================
