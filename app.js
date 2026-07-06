@@ -1,5 +1,4 @@
 
-
 /* ======================
    IMPORT MODULI
 ====================== */
@@ -2890,9 +2889,8 @@ else{
   newStatus = "USER_REJECTED";
 
 
-  notificationText =
-  `❌ La richiesta di cambio è stata rifiutata da ${EMPLOYEES[req.toEmployee].name}`;
-
+ notificationText =
+  `❌ La richiesta di cambio è stata rifiutata da ${employeesData[req.toEmployee]?.name}`;
 
 }
 
@@ -3024,12 +3022,12 @@ pdf.text("Totale CFI / CFI-REP", 14, 15);
 
 const stats = {};
 
-Object.keys(EMPLOYEES).forEach(id => {
- stats[id] = {
-  name: EMPLOYEES[id].name,
-  cfiF: 0,
-  cfiA: 0
-};
+Object.keys(employeesData).forEach(id => {
+  stats[id] = {
+    name: employeesData[id]?.name,
+    cfiF: 0,
+    cfiA: 0
+  };
 });
 
 const snapshot = await firestore.getDocs(
