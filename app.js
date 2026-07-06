@@ -20,12 +20,16 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 import { EMPLOYEES, SHIFT_COLORS } from "./employees.js";
+
 import {
   initPush,
   listenForegroundNotifications
 } from "./push.js";
 
-/* 🔥 AGGIUNTA FIREBASE AUTH (NUOVA PARTE) */
+/* ======================
+   FIREBASE AUTH (NUOVO)
+====================== */
+
 import { auth } from "./firebase.js";
 import { createUserWithEmailAndPassword } 
 from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
