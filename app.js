@@ -3502,17 +3502,12 @@ window.closeEmployeeEditor = function () {
 
 window.saveEmployee = async function () {
 
-  const code = document.getElementById("empCode").value.trim().toUpperCase();
-   const email = document.getElementById("empEmail")?.value.trim() || "";
-const name = document.getElementById("empName").value.trim();
-const color = document.getElementById("empColor").value;
-const role = document.getElementById("empRole").value;
+  const email = document.getElementById("empEmail")?.value.trim() || "";
+  const password = document.getElementById("empPassword")?.value || "";
+  const name = document.getElementById("empName").value.trim();
+  const color = document.getElementById("empColor").value;
+  const role = document.getElementById("empRole").value;
 
-   if (!code) {
-  alert("Inserisci il codice dipendente");
-  return;
-}
-   
   if (!name) {
     alert("Inserisci un nome");
     return;
@@ -3520,47 +3515,56 @@ const role = document.getElementById("empRole").value;
 
   try {
 
-   if (editingEmployeeId) {
+    // ======================
+    // ✏️ MODIFICA DIPENDENTE
+    // ======================
+    if (editingEmployeeId) {
 
-  await firestore.updateDoc(
-    firestore.doc(db, "employees", editingEmployeeId),
-    {
-      name,
-      email,
-      color,
-      role
+      await firestore.updateDoc(
+        firestore.doc(db, "employees", editingEmployeeId),
+        {
+          name,
+          email,
+          color,
+          role
+        }
+      );
+
     }
-  );
 
-else {
+    // ======================
+    // ➕ NUOVO DIPENDENTE (FIREBASE AUTH)
+    // ======================
+    else {
 
-  const password = document.getElementById("empPassword")?.value;
+      if (!email || !password) {
+        alert("Email e password obbligatorie");
+        return;
+      }
 
-  if (!password) {
-    alert("Inserisci password per il nuovo dipendente");
-    return;
-  }
+      // 🔐 crea utente auth
+      const userCredential =
+        await createUserWithEmailAndPassword(auth, email, password);
 
-  // 🔐 1. CREA UTENTE AUTH
-  const userCredential =
-    await createUserWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
 
-  const uid = userCredential.user.uid;
-
-  // 📦 2. CREA PROFILO FIRESTORE
-  await firestore.setDoc(
-    firestore.doc(db, "employees", uid),
-    {
-      name,
-      email,
-      color,
-      role,
-      createdAt: new Date()
+      // 📦 salva su firestore con UID
+      await firestore.setDoc(
+        firestore.doc(db, "employees", uid),
+        {
+          name,
+          email,
+          color,
+          role,
+          createdAt: new Date()
+        }
+      );
     }
-  );
-}
 
-    // Chiudi popup
+    // ======================
+    // UI RESET
+    // ======================
+
     document.getElementById("employeePopup").style.display = "none";
 
     editingEmployeeId = null;
@@ -3568,24 +3572,19 @@ else {
     document.querySelector("#employeePopup h2").textContent =
       "👤 Nuovo Nominativo";
 
-    // Ricarica lista
- // 🔄 RICARICA COMPLETA DATI DOPO SALVATAGGIO
-await loadEmployeesFromFirestore();
-
-// aggiorna lista dipendenti a schermo
-loadEmployeesList();
-
-// aggiorna select (dropdown eventi, popup ecc.)
-await populateEmployeeSelects();
-
-// 🔥 IMPORTANTISSIMO: rigenera calendario DOPO che i dati sono pronti
-await renderCalendar();
+    await loadEmployeesFromFirestore();
+    loadEmployeesList();
+    await populateEmployeeSelects();
+    await renderCalendar();
 
   } catch (err) {
 
-    console.error(err);
-    alert("Errore salvataggio nominativo");
+    console.error("Errore salvataggio nominativo:", err);
 
+    if (err.code === "auth/email-already-in-use") {
+      alert("Email già registrata");
+    } else {
+      alert("Errore salvataggio dipendente");
+    }
   }
-
 };
