@@ -119,30 +119,35 @@ async function addEmployee() {
 
   const password = "123456"; // per ora semplice
 
-  try {
+try {
 
-    // 1. CREA UTENTE AUTH (LOGIN REALE)
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+  console.log("👉 CREO UTENTE:", email, password);
 
-    const uid = cred.user.uid;
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
 
-    // 2. CREA PROFILO FIRESTORE
-    await setDoc(doc(db, "users", uid), {
-      email,
-      employee: nome,
-      role: ruolo.toUpperCase(),
-      active: true,
-      fcmTokens: []
-    });
+  console.log("✅ UTENTE CREATO UID:", cred.user.uid);
 
-    alert("Dipendente creato e può fare login ✔");
+  const uid = cred.user.uid;
 
-    openEmployees();
+  await setDoc(doc(db, "users", uid), {
+    email,
+    employee: nome,
+    role: ruolo.toUpperCase(),
+    active: true,
+    fcmTokens: []
+  });
 
-  } catch (err) {
-    console.error(err);
-    alert("Errore: " + err.message);
-  }
+  console.log("✅ FIRESTORE CREATO");
+
+  alert("Dipendente creato ✔");
+
+  openEmployees();
+
+} catch (err) {
+
+  console.error("❌ ERRORE COMPLETO:", err.code, err.message);
+  alert("Errore: " + err.message);
+}
 }
 // ======================
 // 🔄 CAMBIA RUOLO
