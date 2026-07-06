@@ -57,7 +57,7 @@ async function openEmployees() {
 ${data.email}<br>
 Ruolo: <b>${data.role}</b><br>
 
-        <button onclick="toggleRole('${docSnap.id}', '${data.ruolo}')">
+        <button onclick="toggleRole('${docSnap.id}', '${data.role}')">
           Cambia ruolo
         </button>
 
@@ -134,10 +134,12 @@ async function addEmployee() {
 // 🔄 CAMBIA RUOLO
 // ======================
 async function toggleRole(id, currentRole) {
-  const newRole = currentRole === "admin" ? "user" : "admin";
 
-  await updateDoc(doc(db, "employees", id), {
-    ruolo: newRole
+  const newRole =
+    currentRole.toUpperCase() === "ADMIN" ? "USER" : "ADMIN";
+
+  await updateDoc(doc(db, "users", id), {
+    role: newRole
   });
 
   openEmployees();
@@ -149,7 +151,7 @@ async function toggleRole(id, currentRole) {
 async function deleteEmployee(id) {
   if (!confirm("Sei sicuro di eliminare questo dipendente?")) return;
 
-  await deleteDoc(doc(db, "employees", id));
+  await deleteDoc(doc(db, "users", id));
 
   openEmployees();
 }
