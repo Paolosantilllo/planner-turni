@@ -3527,11 +3527,22 @@ const role = document.getElementById("empRole").value;
     }
   );
 
-} else {
+else {
 
-  // ⚠️ QUI devi avere UID (non code)
-  const uid = crypto.randomUUID(); // TEMP fallback
+  const password = document.getElementById("empPassword")?.value;
 
+  if (!password) {
+    alert("Inserisci password per il nuovo dipendente");
+    return;
+  }
+
+  // 🔐 1. CREA UTENTE AUTH
+  const userCredential =
+    await createUserWithEmailAndPassword(auth, email, password);
+
+  const uid = userCredential.user.uid;
+
+  // 📦 2. CREA PROFILO FIRESTORE
   await firestore.setDoc(
     firestore.doc(db, "employees", uid),
     {
