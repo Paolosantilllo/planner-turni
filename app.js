@@ -3537,12 +3537,13 @@ const role = document.getElementById("empRole").value;
 
       await firestore.updateDoc(
         firestore.doc(db, "employees", editingEmployeeId),
-        {
-          name,
-          email,
-          color,
-          role
-        }
+       {
+  code,
+  name,
+  email,
+  color,
+  role
+}
       );
 
     }
