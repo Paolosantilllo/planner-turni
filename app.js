@@ -35,33 +35,27 @@ initAuth(async (user) => {
 
   window.CURRENT_USER = user;
 
-  // 🔥 dipendente corrente
   window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
-document.getElementById("app").classList.add("show");
-   
-// ======================
-// UI INIT
-// ======================
 
-await populateEmployeeSelects();
+  await loadEmployeesFromFirestore(); // 🔥 PRIMA COSA
 
-// ======================
-// 🔐 RUOLO ADMIN
-// ======================
+  window.IS_ADMIN =
+    employeesData[CURRENT_EMPLOYEE]?.role === "ADMIN" ||
+    CURRENT_EMPLOYEE === "A";
 
-window.IS_ADMIN =
-  employeesData[CURRENT_EMPLOYEE]?.role === "ADMIN"
-  || CURRENT_EMPLOYEE === "A";
+  document.getElementById("app").classList.add("show");
 
-setDefaultFilter();
-loadEvents();
-loadChangeRequests();
-loadNotificationBadge();
+  await populateEmployeeSelects();
 
-setupAdminUI();
+  setDefaultFilter();
+  loadEvents();
+  loadChangeRequests();
+  loadNotificationBadge();
 
-initPush(user);
-listenForegroundNotifications();
+  setupAdminUI();
+
+  initPush(user);
+  listenForegroundNotifications();
 
 });
 /* ======================
@@ -74,7 +68,8 @@ let savedEvents = [];
 let unsubscribeEvents = null;
 let eventsByDate = {};
 
-const employeesData = {};
+window.employeesData = window.employeesData || {};
+const employeesData = window.employeesData;
 
 let editingEmployeeId = null;
 
