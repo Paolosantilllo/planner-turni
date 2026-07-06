@@ -74,7 +74,15 @@ export async function initAuth(onReady) {
       return;
     }
 
-    const data = mapUser(user.email);
+   const snap = await getDoc(doc(db, "users", user.uid));
+
+if (!snap.exists()) {
+  await signOut(auth);
+  alert("Utente non autorizzato");
+  return;
+}
+
+const data = snap.data();
 
     /* ❌ NON AUTORIZZATO */
     if (!data) {
