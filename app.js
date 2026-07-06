@@ -39,31 +39,31 @@ initAuth(async (user) => {
   window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
 document.getElementById("app").classList.add("show");
    
-  // ======================
+// ======================
+// UI INIT
+// ======================
+
+await populateEmployeeSelects();
+
+// ======================
 // 🔐 RUOLO ADMIN
 // ======================
 
 window.IS_ADMIN =
   employeesData[CURRENT_EMPLOYEE]?.role === "ADMIN"
   || CURRENT_EMPLOYEE === "A";
-   
-  // ======================
-  // UI INIT
-  // ======================
-  await populateEmployeeSelects();
 
-  setDefaultFilter();
-  loadEvents();
-  loadChangeRequests();
-  loadNotificationBadge();
+setDefaultFilter();
+loadEvents();
+loadChangeRequests();
+loadNotificationBadge();
 
 setupAdminUI();
 
-  initPush(user);
-  listenForegroundNotifications();
+initPush(user);
+listenForegroundNotifications();
 
 });
-
 /* ======================
    STATO APP
 ====================== */
