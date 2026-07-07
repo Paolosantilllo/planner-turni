@@ -11,6 +11,8 @@ import {
   getDoc,
   getDocs,
   collection,
+  query,
+  where,
   setDoc,
   deleteDoc,
   addDoc,
@@ -18,7 +20,6 @@ import {
   onSnapshot,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
 import { EMPLOYEES, SHIFT_COLORS } from "./employees.js";
 
 import {
