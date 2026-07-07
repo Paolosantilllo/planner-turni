@@ -3566,15 +3566,17 @@ const role = document.getElementById("empRole").value;
         return;
       }
 
-      // 🔐 crea utente auth
-      const userCredential =
-        await createUserWithEmailAndPassword(auth, email, password);
+     // 🔐 crea utente auth
+const userCredential =
+  await createUserWithEmailAndPassword(auth, email, password);
 
 const uid = userCredential.user.uid;
 
-console.log("CODICE SALVATO:", code);
-console.log("UID FIREBASE:", uid);
-     
+
+// ======================
+// 📦 CREA PROFILO EMPLOYEE
+// ======================
+
 await firestore.setDoc(
   firestore.doc(db, "employees", code),
   {
@@ -3584,6 +3586,23 @@ await firestore.setDoc(
     email,
     color,
     role,
+    createdAt: new Date()
+  }
+);
+
+
+// ======================
+// 👤 CREA UTENTE LOGIN
+// ======================
+
+await firestore.setDoc(
+  firestore.doc(db, "users", uid),
+  {
+    uid,
+    email,
+    employee: code,
+    role,
+    active: true,
     createdAt: new Date()
   }
 );
