@@ -3569,6 +3569,9 @@ const role = document.getElementById("empRole").value;
 
 const uid = userCredential.user.uid;
 
+console.log("CODICE SALVATO:", code);
+console.log("UID FIREBASE:", uid);
+     
 await firestore.setDoc(
   firestore.doc(db, "employees", code),
   {
