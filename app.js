@@ -53,6 +53,9 @@ initAuth(async (user) => {
 
 const snap = await getDocs(q);
 
+ console.log("UID LOGIN:", user.uid);
+console.log("DOCUMENTI TROVATI:", snap.docs.map(d => d.data()));
+ 
 if (snap.empty) {
   alert("Utente non registrato come dipendente");
   return;
