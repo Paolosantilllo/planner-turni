@@ -3595,17 +3595,21 @@ await firestore.setDoc(
 // 👤 CREA UTENTE LOGIN
 // ======================
 
+console.log("CREO USERS:", uid);
+
 await firestore.setDoc(
   firestore.doc(db, "users", uid),
   {
-    uid,
-    email,
+    uid: uid,
+    email: email,
     employee: code,
-    role,
+    role: role,
     active: true,
     createdAt: new Date()
   }
 );
+
+console.log("USERS CREATO");
     }
 
     // ======================
