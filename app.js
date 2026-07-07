@@ -45,7 +45,7 @@ initAuth(async (user) => {
   window.CURRENT_USER = user;
 
   // 🔥 prendo dipendente da UID Firebase
-  const q = query(
+ const q = query(
   collection(db, "employees"),
   where("uid", "==", user.uid)
 );
@@ -59,15 +59,10 @@ if (snap.empty) {
 
 const employee = snap.docs[0].data();
 
-  if (!empSnap.exists()) {
-    alert("Utente non registrato come dipendente");
-    return;
-  }
+window.CURRENT_EMPLOYEE = employee.code;
+window.CURRENT_EMPLOYEE_DATA = employee;
 
-  window.CURRENT_EMPLOYEE = user.uid;
-  window.CURRENT_EMPLOYEE_DATA = employee;
-
-  window.IS_ADMIN = employee.role === "ADMIN";
+window.IS_ADMIN = employee.role === "ADMIN";
 
   document.getElementById("app").classList.add("show");
 
