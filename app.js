@@ -64,8 +64,6 @@ const employee = snap.docs[0].data();
     return;
   }
 
-  const employee = empSnap.data();
-
   window.CURRENT_EMPLOYEE = user.uid;
   window.CURRENT_EMPLOYEE_DATA = employee;
 
