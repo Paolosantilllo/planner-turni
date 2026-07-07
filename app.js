@@ -3567,13 +3567,16 @@ const role = document.getElementById("empRole").value;
       const userCredential =
         await createUserWithEmailAndPassword(auth, email, password);
 
-      const uid = userCredential.user.uid;
+      const userCredential =
+  await createUserWithEmailAndPassword(auth, email, password);
 
-      // 📦 salva su firestore con UID
-      await firestore.setDoc(
-  firestore.doc(db, "employees", uid),
+const uid = userCredential.user.uid;
+
+await firestore.setDoc(
+  firestore.doc(db, "employees", code),
   {
     code,
+    uid,
     name,
     email,
     color,
