@@ -3469,12 +3469,22 @@ window.deleteEmployee = async function (id) {
 
   try {
 
+    // 🗑️ elimina documento users
+    if (emp.uid) {
+      await firestore.deleteDoc(
+        firestore.doc(db, "users", emp.uid)
+      );
+    }
+
+    // 🗑️ elimina documento employees
     await firestore.deleteDoc(
       firestore.doc(db, "employees", id)
     );
 
     await loadEmployeesFromFirestore();
     loadEmployeesList();
+    await populateEmployeeSelects();
+    await renderCalendar();
 
   } catch (err) {
 
