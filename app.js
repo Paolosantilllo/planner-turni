@@ -3595,6 +3595,8 @@ await firestore.setDoc(
 // 👤 CREA UTENTE LOGIN
 // ======================
 
+console.log("PRIMA USERS", uid, email, code);
+     
 console.log("CREO USERS:", uid);
 
 await firestore.setDoc(
