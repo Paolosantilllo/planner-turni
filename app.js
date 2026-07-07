@@ -3567,9 +3567,6 @@ const role = document.getElementById("empRole").value;
       const userCredential =
         await createUserWithEmailAndPassword(auth, email, password);
 
-      const userCredential =
-  await createUserWithEmailAndPassword(auth, email, password);
-
 const uid = userCredential.user.uid;
 
 await firestore.setDoc(
