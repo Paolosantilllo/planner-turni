@@ -3612,14 +3612,30 @@ const role = document.getElementById("empRole").value;
     // ======================
     // ➕ NUOVO DIPENDENTE (FIREBASE AUTH)
     // ======================
-    else {
+   else {
 
-      if (!email || !password) {
-        alert("Email e password obbligatorie");
-        return;
-      }
+  if (!email || !password) {
+    alert("Email e password obbligatorie");
+    return;
+  }
 
-     // 🔐 crea utente auth
+
+  // 🔐 SOLO SUPER ADMIN PUÒ CREARE ADMIN
+
+  if (
+    role === "ADMIN" &&
+    auth.currentUser.uid !== SUPER_ADMIN_UID
+  ) {
+
+    alert(
+      "🔒 Solo il Super Admin può creare nuovi Admin."
+    );
+
+    return;
+
+  }
+
+    // 🔐 crea utente auth
 const userCredential =
   await createUserWithEmailAndPassword(
     secondaryAuth,
