@@ -3522,7 +3522,35 @@ window.openEmployeeEditor = function () {
   document.getElementById("empColor").value = "#ffffff";
   document.getElementById("empRole").value = "USER";
 
-  // titolo popup
+// 🔐 NASCONDI ADMIN AGLI ADMIN NORMALI
+
+const roleSelect =
+  document.getElementById("empRole");
+
+
+const adminOption =
+  roleSelect.querySelector(
+    'option[value="ADMIN"]'
+  );
+
+
+if (
+  auth.currentUser.uid !== SUPER_ADMIN_UID
+) {
+
+  if (adminOption) {
+    adminOption.style.display = "none";
+  }
+
+} else {
+
+  if (adminOption) {
+    adminOption.style.display = "block";
+  }
+
+}
+ 
+ // titolo popup
   document.querySelector("#employeePopup h2").textContent =
     "👤 Nuovo Nominativo";
 
