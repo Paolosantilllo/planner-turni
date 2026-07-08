@@ -39,6 +39,14 @@ import {
 
 window.logout = logout;
 
+
+// ======================
+// 🔐 SUPER ADMIN
+// ======================
+
+const SUPER_ADMIN_UID = "BxOjzbbfzCRj8trObW6NFQuKCB32";
+
+
 /* ======================
    INIT AUTH
 ====================== */
