@@ -130,7 +130,9 @@ functions.firestore
 
 
     const tokens =
-      userData.fcmTokens || [];
+      Array.isArray(userData.fcmTokens)
+      ? userData.fcmTokens
+      : [];
 
 
 
