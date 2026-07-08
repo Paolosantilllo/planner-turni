@@ -3456,9 +3456,50 @@ window.editEmployee = function (id) {
   // Altri campi
   document.getElementById("empName").value = emp.name || "";
   document.getElementById("empEmail").value =
-  emp.email || "";
-  document.getElementById("empColor").value = emp.color || "#ffffff";
-  document.getElementById("empRole").value = emp.role || "USER";
+    emp.email || "";
+  document.getElementById("empColor").value =
+    emp.color || "#ffffff";
+  document.getElementById("empRole").value =
+    emp.role || "USER";
+
+
+  // 🔐 NASCONDI ADMIN AGLI ADMIN NORMALI
+
+  const roleSelect =
+    document.getElementById("empRole");
+
+
+  const adminOption =
+    roleSelect.querySelector(
+      'option[value="ADMIN"]'
+    );
+
+
+  if (
+    auth.currentUser.uid !== SUPER_ADMIN_UID
+  ) {
+
+    if (adminOption) {
+      adminOption.style.display = "none";
+    }
+
+    // se il dipendente è ADMIN e non sei Super Admin,
+    // non permettere di mantenerlo come scelta
+    if (emp.role === "ADMIN") {
+      roleSelect.value = "ADMIN";
+      roleSelect.disabled = true;
+    }
+
+  } else {
+
+    if (adminOption) {
+      adminOption.style.display = "block";
+    }
+
+    roleSelect.disabled = false;
+
+  }
+
 
   document.querySelector("#employeePopup h2").textContent =
     "✏️ Modifica Nominativo";
@@ -3466,7 +3507,6 @@ window.editEmployee = function (id) {
   document.getElementById("employeePopup").style.display = "flex";
 
 };
-
 window.deleteEmployee = async function (id) {
 
   const emp = employeesData[id];
