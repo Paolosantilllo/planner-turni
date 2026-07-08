@@ -1340,7 +1340,7 @@ window.currentPdfInfo = pdfInfo;
   const map = ["D","L","Ma","Me","G","V","S"];
 
   const monthsToPrint = Number(months);
-  let startY = 20;
+  let startY = 15;
 
   // ======================
   // 🔁 LOOP MESI
@@ -1479,7 +1479,7 @@ const ev = savedEvents.find(e =>
     pdf.autoTable({
       head,
       body: [weekdayRow, ...body],
-      startY,
+       startY: startY + 10,
       theme: "grid",
 
 headStyles: {
