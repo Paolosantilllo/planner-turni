@@ -3561,20 +3561,53 @@ const role = document.getElementById("empRole").value;
     // ======================
     // ✏️ MODIFICA DIPENDENTE
     // ======================
-    if (editingEmployeeId) {
+   if (editingEmployeeId) {
 
-      await firestore.updateDoc(
-        firestore.doc(db, "employees", editingEmployeeId),
-       {
-  code,
-  name,
-  email,
-  color,
-  role
-}
-      );
 
+  const currentUser = auth.currentUser;
+
+
+  // Recupero dati vecchi del dipendente
+  const oldEmployeeSnap =
+    await firestore.getDoc(
+      firestore.doc(db, "employees", editingEmployeeId)
+    );
+
+
+  const oldEmployee =
+    oldEmployeeSnap.data();
+
+
+
+  // 🔐 CONTROLLO SUPER ADMIN
+  if (
+    oldEmployee.role !== role &&
+    currentUser.uid !== SUPER_ADMIN_UID
+  ) {
+
+    alert(
+      "🔒 Solo il Super Admin può modificare i ruoli."
+    );
+
+    return;
+
+  }
+
+
+
+  await firestore.updateDoc(
+    firestore.doc(db, "employees", editingEmployeeId),
+    {
+      code,
+      name,
+      email,
+      color,
+      role
     }
+  );
+
+
+}
 
     // ======================
     // ➕ NUOVO DIPENDENTE (FIREBASE AUTH)
