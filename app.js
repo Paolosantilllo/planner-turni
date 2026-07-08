@@ -1992,18 +1992,38 @@ if (fromDateObj < today || toDateObj < today) {
 }
 
 try {
-  await firestore.addDoc(
-    firestore.collection(db, "changeRequests"),
-    {
-      fromEmployee: CURRENT_EMPLOYEE,
-      toEmployee: toEmployee,
-      fromDate: window.selectedFromDate,
-      toDate: window.selectedToDate,
-      shift: shift,
-      status: "PENDING_USER",
-      createdAt: new Date()
-    }
-  );
+ await firestore.addDoc(
+  firestore.collection(db, "changeRequests"),
+  {
+    fromEmployee: CURRENT_EMPLOYEE,
+    toEmployee: toEmployee,
+    fromDate: window.selectedFromDate,
+    toDate: window.selectedToDate,
+    shift: shift,
+    status: "PENDING_USER",
+    createdAt: new Date()
+  }
+);
+
+
+// 🔔 NOTIFICA NUOVA RICHIESTA AL DIPENDENTE
+
+await firestore.addDoc(
+  firestore.collection(db, "notifications"),
+  {
+    employee: toEmployee,
+
+    email:
+      employeesData[toEmployee]?.email,
+
+    message:
+      `🔄 Nuova richiesta di cambio reperibilità da ${employeesData[CURRENT_EMPLOYEE]?.name} (${window.selectedFromDate} ➡️ ${window.selectedToDate})`,
+
+    read:false,
+
+    createdAt:new Date()
+  }
+);
 
   alert("✅ Richiesta inviata");
   closeChangePopup();
@@ -2950,6 +2970,8 @@ await firestore.addDoc(
   {
 
     employee:req.fromEmployee,
+
+    email: employeesData[req.fromEmployee]?.email,
 
     message:notificationText,
 
