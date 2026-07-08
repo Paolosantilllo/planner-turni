@@ -24,15 +24,6 @@ const messaging = firebase.messaging();
 let badgeCount = 0;
 
 
-
-self.addEventListener("push", event => {
-
-  console.log("🔥 PUSH RAW ARRIVATO", event);
-
-});
-
-
-
 /* ====================
    NOTIFICHE BACKGROUND
 ====================== */
