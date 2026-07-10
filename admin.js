@@ -227,3 +227,14 @@ console.log("🚀 NUOVA DELETE SERVER", id);
   }
 
 }
+
+window.goHome = goHome;
+window.openEmployees = openEmployees;
+window.openStats = openStats;
+window.exportPDF = exportPDF;
+window.openSettings = openSettings;
+
+window.showAddEmployee = showAddEmployee;
+window.addEmployee = addEmployee;
+window.toggleRole = toggleRole;
+window.deleteEmployee = deleteEmployee;
