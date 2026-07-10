@@ -169,6 +169,8 @@ async function toggleRole(id, currentRole) {
 // ======================
 async function deleteEmployee(id) {
 
+console.log("UID DA ELIMINARE:", id);
+  
   if (!confirm("Sei sicuro di eliminare questo dipendente?")) return;
 
 
