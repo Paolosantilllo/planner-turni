@@ -1,3 +1,5 @@
+console.log("🔥 ADMIN.JS NUOVO CARICATO");
+
 import { db, auth } from "./firebase.js";
 
 import {
