@@ -168,14 +168,60 @@ async function toggleRole(id, currentRole) {
 // 🗑 ELIMINA DIPENDENTE
 // ======================
 async function deleteEmployee(id) {
+
   if (!confirm("Sei sicuro di eliminare questo dipendente?")) return;
 
-  await deleteDoc(doc(db, "users", id));
 
-  openEmployees();
+  try {
+
+    const response = await fetch(
+      "http://localhost:3000/delete-user",
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          uid:id
+        })
+
+      }
+    );
+
+
+    const result = await response.json();
+
+
+    if(result.success){
+
+      alert("✅ Dipendente eliminato completamente");
+
+      openEmployees();
+
+    }else{
+
+      alert(
+        "Errore eliminazione: "
+        + result.errore
+      );
+
+    }
+
+
+  } catch(error){
+
+    console.error(
+      "Errore server:",
+      error
+    );
+
+    alert(
+      "❌ Server non raggiungibile"
+    );
+
+  }
+
 }
-
-window.showAddEmployee = showAddEmployee;
-window.addEmployee = addEmployee;
-window.toggleRole = toggleRole;
-window.deleteEmployee = deleteEmployee;
