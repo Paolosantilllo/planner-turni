@@ -63,7 +63,8 @@ export async function initAuth(onReady) {
     CURRENT_EMPLOYEE = data.employee;
     IS_ADMIN = data.role === "ADMIN";
 
-    await registerDeviceToken(user);
+   // Token FCM gestito dal pulsante "Attiva notifiche"
+// await registerDeviceToken(user);
 
     window.CURRENT_USER = CURRENT_USER;
     window.CURRENT_EMPLOYEE = CURRENT_EMPLOYEE;
