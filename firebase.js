@@ -14,8 +14,10 @@ import {
   doc,
   getDoc,
   setDoc,
-  getDocs
+  getDocs,
+  arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
 import {
   getAuth,
   signOut
@@ -70,7 +72,8 @@ export const firestore = {
   doc,
   getDoc,
   getDocs,
-  setDoc
+  setDoc,
+  arrayUnion
 };
 
 /* ======================
