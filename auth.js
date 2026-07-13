@@ -119,8 +119,8 @@ async function registerDeviceToken(user) {
     if (permission !== "granted") return;
 
     const registration = await navigator.serviceWorker.register(
-      "/planner-turni/firebase-messaging-sw.js"
-    );
+  "/firebase-messaging-sw.js"
+);
 
     const messaging = getMessaging();
 
