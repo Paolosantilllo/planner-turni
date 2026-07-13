@@ -34,11 +34,9 @@
 
   </div>
 
-  <!-- Firebase & Logica -->
-  <script src="firebase.js"></script>
-  <script src="auth.js"></script>
-  <script src="admin.js"></script>
-
+ <!-- Firebase & Logica -->
+<script type="module" src="admin.js"></script>
+  
   <!-- 🔐 BLOCCO ACCESSO ADMIN -->
   <script>
     auth.onAuthStateChanged(async (user) => {
