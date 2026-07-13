@@ -3451,7 +3451,7 @@ window.loadEmployeesList = function () {
         <div class="employee-actions">
 
           <button onclick="editEmployee('${id}')">✏️</button>
-          <button onclick="deleteEmployee('${id}')">🗑️</button>
+         <button onclick="deleteEmployeeFromCalendar('${id}')">🗑️</button>
 
         </div>
 
@@ -3529,7 +3529,7 @@ window.editEmployee = function (id) {
   document.getElementById("employeePopup").style.display = "flex";
 
 };
-window.deleteEmployee = async function (id) {
+window.deleteEmployeeFromCalendar = async function (id) {
 
   const emp = employeesData[id];
 
