@@ -78,7 +78,7 @@ token
 
 
 
-if(user?.email && token){
+if(user?.uid && user?.email && token){
 
 
 await firestore.setDoc(
