@@ -60,9 +60,8 @@ const body =
 
     body: body,
 
-    icon: "/icon-192.png",
-
-    badge: "/icon-192.png",
+   icon: "/planner-turni/icon-192.png",
+badge: "/planner-turni/icon-192.png",
 
     data: data,   // 👈 QUESTO è giusto
 
@@ -87,7 +86,11 @@ const body =
 });
 
 
+self.addEventListener("push", event => {
 
+  console.log("📩 PUSH EVENT RICEVUTO");
+
+});
 
 
 /* ======================
