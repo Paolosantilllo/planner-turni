@@ -37,24 +37,5 @@
  <!-- Firebase & Logica -->
 <script type="module" src="admin.js"></script>
   
-  <!-- 🔐 BLOCCO ACCESSO ADMIN -->
-  <script>
-    auth.onAuthStateChanged(async (user) => {
-
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
-
-      const userDoc = await getDoc(doc(db, "employees", user.uid));
-
-      if (!userDoc.exists() || userDoc.data().ruolo !== "admin") {
-        alert("Accesso negato");
-        window.location.href = "index.html";
-      }
-
-    });
-  </script>
-
 </body>
 </html>
