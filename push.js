@@ -85,15 +85,14 @@ await firestore.setDoc(
 
 firestore.doc(
 db,
-"users",
-user.email
+user.uid
 ),
 
 {
 
 email:user.email,
 
-fcmToken:token,
+fcmTokens: firestore.arrayUnion(token),
 
 lastUpdate:new Date()
 
