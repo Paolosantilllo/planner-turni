@@ -183,23 +183,27 @@ async function savePdfVersion(version, signature) {
 
   const ref = doc(db, "pdfVersions", window.currentPdfKey);
 
+ console.log("SNAPSHOT PDF:", savedEvents);
+ 
   await setDoc(ref, {
 
     version,
 
     signature,
 
-    eventsSnapshot: savedEvents.map(e => ({
+  eventsSnapshot: savedEvents
+  .filter(e => e.employee && e.date && e.shift)
+  .map(e => ({
 
-      employee: e.employee,
-      date: e.date,
-      shift: e.shift
+    employee: e.employee,
+    date: e.date,
+    shift: e.shift
 
-    })),
+  })),
 
-    updatedAt: serverTimestamp()
+updatedAt: serverTimestamp()
 
-  });
+});
 
 }
 
