@@ -184,15 +184,66 @@ async function savePdfVersion(version, signature) {
 
     signature,
 
-    eventsSnapshot: savedEvents.map(e => ({
-      employee: e.employee,
-      date: e.date,
-      shift: e.shift
-    })),
-
     updatedAt: serverTimestamp()
 
   });
+
+}
+
+
+// ======================
+// 📄 CONFRONTO VERSIONI PDF
+// ======================
+
+function getPdfChanges(oldEvents, newEvents){
+
+  const changes=[];
+
+
+  // creo mappa vecchia versione
+
+  const oldMap={};
+
+
+  oldEvents.forEach(e=>{
+
+    const key =
+    `${e.employee}_${e.date}`;
+
+    oldMap[key]=e.shift;
+
+  });
+
+
+  // confronto con nuova versione
+
+  newEvents.forEach(e=>{
+
+    const key =
+    `${e.employee}_${e.date}`;
+
+    const oldShift =
+    oldMap[key];
+
+
+    if(oldShift && oldShift !== e.shift){
+
+      changes.push({
+
+        employee:e.employee,
+        date:e.date,
+        from:oldShift,
+        to:e.shift
+
+      });
+
+    }
+
+
+  });
+
+
+  return changes;
 
 }
 // ======================
