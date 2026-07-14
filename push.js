@@ -168,6 +168,14 @@ token
 );
 
 
+if(!token){
+
+  alert("Token FCM non generato");
+  return;
+
+}
+
+
 
 await firestore.setDoc(
 
