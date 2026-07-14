@@ -9,7 +9,89 @@ import {
 
 export async function initPush(user) {
 
+async function checkExistingToken(user){
 
+  const btn = document.getElementById("enablePushBtn");
+
+  if(!btn || !user?.uid){
+    return;
+  }
+
+
+  try {
+
+    const snap = await firestore.getDoc(
+      firestore.doc(
+        db,
+        "users",
+        user.uid
+      )
+    );
+
+
+    if(!snap.exists()){
+
+      btn.style.display = "block";
+      return;
+
+    }
+
+
+    const data = snap.data();
+
+    const tokens = data.fcmTokens || [];
+
+
+    const registration =
+      await navigator.serviceWorker.register(
+        "/planner-turni/firebase-messaging-sw.js"
+      );
+
+
+    const currentToken =
+      await getToken(
+        messaging,
+        {
+          vapidKey:
+          "BFbZ0Pz3kOKUY0FQFGy85omU5UT22XK4Dg8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
+
+          serviceWorkerRegistration:
+          registration
+        }
+      );
+
+
+    if(tokens.includes(currentToken)){
+
+      btn.style.display="none";
+
+      console.log(
+        "✅ Notifiche già attive"
+      );
+
+
+    }else{
+
+      btn.style.display="block";
+
+      console.log(
+        "🔔 Nuovo dispositivo, mostra pulsante"
+      );
+
+    }
+
+
+  } catch(err){
+
+    console.error(
+      "Errore controllo notifiche:",
+      err
+    );
+
+  }
+
+}
+  
 const btn = document.getElementById("enablePushBtn");
 
 
