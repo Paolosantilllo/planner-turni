@@ -58,41 +58,21 @@ const data = snap.data();
 const tokens = data.fcmTokens || [];
 
 
-
-// recupero token del telefono attuale
-
-const registration =
-await navigator.serviceWorker.register(
-"/planner-turni/firebase-messaging-sw.js"
+console.log(
+"FCM FIRESTORE:",
+tokens
 );
 
 
 
-const currentToken =
-await getToken(
-messaging,
-{
-
-vapidKey:
-"BFbBz0Pz3kOKUY0FQFGy85omU5UT22XK4D8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
-
-serviceWorkerRegistration:
-registration
-
-}
-
-);
-
-
-
-if(tokens.includes(currentToken)){
+if(tokens.length > 0){
 
 
 btn.style.display="none";
 
 
 console.log(
-"✅ Notifiche già attive su questo dispositivo"
+"✅ Notifiche già attive"
 );
 
 
@@ -104,8 +84,9 @@ btn.style.display="block";
 
 
 console.log(
-"🔔 Primo accesso o nuovo dispositivo"
+"🔔 Attiva notifiche disponibile"
 );
+
 
 
 }
@@ -124,9 +105,7 @@ err
 }
 
 
-
 }
-
 
 
 // AVVIO CONTROLLO
