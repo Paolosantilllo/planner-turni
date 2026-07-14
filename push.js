@@ -123,20 +123,14 @@ btn.style.display="none";
 
 }catch(err){
 
+  console.error("Errore notifiche:", err);
 
-console.error(
-"Errore notifiche:",
-err
-);
-
-
-alert(
-"❌ Errore attivazione notifiche"
-);
-
+  alert(
+    "❌ Errore attivazione notifiche:\n\n" +
+    err.message
+  );
 
 }
-
 
 };
 
