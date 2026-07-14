@@ -9,91 +9,7 @@ import {
 
 export async function initPush(user) {
 
-const btn = document.getElementById("enablePushBtn");
-  
-  async function checkExistingToken(user){
 
-  
-
-  if(!btn || !user?.uid){
-    return;
-  }
-
-
-  try {
-
-    const snap = await firestore.getDoc(
-      firestore.doc(
-        db,
-        "users",
-        user.uid
-      )
-    );
-
-
-    if(!snap.exists()){
-
-      btn.style.display = "block";
-      return;
-
-    }
-
-
-    const data = snap.data();
-
-    const tokens = data.fcmTokens || [];
-
-
-    const registration =
-      await navigator.serviceWorker.register(
-        "/planner-turni/firebase-messaging-sw.js"
-      );
-
-
-    const currentToken =
-      await getToken(
-        messaging,
-        {
-          vapidKey:
-          "BFbZ0Pz3kOKUY0FQFGy85omU5UT22XK4Dg8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
-
-          serviceWorkerRegistration:
-          registration
-        }
-      );
-
-
-    if(tokens.includes(currentToken)){
-
-      btn.style.display="none";
-
-      console.log(
-        "✅ Notifiche già attive"
-      );
-
-
-    }else{
-
-      btn.style.display="block";
-
-      console.log(
-        "🔔 Nuovo dispositivo, mostra pulsante"
-      );
-
-    }
-
-
-  } catch(err){
-
-    console.error(
-      "Errore controllo notifiche:",
-      err
-    );
-
-  }
-
-}
-  
 const btn = document.getElementById("enablePushBtn");
 
 
@@ -105,21 +21,132 @@ if(!btn){
 }
 
 
+// ======================
+// CONTROLLO TOKEN ESISTENTE
+// ======================
+
+async function checkExistingToken(){
+
+
+try {
+
+
+const snap = await firestore.getDoc(
+
+  firestore.doc(
+    db,
+    "users",
+    user.uid
+  )
+
+);
+
+
+
+if(!snap.exists()){
+
+  btn.style.display="block";
+  return;
+
+}
+
+
+
+const data = snap.data();
+
+
+const tokens = data.fcmTokens || [];
+
+
+
+// recupero token del telefono attuale
+
+const registration =
+await navigator.serviceWorker.register(
+"/planner-turni/firebase-messaging-sw.js"
+);
+
+
+
+const currentToken =
+await getToken(
+messaging,
+{
+
+vapidKey:
+"BFbBz0Pz3kOKUY0FQFGy85omU5UT22XK4D8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
+
+serviceWorkerRegistration:
+registration
+
+}
+
+);
+
+
+
+if(tokens.includes(currentToken)){
+
+
+btn.style.display="none";
+
+
+console.log(
+"✅ Notifiche già attive su questo dispositivo"
+);
+
+
+
+}else{
+
+
+btn.style.display="block";
+
+
+console.log(
+"🔔 Primo accesso o nuovo dispositivo"
+);
+
+
+}
+
+
+
+}catch(err){
+
+
+console.error(
+"Errore controllo token:",
+err
+);
+
+
+}
+
+
+
+}
+
+
+
+// AVVIO CONTROLLO
+
+await checkExistingToken();
+
+
+
+// ======================
+// ATTIVAZIONE PULSANTE
+// ======================
+
 
 btn.onclick = async ()=>{
-
 
 try{
 
 
 const permission =
 await Notification.requestPermission();
-
-
-console.log(
-"Permesso:",
-permission
-);
 
 
 
@@ -145,12 +172,13 @@ messaging,
 {
 
 vapidKey:
-"BFbZ0Pz3kOKUY0FQFGy85omU5UT22XK4Dg8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
+"BFbZ0Pz3kOKUY0FQFGy85omU5UT22XK4D8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
 
 serviceWorkerRegistration:
 registration
 
 }
+
 );
 
 
@@ -160,9 +188,6 @@ console.log(
 token
 );
 
-
-
-if(user?.uid && user?.email && token){
 
 
 await firestore.setDoc(
@@ -177,9 +202,11 @@ user.uid
 
 email:user.email,
 
-fcmTokens: firestore.arrayUnion(token),
+fcmTokens:
+firestore.arrayUnion(token),
 
-lastUpdate:new Date()
+lastUpdate:
+new Date()
 
 },
 
@@ -188,12 +215,11 @@ lastUpdate:new Date()
 );
 
 
+
 console.log(
 "✅ Token salvato"
 );
 
-
-}
 
 
 alert(
@@ -208,20 +234,25 @@ btn.style.display="none";
 
 }catch(err){
 
-  console.error("Errore notifiche:", err);
 
-  alert(
-    "❌ Errore attivazione notifiche:\n\n" +
-    err.message
-  );
+console.error(
+"Errore notifiche:",
+err
+);
+
+
+alert(
+"❌ Errore attivazione notifiche:\n\n"+err.message
+);
+
 
 }
+
 
 };
 
 
 }
-
 
 
 export function listenForegroundNotifications(){
