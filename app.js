@@ -3329,7 +3329,27 @@ window.sharePdf = async function () {
   const pdfInfo =
     await getPdfVersion(window.currentPdfKey);
 
+// ======================
+// 🔍 CALCOLO MODIFICHE PDF
+// ======================
 
+let pdfChanges = [];
+
+if (
+  pdfInfo.eventsSnapshot &&
+  pdfInfo.version > 1
+) {
+
+  pdfChanges =
+    getPdfChanges(
+      pdfInfo.eventsSnapshot,
+      savedEvents
+    );
+
+}
+
+window.currentPdfChanges = pdfChanges;
+ 
   let version =
     pdfInfo.version;
 
