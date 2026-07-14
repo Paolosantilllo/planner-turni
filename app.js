@@ -184,6 +184,12 @@ async function savePdfVersion(version, signature) {
 
     signature,
 
+    eventsSnapshot: savedEvents.map(e => ({
+      employee: e.employee,
+      date: e.date,
+      shift: e.shift
+    })),
+
     updatedAt: serverTimestamp()
 
   });
