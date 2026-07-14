@@ -3348,7 +3348,7 @@ if (
 
 }
 
-window.currentPdfChanges = pdfChanges;
+window.pdfChanges = pdfChanges;
  
   let version =
     pdfInfo.version;
@@ -3374,29 +3374,6 @@ window.currentPdfChanges = pdfChanges;
     version++;
 
   }
-
-
-// ======================
-// 🔍 CONFRONTO MODIFICHE PDF
-// ======================
-
-let pdfChanges = [];
-
-if (
-  version > 1 &&
-  pdfInfo.eventsSnapshot
-) {
-
-  pdfChanges =
-    getPdfChanges(
-      pdfInfo.eventsSnapshot,
-      savedEvents
-    );
-
-}
-
-
-window.pdfChanges = pdfChanges;
 
 
 // salva sempre la situazione attuale
