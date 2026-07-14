@@ -1839,11 +1839,11 @@ if (
 
 
    pdf.text(
-  `${nome} ${formatDateIT(change.date)} da ${change.from || ""} a ${change.to || ""}`,
+  `${nome} ${formatDateIT(change.date)} da ${change.from || "......."} a ${change.to || "......."} `,
   10,
   y
 );
-
+   
 y += 4;
 
 
