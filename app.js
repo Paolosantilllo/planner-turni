@@ -216,12 +216,11 @@ function getPdfChanges(oldEvents, newEvents){
 
   const changes = [];
 
-
-  // crea mappa vecchia versione
-
   const oldMap = {};
 
   oldEvents.forEach(e => {
+
+    if (!e.employee || !e.date || !e.shift) return;
 
     const key =
       `${e.employee}_${e.date}`;
@@ -231,18 +230,20 @@ function getPdfChanges(oldEvents, newEvents){
   });
 
 
-  // confronto nuova versione
-
   newEvents.forEach(e => {
+
+    if (!e.employee || !e.date || !e.shift) return;
+
 
     const key =
       `${e.employee}_${e.date}`;
+
 
     const oldShift =
       oldMap[key];
 
 
-    // cambio turno
+    // solo modifiche reali
     if (
       oldShift &&
       oldShift !== e.shift
@@ -260,22 +261,13 @@ function getPdfChanges(oldEvents, newEvents){
     }
 
 
-    // nuova aggiunta
-    if (
-      !oldShift
-    ) {
+  });
 
-      changes.push({
 
-        employee:e.employee,
-        date:e.date,
-        from:"ASSENTE",
-        to:e.shift
+  // ordina cronologicamente
+  changes.sort((a,b)=>{
 
-      });
-
-    }
-
+    return new Date(a.date) - new Date(b.date);
 
   });
 
