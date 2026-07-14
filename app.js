@@ -214,42 +214,62 @@ updatedAt: serverTimestamp()
 
 function getPdfChanges(oldEvents, newEvents){
 
-  const changes=[];
+  const changes = [];
 
 
-  // creo mappa vecchia versione
+  // crea mappa vecchia versione
 
-  const oldMap={};
+  const oldMap = {};
 
-
-  oldEvents.forEach(e=>{
+  oldEvents.forEach(e => {
 
     const key =
-    `${e.employee}_${e.date}`;
+      `${e.employee}_${e.date}`;
 
-    oldMap[key]=e.shift;
+    oldMap[key] = e.shift;
 
   });
 
 
-  // confronto con nuova versione
+  // confronto nuova versione
 
-  newEvents.forEach(e=>{
+  newEvents.forEach(e => {
 
     const key =
-    `${e.employee}_${e.date}`;
+      `${e.employee}_${e.date}`;
 
     const oldShift =
-    oldMap[key];
+      oldMap[key];
 
 
-    if(oldShift && oldShift !== e.shift){
+    // cambio turno
+    if (
+      oldShift &&
+      oldShift !== e.shift
+    ) {
 
       changes.push({
 
         employee:e.employee,
         date:e.date,
         from:oldShift,
+        to:e.shift
+
+      });
+
+    }
+
+
+    // nuova aggiunta
+    if (
+      !oldShift
+    ) {
+
+      changes.push({
+
+        employee:e.employee,
+        date:e.date,
+        from:"ASSENTE",
         to:e.shift
 
       });
