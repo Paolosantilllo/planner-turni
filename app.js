@@ -3425,11 +3425,19 @@ if (
   pdfInfo.signature !== signature
 ) {
 
-  pdfChanges =
-    getPdfChanges(
-      pdfInfo.eventsSnapshot,
-      savedEvents
-    );
+ pdfChanges =
+  getPdfChanges(
+    pdfInfo.eventsSnapshot.filter(e =>
+      e.date.startsWith(
+        window.currentPdfKey.substring(0,7)
+      )
+    ),
+    savedEvents.filter(e =>
+      e.date.startsWith(
+        window.currentPdfKey.substring(0,7)
+      )
+    )
+  );
 
 }
 
