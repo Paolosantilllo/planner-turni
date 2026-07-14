@@ -3385,8 +3385,9 @@ window.sharePdf = async function () {
   // 📄 VERSIONE FIREBASE
   // ======================
 
-  const pdfInfo =
+ const pdfInfo =
     await getPdfVersion(window.currentPdfKey);
+
 
 // ======================
 // 🔍 CALCOLO MODIFICHE PDF
@@ -3396,7 +3397,8 @@ let pdfChanges = [];
 
 if (
   pdfInfo.eventsSnapshot &&
-  pdfInfo.version > 1
+  pdfInfo.signature &&
+  pdfInfo.signature !== signature
 ) {
 
   pdfChanges =
@@ -3408,31 +3410,21 @@ if (
 }
 
 window.pdfChanges = pdfChanges;
- 
-  let version =
+
+
+let version =
     pdfInfo.version;
 
 
-  // Se il contenuto è cambiato
-  if (
-    pdfInfo.signature &&
-    pdfInfo.signature !== signature
-  ) {
+// Se il contenuto è cambiato
+if (
+  pdfInfo.signature &&
+  pdfInfo.signature !== signature
+) {
 
-    version++;
+  version++;
 
-
-  }
-
-
-   if (
-    pdfInfo.signature &&
-    pdfInfo.signature !== signature
-  ) {
-
-    version++;
-
-  }
+}
 
 
 // salva sempre la situazione attuale
@@ -3443,7 +3435,7 @@ await savePdfVersion(
 );
 
 
-  window.pdfVersion =
+window.pdfVersion =
     `1/${version}`;
 
 
