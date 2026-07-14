@@ -65,29 +65,21 @@ tokens
 
 
 
-if(tokens.length > 0){
+if(tokens && tokens.length > 0){
 
+  btn.style.display="none";
 
-btn.style.display="none";
-
-
-console.log(
-"✅ Notifiche già attive"
-);
-
-
+  console.log(
+  "✅ Notifiche già attive"
+  );
 
 }else{
 
+  btn.style.display="block";
 
-btn.style.display="block";
-
-
-console.log(
-"🔔 Attiva notifiche disponibile"
-);
-
-
+  console.log(
+  "🔔 Attiva notifiche disponibile"
+  );
 
 }
 
