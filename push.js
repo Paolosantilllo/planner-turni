@@ -140,7 +140,7 @@ return;
 
 const registration =
 await navigator.serviceWorker.register(
-"/firebase-messaging-sw.js"
+"/planner-turni/firebase-messaging-sw.js"
 );
 
 console.log("SERVICE WORKER:", registration);
