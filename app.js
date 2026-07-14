@@ -216,47 +216,93 @@ function getPdfChanges(oldEvents, newEvents){
 
   const changes = [];
 
-  const oldMap = {};
 
-  oldEvents.forEach(e => {
+  function createMap(events){
 
-    if (!e.employee || !e.date || !e.shift) return;
+    const map = {};
 
-    const key =
-      `${e.employee}_${e.date}`;
+    events.forEach(e => {
 
-    oldMap[key] = e.shift;
-
-  });
+      if(!e.employee || !e.date || !e.shift)
+        return;
 
 
-  newEvents.forEach(e => {
-
-    if (!e.employee || !e.date || !e.shift) return;
-
-
-    const key =
-      `${e.employee}_${e.date}`;
+      const key =
+        `${e.employee}_${e.date}`;
 
 
-    const oldShift =
-      oldMap[key];
+      if(!map[key]){
+        map[key] = [];
+      }
 
 
-    // solo modifiche reali
-    if (
-      oldShift &&
-      oldShift !== e.shift
-    ) {
+      map[key].push(e.shift);
+
+    });
+
+
+    return map;
+
+  }
+
+
+  const oldMap = createMap(oldEvents);
+  const newMap = createMap(newEvents);
+
+
+  // unione di tutte le date coinvolte
+  const allKeys = new Set([
+    ...Object.keys(oldMap),
+    ...Object.keys(newMap)
+  ]);
+
+
+
+  allKeys.forEach(key => {
+
+
+    const oldShifts =
+      oldMap[key] || [];
+
+
+    const newShifts =
+      newMap[key] || [];
+
+
+
+    const oldText =
+      [...new Set(oldShifts)]
+      .sort()
+      .join(", ");
+
+
+    const newText =
+      [...new Set(newShifts)]
+      .sort()
+      .join(", ");
+
+
+
+    // aggiunge solo modifiche reali
+    if(
+      oldText !== newText &&
+      oldText !== ""   // evita nuove assegnazioni
+    ){
+
+
+      const parts =
+        key.split("_");
+
 
       changes.push({
 
-        employee:e.employee,
-        date:e.date,
-        from:oldShift,
-        to:e.shift
+        employee: parts[0],
+        date: parts[1],
+        from: oldText,
+        to: newText
 
       });
+
 
     }
 
@@ -264,12 +310,11 @@ function getPdfChanges(oldEvents, newEvents){
   });
 
 
-  // ordina cronologicamente
-  changes.sort((a,b)=>{
 
-    return new Date(a.date) - new Date(b.date);
-
-  });
+  // ordine cronologico
+  changes.sort((a,b)=>
+    new Date(a.date) - new Date(b.date)
+  );
 
 
   return changes;
