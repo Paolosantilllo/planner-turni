@@ -168,9 +168,14 @@ async function getPdfVersion(pdfKey) {
   const data = snap.data();
 
   return {
-    version: data.version || 1,
-    signature: data.signature || null
-  };
+
+  version: data.version || 1,
+
+  signature: data.signature || null,
+
+  eventsSnapshot: data.eventsSnapshot || null
+
+};
 
 }
 
@@ -183,6 +188,14 @@ async function savePdfVersion(version, signature) {
     version,
 
     signature,
+
+    eventsSnapshot: savedEvents.map(e => ({
+
+      employee: e.employee,
+      date: e.date,
+      shift: e.shift
+
+    })),
 
     updatedAt: serverTimestamp()
 
