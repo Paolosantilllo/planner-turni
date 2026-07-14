@@ -148,17 +148,16 @@ console.log("SERVICE WORKER:", registration);
 
 const token =
 await getToken(
-messaging,
-{
+  messaging,
+  {
 
-vapidKey:
-"BFbZ0Pz3kOKUY0FQFGy85omU5UT22XK4Dg8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq9_9yBFMgBfCc"
+    vapidKey:
+    "BFbZ0Pz3kOKUY0FQFGy85omU5UT22XK4Dg8NDkiU4gueTSN4J8KJLz3-XKIV73Upqe1XZLS1yRnq_9yBFMgBfCc",
 
-serviceWorkerRegistration:
-registration
+    serviceWorkerRegistration:
+    registration
 
-}
-
+  }
 );
 
 
