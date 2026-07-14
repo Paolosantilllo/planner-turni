@@ -85,6 +85,7 @@ await firestore.setDoc(
 
 firestore.doc(
 db,
+"users",
 user.uid
 ),
 
