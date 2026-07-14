@@ -39,6 +39,17 @@ import {
 
 window.logout = logout;
 
+// ======================
+// LOGOUT CON CONFERMA
+// ======================
+
+window.confirmLogout = function () {
+
+  if (confirm("Sei sicuro di voler uscire dall'app?")) {
+    logout();
+  }
+
+};
 
 // ======================
 // 🔐 SUPER ADMIN
