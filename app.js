@@ -3346,12 +3346,45 @@ window.sharePdf = async function () {
   }
 
 
-  // salva sempre la situazione attuale
+   if (
+    pdfInfo.signature &&
+    pdfInfo.signature !== signature
+  ) {
 
-  await savePdfVersion(
-    version,
-    signature
-  );
+    version++;
+
+  }
+
+
+// ======================
+// 🔍 CONFRONTO MODIFICHE PDF
+// ======================
+
+let pdfChanges = [];
+
+if (
+  version > 1 &&
+  pdfInfo.eventsSnapshot
+) {
+
+  pdfChanges =
+    getPdfChanges(
+      pdfInfo.eventsSnapshot,
+      savedEvents
+    );
+
+}
+
+
+window.pdfChanges = pdfChanges;
+
+
+// salva sempre la situazione attuale
+
+await savePdfVersion(
+  version,
+  signature
+);
 
 
   window.pdfVersion =
