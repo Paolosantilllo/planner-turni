@@ -284,27 +284,24 @@ function getPdfChanges(oldEvents, newEvents){
 
 
     // aggiunge solo modifiche reali
-    if(
-      oldText !== newText &&
-      oldText !== ""   // evita nuove assegnazioni
-    ){
+   if(
+  oldText !== newText
+){
+
+  const parts =
+    key.split("_");
 
 
-      const parts =
-        key.split("_");
+  changes.push({
 
+    employee: parts[0],
+    date: parts[1],
+    from: oldText,
+    to: newText
 
-      changes.push({
+  });
 
-        employee: parts[0],
-        date: parts[1],
-        from: oldText,
-        to: newText
-
-      });
-
-
-    }
+}
 
 
   });
@@ -1842,7 +1839,7 @@ if (
 
 
    pdf.text(
-  `${nome} ${formatDateIT(change.date)} da ${change.from} a ${change.to}`,
+  `${nome} ${formatDateIT(change.date)} da ${change.from || ""} a ${change.to || ""}`,
   10,
   y
 );
