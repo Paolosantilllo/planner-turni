@@ -140,9 +140,10 @@ return;
 
 const registration =
 await navigator.serviceWorker.register(
-"/planner-turni/firebase-messaging-sw.js"
+"/firebase-messaging-sw.js"
 );
 
+console.log("SERVICE WORKER:", registration);
 
 
 const token =
