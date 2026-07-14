@@ -1742,6 +1742,65 @@ if (value === "REP" || value === "FREP") {
 }
     });
 
+   // ======================
+// 📝 RIEPILOGO MODIFICHE PDF
+// ======================
+
+if (
+  window.pdfVersion !== "1/1" &&
+  window.pdfChanges &&
+  window.pdfChanges.length > 0
+) {
+
+  let y =
+    pdf.lastAutoTable.finalY + 8;
+
+
+  pdf.setFontSize(9);
+  pdf.setFont("helvetica", "bold");
+
+  pdf.text(
+    "Riepilogo modifiche:",
+    10,
+    y
+  );
+
+
+  pdf.setFontSize(8);
+  pdf.setFont("helvetica", "normal");
+
+
+  y += 5;
+
+
+  window.pdfChanges.forEach(change => {
+
+    const nome =
+      employeesData[change.employee]?.name ||
+      change.employee;
+
+
+   pdf.text(
+  `${nome} ${formatDateIT(change.date)} da ${change.from} a ${change.to}`,
+  10,
+  y
+);
+
+y += 4;
+
+
+// nuova pagina se serve
+if (y > 190) {
+
+  pdf.addPage();
+
+  y = 15;
+
+}
+  });
+
+}
+   
     if (m < monthsToPrint - 1) {
       startY = pdf.lastAutoTable.finalY + 10;
     }
