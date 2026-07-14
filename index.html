@@ -99,19 +99,27 @@
 
 
 
-  <!-- CALENDARIO -->
-  <div class="calendar" id="calendar"></div>
+ <!-- CALENDARIO -->
+<div class="calendar" id="calendar"></div>
 
 
+<!-- NOTIFICHE -->
+<button
+  id="enablePushBtn"
+  class="save-btn notification-home-btn"
+  style="display:none">
+  🔔 Attiva notifiche
+</button>
 
-  <!-- ROTELLINA SOLO ADMIN -->
-  <button
-    id="adminBtn"
-    class="admin-floating-btn"
-    style="display:none"
-    onclick="openAdminPage()">
-    ⚙️
-  </button>
+
+<!-- ROTELLINA SOLO ADMIN -->
+<button
+  id="adminBtn"
+  class="admin-floating-btn"
+  style="display:none"
+  onclick="openAdminPage()">
+  ⚙️
+</button>
 
 
 
@@ -532,14 +540,7 @@
   ">
   📄 Esporta PDF
 </button>
-
-<button
-  id="enablePushBtn"
-  class="save-btn">
-  🔔 Attiva notifiche
-</button>
-  
-  
+    
   </div>
 
 </div>
