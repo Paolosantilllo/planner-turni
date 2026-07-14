@@ -9,9 +9,11 @@ import {
 
 export async function initPush(user) {
 
-async function checkExistingToken(user){
+const btn = document.getElementById("enablePushBtn");
+  
+  async function checkExistingToken(user){
 
-  const btn = document.getElementById("enablePushBtn");
+  
 
   if(!btn || !user?.uid){
     return;
