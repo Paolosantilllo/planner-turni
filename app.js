@@ -3206,11 +3206,47 @@ err
 
 
 // ======================
+// NOMI FESTIVITÀ
+// ======================
+
+function getHolidayName(date){
+
+  const holidays = {
+
+    "01-01": "Capodanno",
+    "01-06": "Epifania",
+    "25-04": "Festa della Liberazione",
+    "01-05": "Festa dei Lavoratori",
+    "02-06": "Festa della Repubblica",
+    "15-08": "Ferragosto",
+    "01-11": "Ognissanti",
+    "08-12": "Immacolata Concezione",
+    "25-12": "Natale",
+    "26-12": "Santo Stefano"
+
+  };
+
+
+  const d = new Date(date);
+
+  const key =
+    String(d.getDate()).padStart(2,"0")
+    +
+    "-"
+    +
+    String(d.getMonth()+1).padStart(2,"0");
+
+
+  return holidays[key] || "";
+
+}
+
+
+// ======================
 // PDF FESTIVI
 // ======================
 
 window.exportFestiviPdf = async function(){
-
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
 
