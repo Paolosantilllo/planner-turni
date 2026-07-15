@@ -3235,34 +3235,47 @@ window.exportFestiviPdf = async function(){
     // Solo anno corrente
     if (new Date(ev.date).getFullYear() !== currentYear) return;
 
-    rows.push({
+   rows.push({
 
-      date: ev.date,
-      employee: employeesData[ev.employee]?.name || "",
-      shift: ev.shift
+  date: ev.date,
+  holiday: getHolidayName(ev.date),
+  employee: employeesData[ev.employee]?.name || "",
+  shift: ev.shift
 
-    });
+});
 
   });
 
   // Ordina per data
-  rows.sort((a, b) => a.date.localeCompare(b.date));
+  rows.sort((a,b)=>{
 
-  pdf.autoTable({
+  return a.date.localeCompare(b.date);
 
-    head: [["Data", "Dipendente", "Turno"]],
+});
 
-    body: rows.map(r => [
+ pdf.autoTable({
 
-      formatDateIT(r.date),
-      r.employee,
-      r.shift
+  head: [
+    [
+      "Data",
+      "Festività",
+      "Dipendente",
+      "Turno"
+    ]
+  ],
 
-    ]),
+  body: rows.map(r => [
 
-    startY: 25
+    formatDateIT(r.date),
+    r.holiday,
+    r.employee,
+    r.shift
 
-  });
+  ]),
+
+  startY: 25
+
+});
 
   // 👉 apre direttamente il tuo sistema PDF
   await openPdfPreview(pdf, "Turnazione_Festivi.pdf");
