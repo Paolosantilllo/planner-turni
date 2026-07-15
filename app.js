@@ -1805,6 +1805,7 @@ if (value === "REP" || value === "FREP") {
 // ======================
 
 if (
+  monthsToPrint === 1 &&
   window.pdfVersion !== "1/1" &&
   window.pdfChanges &&
   window.pdfChanges.length > 0
