@@ -3238,6 +3238,18 @@ snapshot.forEach(doc => {
 
 });
 
+rows.sort((a, b) => {
+
+  const [g1, m1, a1] = a[0].split("/");
+  const [g2, m2, a2] = b[0].split("/");
+
+  const d1 = new Date(`${a1}-${m1}-${g1}`);
+  const d2 = new Date(`${a2}-${m2}-${g2}`);
+
+  return d1 - d2;
+
+});
+ 
 pdf.autoTable({
   head: [["Data", "Dipendente", "Turno"]],
   body: rows,
