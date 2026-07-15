@@ -3211,57 +3211,63 @@ err
 
 window.exportFestiviPdf = async function(){
 
-const { jsPDF } = window.jspdf;
-const pdf = new jsPDF();
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
 
-pdf.setFontSize(16);
-pdf.text("Turnazione Festivi", 14, 15);
+  pdf.setFontSize(16);
+  pdf.text("Turnazione Festivi", 14, 15);
 
-const snapshot = await firestore.getDocs(
-  firestore.collection(db, "events")
-);
+  const currentYear = currentDate.getFullYear();
 
-let rows = [];
+  const snapshot = await firestore.getDocs(
+    firestore.collection(db, "events")
+  );
 
-snapshot.forEach(doc => {
+  let rows = [];
 
-  const ev = doc.data();
+  snapshot.forEach(doc => {
 
-  if (ev.shift !== "FREP" && ev.shift !== "CFI/REP") return;
-  if (!isHoliday(ev.date)) return;
+    const ev = doc.data();
 
-  rows.push([
-    formatDateIT(ev.date),
-    employeesData[ev.employee]?.name || "",
-    ev.shift
-  ]);
+    if (ev.shift !== "FREP" && ev.shift !== "CFI/REP") return;
+    if (!isHoliday(ev.date)) return;
 
-});
+    // Solo anno corrente
+    if (new Date(ev.date).getFullYear() !== currentYear) return;
 
-rows.sort((a, b) => {
+    rows.push({
 
-  const [g1, m1, a1] = a[0].split("/");
-  const [g2, m2, a2] = b[0].split("/");
+      date: ev.date,
+      employee: employeesData[ev.employee]?.name || "",
+      shift: ev.shift
 
-  const d1 = new Date(`${a1}-${m1}-${g1}`);
-  const d2 = new Date(`${a2}-${m2}-${g2}`);
+    });
 
-  return d1 - d2;
+  });
 
-});
- 
-pdf.autoTable({
-  head: [["Data", "Dipendente", "Turno"]],
-  body: rows,
-  startY: 25
-});
+  // Ordina per data
+  rows.sort((a, b) => a.date.localeCompare(b.date));
 
-// 👉 apre direttamente il tuo sistema PDF (quello già funzionante)
-await openPdfPreview(pdf, "Turnazione_Festivi.pdf");
+  pdf.autoTable({
+
+    head: [["Data", "Dipendente", "Turno"]],
+
+    body: rows.map(r => [
+
+      formatDateIT(r.date),
+      r.employee,
+      r.shift
+
+    ]),
+
+    startY: 25
+
+  });
+
+  // 👉 apre direttamente il tuo sistema PDF
+  await openPdfPreview(pdf, "Turnazione_Festivi.pdf");
 
 };
-
-
 
 // ======================
 // PDF CFI
