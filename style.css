@@ -1521,7 +1521,7 @@ button:disabled{
 
     background:#f8f8f8;
 
-    line-height:1.35;
+    line-height:1.25;
     font-size:13px;
 
     display:inline-block;
@@ -1532,7 +1532,7 @@ button:disabled{
 .employee-month-stats strong{
 
     display:block;
-    margin-bottom:2px;   
+    margin-bottom:0;   
     font-size:14px;
 
 }
