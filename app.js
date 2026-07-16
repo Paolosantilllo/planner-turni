@@ -149,6 +149,101 @@ function formatDateIT(date){
 }
 
 // ======================
+// 📊 CONTATORI MESE POPUP
+// ======================
+
+function setCounter(id, value, max){
+
+  const el = document.getElementById(id);
+
+  if(!el) return;
+
+  el.innerHTML =
+    value >= max
+      ? `<span style="color:#d32f2f;font-weight:bold">${value} / ${max}</span>`
+      : `${value} / ${max}`;
+
+}
+
+// ======================
+// 📊 STATISTICHE DIPENDENTE
+// ======================
+
+function updateEmployeeMonthStats(){
+
+    const employee =
+        document.getElementById("employee").value;
+
+    const date =
+        document.getElementById("startDate").value;
+
+    if(!employee || !date) return;
+
+    const d = new Date(date);
+
+    const year = d.getFullYear();
+    const month = d.getMonth();
+
+    const monthName =
+        d.toLocaleDateString("it-IT",{
+            month:"long",
+            year:"numeric"
+        });
+
+    document.querySelector(
+        "#employeeMonthStats strong"
+    ).textContent =
+        "📊 " +
+        monthName.charAt(0).toUpperCase() +
+        monthName.slice(1);
+
+    let rep=0;
+    let frep=0;
+    let cfi=0;
+    let cfirep=0;
+
+    savedEvents.forEach(ev=>{
+
+        if(ev.employee!==employee) return;
+
+        const x=new Date(ev.date);
+
+        if(
+            x.getFullYear()!=year ||
+            x.getMonth()!=month
+        ) return;
+
+        switch(ev.shift){
+
+            case "REP":
+                rep++;
+                break;
+
+            case "FREP":
+                frep++;
+                break;
+
+            case "CFI":
+                cfi++;
+                break;
+
+            case "CFI/REP":
+                cfirep++;
+                break;
+
+        }
+
+    });
+
+    setCounter("statRep",rep,6);
+    setCounter("statFrep",frep,2);
+
+    document.getElementById("statCfi").textContent = cfi;
+    document.getElementById("statCfiRep").textContent = cfirep;
+
+}
+
+// ======================
 // 📄 VERSIONE PDF
 // ======================
 
