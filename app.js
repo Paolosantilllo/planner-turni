@@ -166,14 +166,27 @@ function formatDateIT(date){
 
 function setCounter(id, value, max){
 
-  const el = document.getElementById(id);
+    const el = document.getElementById(id);
 
-  if(!el) return;
+    if(!el) return;
 
-  el.innerHTML =
-    value >= max
-      ? `<span style="color:#d32f2f;font-weight:bold">${value} / ${max}</span>`
-      : `${value} / ${max}`;
+    el.textContent = `${value} / ${max}`;
+
+    // reset
+    el.style.color = "#2e7d32";
+    el.style.fontWeight = "600";
+
+    if(value >= max){
+
+        // rosso
+        el.style.color = "#d32f2f";
+
+    }else if(value === max - 1){
+
+        // arancione
+        el.style.color = "#f57c00";
+
+    }
 
 }
 
