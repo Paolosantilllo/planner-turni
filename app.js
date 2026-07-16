@@ -132,6 +132,18 @@ window.currentPdfMonths = 1;
 const calendar = document.getElementById("calendar");
 const monthTitle = document.getElementById("monthTitle");
 const employeeFilter = document.getElementById("employeeFilter");
+
+const employeeSelect = document.getElementById("employee");
+const startDateInput = document.getElementById("startDate");
+
+if (employeeSelect) {
+  employeeSelect.addEventListener("change", updateEmployeeMonthStats);
+}
+
+if (startDateInput) {
+  startDateInput.addEventListener("change", updateEmployeeMonthStats);
+}
+
 // ======================
 // FORMATTAZIONE DATE
 // ======================
@@ -1105,6 +1117,8 @@ window.openPopupWithDate = function(date, events = []) {
     employeeSelect.value = "";
   }
 
+ updateEmployeeMonthStats();
+ 
   document.getElementById("popup").style.display = "flex";
 };
 
