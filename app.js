@@ -658,6 +658,7 @@ function loadEvents() {
     unsubscribeEvents();
   }
 
+
   unsubscribeEvents = firestore.onSnapshot(
 
     firestore.collection(db, "events"),
@@ -668,6 +669,7 @@ function loadEvents() {
       eventsByDate = {};
       monthlyStatsCache = {};
 
+
       snap.forEach(doc => {
 
         const ev = {
@@ -675,7 +677,9 @@ function loadEvents() {
           ...doc.data()
         };
 
+
         savedEvents.push(ev);
+
 
         // indicizzazione per data
         if (!eventsByDate[ev.date]) {
@@ -684,59 +688,58 @@ function loadEvents() {
 
         eventsByDate[ev.date].push(ev);
 
-              // ======================
-      // CACHE STATISTICHE MENSILI
-      // ======================
 
-      const d = new Date(ev.date);
 
-      const key =
-        `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
+        // ======================
+        // CACHE STATISTICHE MENSILI
+        // ======================
 
-      if (!monthlyStatsCache[key]) {
+        const d = new Date(ev.date);
 
-        monthlyStatsCache[key] = {
+        const key =
+          `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
 
-          REP: 0,
-          FREP: 0,
-          CFI: 0,
-          "CFI/REP": 0
 
-        };
+        if (!monthlyStatsCache[key]) {
 
-      }
+          monthlyStatsCache[key] = {
 
-      if (monthlyStatsCache[key][ev.shift] !== undefined) {
+            REP: 0,
+            FREP: 0,
+            CFI: 0,
+            "CFI/REP": 0
 
-        monthlyStatsCache[key][ev.shift]++;
+          };
 
-      }
+        }
 
-    });
 
-    console.log(
-      "EVENTI CARICATI:",
-      savedEvents.length
-    );
+        if (
+          monthlyStatsCache[key][ev.shift] !== undefined
+        ) {
 
-    const currentMonthKey =
-      `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+          monthlyStatsCache[key][ev.shift]++;
 
-    if (currentMonthKey !== lastRenderMonth) {
+        }
 
-      lastRenderMonth = currentMonthKey;
 
-      renderCalendar();
+      });
 
-    } else {
+
+      console.log(
+        "EVENTI CARICATI:",
+        savedEvents.length
+      );
+
 
       renderCalendar();
+
 
     }
 
-  }
+  );
 
-);
+}
 
 // ======================
 // 🔔 CARICA RICHIESTE CAMBIO
