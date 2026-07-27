@@ -113,11 +113,13 @@ let savedEvents = [];
 let unsubscribeEvents = null;
 let eventsByDate = {};
 
+let monthlyStatsCache = {};
+let lastRenderMonth = "";
+
 window.employeesData = window.employeesData || {};
 const employeesData = window.employeesData;
 
 let editingEmployeeId = null;
-
 // ======================
 // 📄 VERSIONI PDF
 // ======================
@@ -222,52 +224,33 @@ function updateEmployeeMonthStats(){
         monthName.charAt(0).toUpperCase() +
         monthName.slice(1);
 
-    let rep=0;
-    let frep=0;
-    let cfi=0;
-    let cfirep=0;
+    // ======================
+    // 🚀 Lettura dalla cache
+    // ======================
 
-    savedEvents.forEach(ev=>{
+    const key = `${employee}_${year}_${month}`;
 
-        if(ev.employee!==employee) return;
+    const stats = monthlyStatsCache[key] || {
 
-        const x=new Date(ev.date);
+        REP: 0,
+        FREP: 0,
+        CFI: 0,
+        "CFI/REP": 0
 
-        if(
-            x.getFullYear()!=year ||
-            x.getMonth()!=month
-        ) return;
+    };
 
-        switch(ev.shift){
+    const rep = stats.REP;
+    const frep = stats.FREP;
+    const cfi = stats.CFI;
+    const cfirep = stats["CFI/REP"];
 
-            case "REP":
-                rep++;
-                break;
-
-            case "FREP":
-                frep++;
-                break;
-
-            case "CFI":
-                cfi++;
-                break;
-
-            case "CFI/REP":
-                cfirep++;
-                break;
-
-        }
-
-    });
-
-    setCounter("statRep",rep,6);
-    setCounter("statFrep",frep,2);
+    setCounter("statRep", rep, 6);
+    setCounter("statFrep", frep, 2);
 
     document.getElementById("statCfi").textContent = cfi;
     document.getElementById("statCfiRep").textContent = cfirep;
 
 }
-
 // ======================
 // 📄 VERSIONE PDF
 // ======================
@@ -675,9 +658,6 @@ function loadEvents() {
     unsubscribeEvents();
   }
 
-  // mostra subito il calendario
-  renderCalendar();
-
   unsubscribeEvents = firestore.onSnapshot(
 
     firestore.collection(db, "events"),
@@ -686,6 +666,7 @@ function loadEvents() {
 
       savedEvents = [];
       eventsByDate = {};
+      monthlyStatsCache = {};
 
       snap.forEach(doc => {
 
@@ -703,20 +684,59 @@ function loadEvents() {
 
         eventsByDate[ev.date].push(ev);
 
-      });
+              // ======================
+      // CACHE STATISTICHE MENSILI
+      // ======================
 
-      console.log(
-        "EVENTI CARICATI:",
-        savedEvents.length
-      );
+      const d = new Date(ev.date);
+
+      const key =
+        `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
+
+      if (!monthlyStatsCache[key]) {
+
+        monthlyStatsCache[key] = {
+
+          REP: 0,
+          FREP: 0,
+          CFI: 0,
+          "CFI/REP": 0
+
+        };
+
+      }
+
+      if (monthlyStatsCache[key][ev.shift] !== undefined) {
+
+        monthlyStatsCache[key][ev.shift]++;
+
+      }
+
+    });
+
+    console.log(
+      "EVENTI CARICATI:",
+      savedEvents.length
+    );
+
+    const currentMonthKey =
+      `${currentDate.getFullYear()}-${currentDate.getMonth()}`;
+
+    if (currentMonthKey !== lastRenderMonth) {
+
+      lastRenderMonth = currentMonthKey;
+
+      renderCalendar();
+
+    } else {
 
       renderCalendar();
 
     }
 
-  );
+  }
 
-}
+);
 
 // ======================
 // 🔔 CARICA RICHIESTE CAMBIO
