@@ -884,6 +884,8 @@ firestore.onSnapshot(
 
 window.renderCalendar = function(){
 
+ const fragment = document.createDocumentFragment();
+ 
   calendar.innerHTML = "";
 
   const year = currentDate.getFullYear();
@@ -1091,10 +1093,11 @@ box.appendChild(el);
 });
 
 
-calendar.appendChild(box);
+fragment.appendChild(box);
 
 
 }
+ calendar.appendChild(fragment);
 };
   // ======================
  // NAVIGAZIONE MESI
