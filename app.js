@@ -120,6 +120,9 @@ let eventsByDate = {};
 let monthlyStatsCache = {};
 let lastRenderMonth = "";
 
+// Cache dei mesi già caricati
+let loadedMonths = {};
+
 window.employeesData = window.employeesData || {};
 const employeesData = window.employeesData;
 
