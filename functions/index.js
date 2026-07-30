@@ -7,7 +7,6 @@ exports.createEmployee = functions.https.onCall(async (data, context) => {
 
   try {
 
-    // 🔐 SOLO ADMIN
     if (!context.auth || context.auth.token.role !== "ADMIN") {
       throw new functions.https.HttpsError(
         "permission-denied",
@@ -24,13 +23,11 @@ exports.createEmployee = functions.https.onCall(async (data, context) => {
       );
     }
 
-    // CREA UTENTE AUTH
     const userRecord = await admin.auth().createUser({
       email,
       password
     });
 
-    // CREA DOCUMENTO USERS
     await admin.firestore()
       .collection("users")
       .doc(userRecord.uid)
@@ -57,3 +54,92 @@ exports.createEmployee = functions.https.onCall(async (data, context) => {
   }
 
 });
+
+
+// ======================
+// PUSH AUTOMATICHE FCM
+// ======================
+
+exports.sendNotificationPush = functions.firestore
+  .document("notifications/{notificationId}")
+  .onCreate(async (snap) => {
+
+    const notification = snap.data();
+
+    const employee = notification.employee;
+    const message = notification.message;
+
+    console.log(
+      "🔔 Nuova notifica per:",
+      employee
+    );
+
+
+    const usersSnapshot = await admin.firestore()
+      .collection("users")
+      .where("employee", "==", employee)
+      .get();
+
+
+    if (usersSnapshot.empty) {
+
+      console.log(
+        "❌ Nessun utente trovato:",
+        employee
+      );
+
+      return null;
+    }
+
+
+    let tokens = [];
+
+
+    usersSnapshot.forEach((doc) => {
+
+      const data = doc.data();
+
+      if (data.fcmTokens) {
+        tokens.push(...data.fcmTokens);
+      }
+
+    });
+
+
+    if (tokens.length === 0) {
+
+      console.log(
+        "❌ Nessun token FCM"
+      );
+
+      return null;
+    }
+
+
+    const response = await admin.messaging()
+      .sendEachForMulticast({
+
+        tokens,
+
+        notification: {
+          title: "Planner REP",
+          body: message
+        },
+
+        data: {
+          type: "notification",
+          employee
+        }
+
+      });
+
+
+    console.log(
+      "✅ Push inviate:",
+      response.successCount
+    );
+
+
+    return null;
+
+  });
