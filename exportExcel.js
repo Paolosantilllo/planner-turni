@@ -359,13 +359,13 @@ sheet.pageSetup = {
   // ======================
 
 
-  await sheet.protect(
-    "planner",
-    {
-      selectLockedCells:false,
-      selectUnlockedCells:false
-    }
-  );
+  // await sheet.protect(
+  // "planner",
+  // {
+  // selectLockedCells:false,
+  // selectUnlockedCells:false
+  // }
+  // );
 
 
 
