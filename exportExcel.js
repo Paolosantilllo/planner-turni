@@ -342,6 +342,16 @@ cell.alignment = {
 
   });
 
+// ======================
+// IMPOSTAZIONE PAGINA
+// ======================
+
+sheet.pageSetup = {
+  orientation: "landscape",
+  fitToPage: true,
+  fitToWidth: 1,
+  fitToHeight: 0
+};
 
 
   // ======================
