@@ -44,34 +44,6 @@ console.log("🚨 EXPORT EXCEL VERSIONE NUOVA");
   ];
 
 
-// ======================
-// 📌 TITOLO
-// ======================
-
-sheet.mergeCells(
-  1,
-  1,
-  1,
-  daysInMonth + 1
-);
-
-
-const title = sheet.getCell("A1");
-
-title.value =
-  "";
-
-
-title.font = {
-  bold:true,
-  size:16
-};
-
-
-title.alignment = {
-  horizontal:"center"
-};
-
 
 // ======================
 // 📌 TITOLO MENSILE
@@ -161,7 +133,7 @@ sheet.getCell(1,infoColumn).font = {
   }
 
 
-  sheet.getRow(6).values = header;
+  sheet.getRow(3).values = header;
 
 
   const weekRow = [
@@ -180,14 +152,14 @@ sheet.getCell(1,infoColumn).font = {
   }
 
 
-  sheet.getRow(7).values = weekRow;
+  sheet.getRow(4).values = weekRow;
 
 // blocca intestazione e nominativi
 sheet.views = [
   {
     state:"frozen",
     xSplit:1,
-    ySplit:7
+    ySplit:4
   }
 ];
 
@@ -232,42 +204,41 @@ sheet.views = [
 
 
 
-  // ======================
-  // FORMATTAZIONE
-  // ======================
+// ======================
+// FORMATTAZIONE
+// ======================
 
+sheet.getColumn(1).width = 28;
 
-  sheet.getColumn(1).width = 28;
+for(let i=2; i<=daysInMonth+1; i++){
+  sheet.getColumn(i).width = 6;
+}
 
+sheet.eachRow((row,rowNumber)=>{
 
-  for(let i=2;i<=daysInMonth+1;i++){
-    sheet.getColumn(i).width = 6;
-  }
+  if(rowNumber < 6)
+    return;
 
+  row.height = 22;
 
+  row.eachCell(cell=>{
 
-  sheet.eachRow(row=>{
+    cell.alignment = {
+      horizontal:"center",
+      vertical:"middle",
+      wrapText:false
+    };
 
-    row.eachCell(cell=>{
-
-      cell.alignment = {
-        horizontal:"center",
-        vertical:"middle"
-        wrapText:true
-      };
-
-      cell.border = {
-        top:{style:"thin"},
-        left:{style:"thin"},
-        bottom:{style:"thin"},
-        right:{style:"thin"}
-      };
-
-    });
+    cell.border = {
+      top:{style:"thin"},
+      left:{style:"thin"},
+      bottom:{style:"thin"},
+      right:{style:"thin"}
+    };
 
   });
 
-
+});
 
   // ======================
   // COLORI CELLE
