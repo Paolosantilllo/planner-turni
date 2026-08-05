@@ -44,6 +44,34 @@ console.log("🚨 EXPORT EXCEL VERSIONE NUOVA");
   ];
 
 
+// ======================
+// 📌 TITOLO
+// ======================
+
+sheet.mergeCells(
+  1,
+  1,
+  1,
+  daysInMonth + 1
+);
+
+
+const title = sheet.getCell("A1");
+
+title.value =
+  "Reperibilità PLF";
+
+
+title.font = {
+  bold:true,
+  size:16
+};
+
+
+title.alignment = {
+  horizontal:"center"
+};
+
 
 // ======================
 // 📌 TITOLO MENSILE
@@ -97,11 +125,11 @@ daysInMonth + 4;
 
 
 sheet.getCell(1,infoColumn).value =
-"Inviato il: " + dataInvio;
+"Versione: 1/1";
 
 
 sheet.getCell(2,infoColumn).value =
-"Versione: 1/1";
+"Inviato il: " + dataInvio;
 
 
 sheet.getCell(1,infoColumn).alignment = {
@@ -124,7 +152,7 @@ sheet.getCell(1,infoColumn).font = {
 
 
   const header = [
-    "Nominativo"
+    "Nominativi"
   ];
 
 
@@ -133,7 +161,7 @@ sheet.getCell(1,infoColumn).font = {
   }
 
 
-  sheet.getRow(3).values = header;
+  sheet.getRow(6).values = header;
 
 
   const weekRow = [
@@ -152,16 +180,9 @@ sheet.getCell(1,infoColumn).font = {
   }
 
 
-  sheet.getRow(4).values = weekRow;
+  sheet.getRow(7).values = weekRow;
 
-// blocca intestazione e nominativi
-sheet.views = [
-  {
-    state:"frozen",
-    xSplit:1,
-    ySplit:4
-  }
-];
+
 
   // ======================
   // NOMINATIVI
@@ -204,41 +225,41 @@ sheet.views = [
 
 
 
-// ======================
-// FORMATTAZIONE
-// ======================
+  // ======================
+  // FORMATTAZIONE
+  // ======================
 
-sheet.getColumn(1).width = 28;
 
-for(let i=2; i<=daysInMonth+1; i++){
-  sheet.getColumn(i).width = 6;
-}
+  sheet.getColumn(1).width = 22;
 
-sheet.eachRow((row,rowNumber)=>{
 
-  if(rowNumber < 6)
-    return;
+  for(let i=2;i<=daysInMonth+1;i++){
+    sheet.getColumn(i).width = 5;
+  }
 
-  row.height = 22;
 
-  row.eachCell(cell=>{
 
-    cell.alignment = {
-      horizontal:"center",
-      vertical:"middle",
-      wrapText:false
-    };
+  sheet.eachRow(row=>{
 
-    cell.border = {
-      top:{style:"thin"},
-      left:{style:"thin"},
-      bottom:{style:"thin"},
-      right:{style:"thin"}
-    };
+    row.eachCell(cell=>{
+
+      cell.alignment = {
+        horizontal:"center",
+        vertical:"middle"
+      };
+
+      cell.border = {
+        top:{style:"thin"},
+        left:{style:"thin"},
+        bottom:{style:"thin"},
+        right:{style:"thin"}
+      };
+
+    });
 
   });
 
-});
+
 
   // ======================
   // COLORI CELLE
