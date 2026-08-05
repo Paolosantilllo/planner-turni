@@ -112,7 +112,6 @@ monthTitle.alignment = {
 
 const now = new Date();
 
-
 const dataInvio =
 now.toLocaleDateString("it-IT")
 +
@@ -121,30 +120,31 @@ now.toLocaleDateString("it-IT")
 now.toLocaleTimeString("it-IT");
 
 
-
-const lastColumn =
-daysInMonth + 1;
-
+const infoColumn =
+daysInMonth + 4;
 
 
-sheet.getCell(1,lastColumn).value =
+sheet.getCell(1,infoColumn).value =
 "Versione: 1/1";
 
 
-sheet.getCell(2,lastColumn).value =
-"Data invio: " + dataInvio;
+sheet.getCell(2,infoColumn).value =
+"Inviato il: " + dataInvio;
 
 
-
-sheet.getCell(1,lastColumn).alignment = {
+sheet.getCell(1,infoColumn).alignment = {
   horizontal:"right"
 };
 
 
-sheet.getCell(2,lastColumn).alignment = {
+sheet.getCell(2,infoColumn).alignment = {
   horizontal:"right"
 };
 
+
+sheet.getCell(1,infoColumn).font = {
+  bold:true
+};
 
   // ======================
   // INTESTAZIONE
