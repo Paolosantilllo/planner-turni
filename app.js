@@ -112,7 +112,8 @@ window.IS_ADMIN = employee.role === "ADMIN";
 ====================== */
 
 let currentDate = new Date();
-let savedEvents = [];
+window.savedEvents = [];
+const savedEvents = window.savedEvents;
 
 let unsubscribeEvents = null;
 let eventsByDate = {};
@@ -672,7 +673,7 @@ function loadEvents() {
 
     (snap) => {
 
-      savedEvents = [];
+      window.savedEvents.length = 0;
       eventsByDate = {};
       monthlyStatsCache = {};
 
@@ -737,6 +738,14 @@ function loadEvents() {
         "EVENTI CARICATI:",
         savedEvents.length
       );
+
+
+window.savedEvents = savedEvents;
+
+console.log(
+  "WINDOW EVENTS:",
+  window.savedEvents.length
+);
 
 
       renderCalendar();
@@ -2346,6 +2355,7 @@ if (fromDateObj < today || toDateObj < today) {
 }
 
 try {
+  
  await firestore.addDoc(
   firestore.collection(db, "changeRequests"),
   {
@@ -2363,7 +2373,7 @@ try {
 // 🔔 NOTIFICA NUOVA RICHIESTA AL DIPENDENTE
 
 await firestore.addDoc(
-  firestore.collection(db, "notifications"),
+  firestore.collection(db, "notifications"),   
   {
     employee: toEmployee,
 
@@ -2379,8 +2389,51 @@ await firestore.addDoc(
   }
 );
 
-  alert("✅ Richiesta inviata");
-  closeChangePopup();
+
+// 📲 INVIO PUSH AL DIPENDENTE DESTINATARIO
+
+try {
+  
+await fetch(
+    "https://planner-turni-seven.vercel.app/api/sendNotification",
+    {
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        employee: toEmployee,
+
+        message:
+        `🔄 Nuova richiesta di cambio reperibilità da ${employeesData[CURRENT_EMPLOYEE]?.name} (${window.selectedFromDate} ➡️ ${window.selectedToDate})`
+
+      })
+
+    }
+  );
+
+
+  console.log(
+    "✅ PUSH INVIATA A:",
+    toEmployee
+  );
+
+
+}catch(pushError){
+
+  console.error(
+    "❌ Errore invio push:",
+    pushError
+  );
+
+}
+
+
+alert("✅ Richiesta inviata");
+closeChangePopup();
 
 }catch(err){
 
@@ -2665,6 +2718,53 @@ window.closeRequestsPopup = function(){
 
 };
 
+async function sendAdminPush(employee, message){
+
+  try{
+
+    const response = await fetch(
+      "https://planner-turni-seven.vercel.app/api/sendNotification",
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+          employee:employee,
+
+          message:message
+
+        })
+
+      }
+    );
+
+
+    const result = await response.json();
+
+
+    console.log(
+      "📲 PUSH ADMIN:",
+      employee,
+      result
+    );
+
+
+  }catch(err){
+
+    console.error(
+      "❌ Errore PUSH ADMIN:",
+      err
+    );
+
+  }
+
+}
+
 // ======================
 // 👑 GESTIONE ADMIN RICHIESTA
 // ======================
@@ -2938,6 +3038,11 @@ console.log(
   req.fromEmployee
 );
 
+await sendAdminPush(
+  req.fromEmployee,
+  message
+);
+
 
 // 🔔 NOTIFICA A DIPENDENTE C
 
@@ -2957,6 +3062,11 @@ message:
  createdAt:new Date()
 }
 
+);
+
+await sendAdminPush(
+  req.toEmployee,
+  `✅ L'Admin ha approvato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`
 );
 
 
@@ -3028,6 +3138,15 @@ await firestore.addDoc(
 
 );
 
+await sendAdminPush(
+  req.fromEmployee,
+  `❌ L'Admin ha rifiutato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`
+);
+
+await sendAdminPush(
+  req.toEmployee,
+  `❌ L'Admin ha rifiutato il cambio reperibilità ${req.fromDate} ➡️ ${req.toDate}`
+);
 
 alert("❌ Cambio rifiutato");
 
@@ -3338,8 +3457,73 @@ await firestore.addDoc(
 );
 
 
+// 📲 INVIO PUSH AL RICHIEDENTE
 
-closeRequestActionPopup();
+console.log(
+  "📲 STO INVIANDO PUSH A:",
+  req.fromEmployee,
+  notificationText
+);
+
+alert("DEBUG: invio PUSH a " + req.fromEmployee);
+
+try {   
+
+  const pushResponse = await fetch(
+  "https://planner-turni-seven.vercel.app/api/sendNotification",
+  {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      employee:req.fromEmployee,
+
+      message:notificationText
+
+    })
+
+  }
+);
+
+
+console.log(
+  "📲 STATUS PUSH API:",
+  pushResponse.status
+);
+
+
+const pushText = await pushResponse.text();
+
+
+console.log(
+  "📲 RISPOSTA PUSH RAW:",
+  pushText
+);
+
+
+  console.log(
+    "✅ PUSH RISPOSTA CAMBIO INVIATA A:",
+    req.fromEmployee  
+  );
+
+
+}catch(pushError){
+
+  console.error(
+    "❌ Errore invio push risposta cambio:",
+    pushError
+  );
+
+}
+
+
+
+console.log("✅ Gestione richiesta completata");
 
 
 
