@@ -59,7 +59,7 @@ sheet.mergeCells(
 const title = sheet.getCell("A1");
 
 title.value =
-  "Reperibilità PLF";
+  "";
 
 
 title.font = {
@@ -125,11 +125,11 @@ daysInMonth + 4;
 
 
 sheet.getCell(1,infoColumn).value =
-"Versione: 1/1";
+"Inviato il: " + dataInvio;
 
 
 sheet.getCell(2,infoColumn).value =
-"Inviato il: " + dataInvio;
+"Versione: 1/1";
 
 
 sheet.getCell(1,infoColumn).alignment = {
@@ -152,7 +152,7 @@ sheet.getCell(1,infoColumn).font = {
 
 
   const header = [
-    "Nominativi"
+    "Nominativo"
   ];
 
 
@@ -182,7 +182,14 @@ sheet.getCell(1,infoColumn).font = {
 
   sheet.getRow(7).values = weekRow;
 
-
+// blocca intestazione e nominativi
+sheet.views = [
+  {
+    state:"frozen",
+    xSplit:1,
+    ySplit:7
+  }
+];
 
   // ======================
   // NOMINATIVI
@@ -230,11 +237,11 @@ sheet.getCell(1,infoColumn).font = {
   // ======================
 
 
-  sheet.getColumn(1).width = 22;
+  sheet.getColumn(1).width = 28;
 
 
   for(let i=2;i<=daysInMonth+1;i++){
-    sheet.getColumn(i).width = 5;
+    sheet.getColumn(i).width = 6;
   }
 
 
@@ -246,6 +253,7 @@ sheet.getCell(1,infoColumn).font = {
       cell.alignment = {
         horizontal:"center",
         vertical:"middle"
+        wrapText:true
       };
 
       cell.border = {
