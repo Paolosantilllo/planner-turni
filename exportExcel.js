@@ -124,12 +124,13 @@ const infoColumn =
 daysInMonth + 4;
 
 
-sheet.getCell(1,infoColumn).value =
-"Versione: 1/1";
+"Versione: 1/1";sheet.getCell(1,infoColumn).value =
+"Inviato il: " + dataInvio;
+
 
 
 sheet.getCell(2,infoColumn).value =
-"Inviato il: " + dataInvio;
+"Versione: 1/1";
 
 
 sheet.getCell(1,infoColumn).alignment = {
