@@ -184,6 +184,18 @@ sheet.getCell(1,infoColumn).font = {
   sheet.getRow(7).values = weekRow;
 
 
+// ======================
+// BLOCCA COLONNA NOMINATIVI
+// ======================
+
+sheet.views = [
+  {
+    state:"frozen",
+    xSplit:1
+  }
+];
+
+
 
   // ======================
   // NOMINATIVI
