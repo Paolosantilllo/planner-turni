@@ -571,6 +571,13 @@
   📄 Esporta PDF
 </button>
     
+<!-- 📊 EXCEL EXPORT -->
+<button
+  class="save-btn"
+  onclick="exportExcel();">
+  📊 Esporta Excel
+</button>
+
   </div>
 
 </div>
@@ -663,12 +670,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <script>
+
+<!-- EXCEL -->
+<script src="libs/exceljs.min.js"></script>
+
+<script type="module" src="exportExcel.js?v=2"></script>
+
+<script>
 console.log("🚀 INDEX HTML CARICATO NUOVO");
 </script>
-  
-  <!-- APP -->
+
+
+<!-- APP -->
 <script type="module" src="app.js"></script>
 
-  </body>
+
+</body>
 </html>
