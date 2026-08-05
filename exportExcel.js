@@ -247,7 +247,7 @@ sheet.views = [
 
 
   for(let i=2;i<=daysInMonth+1;i++){
-    sheet.getColumn(i).width = 5;
+    sheet.getColumn(i).width = 8;
   }
 
 
@@ -256,10 +256,11 @@ sheet.views = [
 
     row.eachCell(cell=>{
 
-      cell.alignment = {
-        horizontal:"center",
-        vertical:"middle"
-      };
+cell.alignment = {
+  horizontal:"center",
+  vertical:"middle",
+  wrapText:false
+};
 
       cell.border = {
         top:{style:"thin"},
