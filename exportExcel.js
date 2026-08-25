@@ -188,13 +188,6 @@ sheet.getCell(1,infoColumn).font = {
 // BLOCCA COLONNA NOMINATIVI
 // ======================
 
-sheet.views = [
-  {
-    state:"frozen",
-    xSplit:1
-  }
-];
-
 
 
   // ======================
