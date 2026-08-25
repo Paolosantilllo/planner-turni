@@ -1794,13 +1794,13 @@ headStyles: {
        
       tableWidth: "auto",
       margin: { left: 3, right: 3 },
-      styles: {
-        fontSize: 3.8,
-        cellPadding: 0.15,
-        halign: "center",
-        valign: "middle",
-         overflow: "hidden"
-      },
+styles: {
+  fontSize: 4.5,
+  cellPadding: 0.3,
+  halign: "center",
+  valign: "middle",
+  overflow: "visible"
+},
       columnStyles,
 
       didParseCell: function (data) {
@@ -2212,16 +2212,25 @@ window.loadChangeDays = function () {
       div.classList.add("mini-day");
       div.innerText = d;
 
-      const hasEvent =
-        events.some(ev => ev.date === iso);
+const hasEvent =
+  events.some(ev => ev.date === iso);
 
-      if (!hasEvent) {
-        div.classList.add("disabled");
-      }
+const today = new Date();
+today.setHours(0, 0, 0, 0);
 
-      div.onclick = () => {
+const cellDate = new Date(year, month, d);
+cellDate.setHours(0, 0, 0, 0);
 
-  if (!hasEvent) return;
+const isPast =
+  cellDate < today;
+
+if (!hasEvent || isPast) {
+  div.classList.add("disabled");
+}
+
+div.onclick = () => {
+
+  if (!hasEvent || isPast) return;
 
   if (isFrom) {
 
@@ -3739,6 +3748,264 @@ await openPdfPreview(pdf, "Totale_CFI_CFI-REP.pdf");
 
 };
 
+// ======================
+// 📦 ARCHIVIO DATI MANUALE
+// ======================
+
+window.archiviaDati = async function () {
+
+  try {
+
+    const today = new Date();
+
+    today.setHours(23, 59, 59, 999);
+
+    const archiveDate =
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+    const year =
+      today.getFullYear();
+
+    const conferma = confirm(
+      `📦 Archiviare i dati fino al ${today.toLocaleDateString("it-IT")}?\n\n` +
+      `Verranno archiviati:\n` +
+      `• Totale CFI / CFI-REP\n` +
+      `• Turnazione Festivi\n\n` +
+      `I dati originali non verranno cancellati.`
+    );
+
+    if (!conferma) return;
+
+    // ======================
+    // 📥 LEGGI EVENTS
+    // ======================
+
+    const snapshot =
+      await getDocs(collection(db, "events"));
+
+    const events = [];
+
+    snapshot.forEach(docSnap => {
+
+      const ev = docSnap.data();
+
+      if (
+        !ev.employee ||
+        !ev.date ||
+        !ev.shift
+      ) {
+        return;
+      }
+
+      const eventDate =
+        new Date(ev.date);
+
+      eventDate.setHours(0, 0, 0, 0);
+
+      if (
+        eventDate.getFullYear() !== year ||
+        eventDate > today
+      ) {
+        return;
+      }
+
+      events.push({
+        employee: ev.employee,
+        date: ev.date,
+        shift: ev.shift
+      });
+
+    });
+
+    // ======================
+    // 👥 DIPENDENTI
+    // ======================
+
+    const employeesSnapshot =
+      await getDocs(collection(db, "employees"));
+
+    const stats = {};
+
+    employeesSnapshot.forEach(docSnap => {
+
+      const employee =
+        docSnap.data();
+
+      stats[docSnap.id] = {
+
+        name:
+          employee.name || "",
+
+        cfiF: 0,
+
+        cfiA: 0
+
+      };
+
+    });
+
+    // ======================
+    // 🎉 FESTIVITÀ
+    // ======================
+
+    const holidays = [
+
+      "01-01",
+      "01-06",
+      "25-04",
+      "01-05",
+      "02-06",
+      "15-08",
+      "01-11",
+      "08-12",
+      "25-12",
+      "26-12"
+
+    ];
+
+    function isHolidayArchive(dateString) {
+
+      const d =
+        new Date(dateString);
+
+      const key =
+        String(d.getDate()).padStart(2, "0") +
+        "-" +
+        String(d.getMonth() + 1).padStart(2, "0");
+
+      return holidays.includes(key);
+
+    }
+
+    // ======================
+    // 📊 CALCOLO CFI
+    // ======================
+
+    events.forEach(ev => {
+
+      if (
+        ev.shift !== "CFI" &&
+        ev.shift !== "CFI/REP"
+      ) {
+        return;
+      }
+
+      if (!stats[ev.employee]) {
+        return;
+      }
+
+      const d =
+        new Date(ev.date);
+
+      const weight =
+        d.getDay() === 0 ||
+        d.getDay() === 6 ||
+        isHolidayArchive(ev.date)
+          ? 2
+          : 1;
+
+      stats[ev.employee].cfiF += weight;
+
+      stats[ev.employee].cfiA += weight;
+
+    });
+
+    // ======================
+    // 🎉 TURNazione FESTIVI
+    // ======================
+
+    const turnazioneFestivi = [];
+
+    events.forEach(ev => {
+
+      if (
+        ev.shift !== "FREP" &&
+        ev.shift !== "CFI/REP"
+      ) {
+        return;
+      }
+
+      if (
+        !isHolidayArchive(ev.date)
+      ) {
+        return;
+      }
+
+      turnazioneFestivi.push({
+
+        date:
+          ev.date,
+
+        employee:
+          ev.employee,
+
+        shift:
+          ev.shift
+
+      });
+
+    });
+
+    turnazioneFestivi.sort(
+      (a, b) =>
+        a.date.localeCompare(b.date)
+    );
+
+    // ======================
+    // 💾 SALVA ARCHIVIO
+    // ======================
+
+    await setDoc(
+
+      doc(
+        db,
+        "annualArchives",
+        String(year)
+      ),
+
+      {
+
+        year,
+
+        archivedUntil:
+          archiveDate,
+
+        cfi:
+          stats,
+
+        turnazioneFestivi,
+
+        archivedAt:
+          serverTimestamp()
+
+      }
+
+    );
+
+    alert(
+      `✅ Dati archiviati fino al ${today.toLocaleDateString("it-IT")}`
+    );
+
+    console.log(
+      "📦 ARCHIVIO SALVATO:",
+      `annualArchives/${year}`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE ARCHIVIAZIONE:",
+      error
+    );
+
+    alert(
+      "❌ Errore durante l'archiviazione."
+    );
+
+  }
+
+};
+
 function setupAdminUI() {
 
   const isAdmin = window.IS_ADMIN === true;
@@ -4007,6 +4274,328 @@ window.closeAdminPage = function () {
 
   document.getElementById("adminPage").style.display = "none";
   document.getElementById("app").style.display = "block";
+
+};
+
+// ======================
+// 📦 PAGINA ARCHIVIO
+// ======================
+
+window.openArchivePage = async function () {
+
+  document.getElementById("adminPage").style.display = "none";
+
+  const archivePage =
+    document.getElementById("archivePage");
+
+  archivePage.style.display = "block";
+
+  const container =
+    document.getElementById("archiveYearsList");
+
+  container.innerHTML =
+    "<p>Caricamento...</p>";
+
+  try {
+
+    const snapshot = await getDocs(
+      collection(db, "annualArchives")
+    );
+
+    if (snapshot.empty) {
+
+      container.innerHTML =
+        "<p>Nessun archivio disponibile.</p>";
+
+      return;
+    }
+
+    const years = [];
+
+    snapshot.forEach(docSnap => {
+
+      const data = docSnap.data();
+
+      if (data.year) {
+        years.push(data.year);
+      }
+
+    });
+
+    years.sort((a, b) => b - a);
+
+    container.innerHTML = "";
+
+    years.forEach(year => {
+
+      const button =
+        document.createElement("button");
+
+      button.className = "save-btn";
+
+      button.textContent =
+        `📁 ${year}`;
+
+      button.onclick = function () {
+
+        openArchiveYear(year);
+
+      };
+
+      container.appendChild(button);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE CARICAMENTO ARCHIVIO:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>❌ Errore durante il caricamento dell'archivio.</p>";
+  }
+};
+
+
+// ======================
+// ◀ CHIUDI ARCHIVIO
+// ======================
+
+window.closeArchivePage = function () {
+
+  document.getElementById("archivePage").style.display =
+    "none";
+
+  document.getElementById("adminPage").style.display =
+    "block";
+};
+
+// ======================
+// 📁 APRI ARCHIVIO ANNUALE
+// ======================
+
+window.openArchiveYear = async function (year) {
+
+  document.getElementById("archivePage").style.display =
+    "none";
+
+  const page =
+    document.getElementById("archiveYearPage");
+
+  page.style.display = "block";
+
+  const title =
+    document.getElementById("archiveYearTitle");
+
+  title.textContent =
+    `📁 Archivio ${year}`;
+
+  // Memorizza l'anno selezionato
+  window.currentArchiveYear = year;
+
+};
+
+
+// ======================
+// ◀ CHIUDI ARCHIVIO ANNUALE
+// ======================
+
+window.closeArchiveYearPage = function () {
+
+  document.getElementById("archiveYearPage").style.display =
+    "none";
+
+  document.getElementById("archivePage").style.display =
+    "block";
+
+};
+
+// ======================
+// 📊 ARCHIVIO CFI
+// ======================
+
+window.openArchiveCfi = async function () {
+
+  const year = window.currentArchiveYear;
+
+  if (!year) {
+    alert("❌ Nessun anno selezionato.");
+    return;
+  }
+
+  try {
+
+    const archiveRef = doc(
+      db,
+      "annualArchives",
+      String(year)
+    );
+
+    const archiveSnap = await getDoc(archiveRef);
+
+    if (!archiveSnap.exists()) {
+
+      alert(
+        `❌ Nessun archivio trovato per il ${year}.`
+      );
+
+      return;
+    }
+
+    const data = archiveSnap.data();
+
+    const stats = data.cfi || {};
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF();
+
+    pdf.setFontSize(16);
+
+    pdf.text(
+      `Totale CFI / CFI-REP ${year}`,
+      14,
+      15
+    );
+
+    const rows = Object.values(stats).map(emp => [
+      emp.name || "",
+      emp.cfiF || 0,
+      emp.cfiA || 0
+    ]);
+
+    pdf.autoTable({
+
+      head: [[
+        "Nominativi",
+        "TOT. CFI/F",
+        "TOT. CFI/A"
+      ]],
+
+      body: rows,
+
+      startY: 25
+
+    });
+
+    await openPdfPreview(
+      pdf,
+      `Totale_CFI_CFI-REP_${year}.pdf`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE ARCHIVIO CFI:",
+      error
+    );
+
+    alert(
+      "❌ Errore durante la visualizzazione dell'archivio CFI."
+    );
+
+  }
+
+};
+
+
+// ======================
+// 🎉 ARCHIVIO FESTIVI
+// ======================
+
+window.openArchiveFestivi = async function () {
+
+  const year = window.currentArchiveYear;
+
+  if (!year) {
+    alert("❌ Nessun anno selezionato.");
+    return;
+  }
+
+  try {
+
+    const archiveRef = doc(
+      db,
+      "annualArchives",
+      String(year)
+    );
+
+    const archiveSnap = await getDoc(archiveRef);
+
+    if (!archiveSnap.exists()) {
+
+      alert(
+        `❌ Nessun archivio trovato per il ${year}.`
+      );
+
+      return;
+    }
+
+    const data = archiveSnap.data();
+
+    const rows =
+      data.turnazioneFestivi || [];
+
+    const { jsPDF } = window.jspdf;
+
+    const pdf = new jsPDF();
+
+    pdf.setFontSize(16);
+
+    pdf.text(
+      `Turnazione Festivi ${year}`,
+      14,
+      15
+    );
+
+    const body = rows.map(row => [
+
+      formatDateIT(row.date),
+
+      getHolidayName(row.date),
+
+      employeesData[row.employee]?.name ||
+        row.employee ||
+        "",
+
+      row.shift || ""
+
+    ]);
+
+    pdf.autoTable({
+
+      head: [[
+        "Data",
+        "Festività",
+        "Dipendente",
+        "Turno"
+      ]],
+
+      body,
+
+      startY: 25
+
+    });
+
+    await openPdfPreview(
+      pdf,
+      `Turnazione_Festivi_${year}.pdf`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE ARCHIVIO FESTIVI:",
+      error
+    );
+
+    alert(
+      "❌ Errore durante la visualizzazione dell'archivio festivi."
+    );
+
+  }
 
 };
 

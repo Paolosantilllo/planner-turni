@@ -561,6 +561,22 @@
   🎉 Turnazione Festivi
 </button>
 
+<!-- 📦 ARCHIVIO -->
+
+<button
+  class="save-btn"
+  onclick="archiviaDati();">
+  📦 Archivia dati
+</button>
+
+<!-- 📦 ARCHIVIO STORICO -->
+
+<button
+  class="save-btn"
+  onclick="openArchivePage();">
+  📦 Archivio
+</button>
+
     <!-- 📄 PDF EXPORT -->
   <button
   class="save-btn"
@@ -581,6 +597,73 @@
   </div>
 
 </div>
+
+<!-- 📦 PAGINA ARCHIVIO -->
+
+<div id="archivePage"
+     class="admin-page"
+     style="display:none;">
+
+  <div class="admin-header">
+
+    <button
+      class="month-btn"
+      onclick="closeArchivePage()">
+      ◀
+    </button>
+
+    <h2>📦 Archivio</h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <div id="archiveYearsList">
+      <p>Caricamento...</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 📁 PAGINA ARCHIVIO ANNUALE -->
+
+<div id="archiveYearPage"
+     class="admin-page"
+     style="display:none;">
+
+  <div class="admin-header">
+
+    <button
+      class="month-btn"
+      onclick="closeArchiveYearPage()">
+      ◀
+    </button>
+
+    <h2 id="archiveYearTitle">
+      📁 Archivio
+    </h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <button
+      class="save-btn"
+      onclick="openArchiveCfi();">
+      📊 Totale CFI / CFI-REP
+    </button>
+
+    <button
+      class="save-btn"
+      onclick="openArchiveFestivi();">
+      🎉 Turnazione Festivi
+    </button>
+
+  </div>
+
+</div>
+
  <!-- PAGINA GESTIONE NOMINATIVI -->
 <div id="employeesPage" class="admin-page" style="display:none;">
 
