@@ -666,21 +666,8 @@ function loadEvents() {
     unsubscribeEvents();
   }
 
-
-  const oggi = new Date();
-
-  const oggiStr =
-    oggi.getFullYear() + "-" +
-    String(oggi.getMonth() + 1).padStart(2, "0") + "-" +
-    String(oggi.getDate()).padStart(2, "0");
-
-  const eventsQuery = firestore.query(
-    firestore.collection(db, "events"),
-    firestore.where("date", ">=", oggiStr)
-  );
-
   unsubscribeEvents = firestore.onSnapshot(
-    eventsQuery,
+firestore.collection(db, "events"),
     (snap) => {
 
       window.savedEvents.length = 0;
