@@ -667,10 +667,20 @@ function loadEvents() {
   }
 
 
-  unsubscribeEvents = firestore.onSnapshot(
+  const oggi = new Date();
 
+  const oggiStr =
+    oggi.getFullYear() + "-" +
+    String(oggi.getMonth() + 1).padStart(2, "0") + "-" +
+    String(oggi.getDate()).padStart(2, "0");
+
+  const eventsQuery = firestore.query(
     firestore.collection(db, "events"),
+    firestore.where("date", ">=", oggiStr)
+  );
 
+  unsubscribeEvents = firestore.onSnapshot(
+    eventsQuery,
     (snap) => {
 
       window.savedEvents.length = 0;
@@ -958,23 +968,23 @@ const today = new Date();
 const todayString =
 `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
 
+const dateObj = new Date(date);
+
+const dayNumber = dateObj.getDay();
+
+// Sabato
+if(dayNumber === 6){
+  box.classList.add("saturday");
+}
+
+// Domenica
+if(dayNumber === 0){
+  box.classList.add("sunday");
+}
+
+// Giorno odierno
 if (date === todayString) {
-
   box.classList.add("today");
-
-  const day = new Date(date);
-  const dayNumber = day.getDay();
-
-  // Domenica
-  if(dayNumber === 0){
-    box.classList.add("sunday");
-  }
-
-  // Sabato
-  if(dayNumber === 6){
-    box.classList.add("saturday");
-  }
-
 }
    
    // ======================
@@ -1018,6 +1028,13 @@ if (dayInfo.isSunday || dayInfo.isHoliday) {
 
   // colora anche la cella
   box.classList.add("holiday-day");
+
+}
+// 🟠 SABATO
+
+if (dayNumber === 6 && !dayInfo.isHoliday) {
+
+  num.style.color = "#ff9500";
 
 }
 
@@ -1530,15 +1547,32 @@ async function openPdfPreview(pdf, fileName){
   window.currentPdfBlob = blob;
   window.currentPdfName = fileName;
 
+const archiveYearPage =
+  document.getElementById("archiveYearPage");
+
+window.pdfOpenedFromArchive = false;
+
+if (
+  archiveYearPage &&
+  archiveYearPage.style.display === "block"
+) {
+  window.pdfOpenedFromArchive = true;
+  archiveYearPage.style.display = "none";
+}
+
   const pdfPopup = document.getElementById("pdfPopup");
 
   if(pdfPopup){
     pdfPopup.style.display = "flex";
   }
 
-  await renderPdfPreview(blob);
+  // Renderizza il PDF senza bloccare la funzione chiamante
+  renderPdfPreview(blob).catch(error => {
+    console.error("❌ ERRORE RENDER PDF:", error);
+  });
 
 }
+
 // ======================
 //  📤 PDF EXPORT
 // ======================
@@ -2086,17 +2120,29 @@ window.confirmPdfExport = function(){
 // ======================
 // ❌ CHIUDI PDF POPUP
 // ======================
-
 window.closePdfPopup = function(){
 
   const popup =
-  document.getElementById("pdfPopup");
+    document.getElementById("pdfPopup");
 
   if(popup){
     popup.style.display = "none";
   }
 
+  if (window.pdfOpenedFromArchive) {
+
+    const archiveYearPage =
+      document.getElementById("archiveYearPage");
+
+    if (archiveYearPage) {
+      archiveYearPage.style.display = "block";
+    }
+
+    window.pdfOpenedFromArchive = false;
+  }
+
 };
+
 // ======================
 // 🔁 CAMBIO REPERIBILITA'
 // ======================

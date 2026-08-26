@@ -15,7 +15,9 @@ import {
   getDoc,
   setDoc,
   getDocs,
-  arrayUnion
+  arrayUnion,
+  query,
+  where
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 import {
@@ -73,7 +75,9 @@ export const firestore = {
   getDoc,
   getDocs,
   setDoc,
-  arrayUnion
+  arrayUnion,
+  query,
+  where
 };
 
 /* ======================

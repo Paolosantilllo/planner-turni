@@ -320,7 +320,13 @@ body{
 
 }
 
+/* SABATO */
 
+.saturday .day-number{
+
+  color:#ff9500 !important;
+
+}
 
 /* FESTIVI */
 
