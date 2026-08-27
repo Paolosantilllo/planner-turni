@@ -4054,6 +4054,7 @@ function setupAdminUI() {
 
   toggle("adminOnlyBtn", isAdmin);
   toggle("adminBtn", isAdmin); // ⚙️ se vuoi nascondere anche questo
+  toggle("accountBtn", !isAdmin);
 
   // ======================
   // BOTTONI PRINCIPALI
