@@ -4090,6 +4090,22 @@ window.closeAccountPage = function() {
 
 }
 
+window.openChangeEmail = function() {
+
+  const popup = document.getElementById("changeEmailPopup");
+
+  const input = document.getElementById("newEmail");
+
+  if (input) {
+    input.value = "";
+  }
+
+  if (popup) {
+    popup.style.display = "flex";
+  }
+
+}
+
 // ======================
 // 🔑 FIRMA CALENDARIO PDF
 // ======================
