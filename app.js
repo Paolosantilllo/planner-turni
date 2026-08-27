@@ -4158,6 +4158,20 @@ window.saveNewEmail = async function() {
 }
 
 // ======================
+// 📧 CHIUDI CAMBIO EMAIL
+// ======================
+
+window.closeChangeEmail = function() {
+
+  const popup = document.getElementById("changeEmailPopup");
+
+  if (popup) {
+    popup.style.display = "none";
+  }
+
+}
+
+// ======================
 // 🔑 FIRMA CALENDARIO PDF
 // ======================
 
