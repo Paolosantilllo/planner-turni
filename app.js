@@ -4065,7 +4065,7 @@ function setupAdminUI() {
   toggle("pdfBtn", isAdmin);
   toggle("statsBtn", isAdmin);
   toggle("addBtn", isAdmin);
-  toggle("logoutBtn", isAdmin);
+  toggle("logoutBtn", true);
 }
 
 // ======================
