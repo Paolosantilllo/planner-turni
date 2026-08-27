@@ -4067,6 +4067,30 @@ function setupAdminUI() {
 }
 
 // ======================
+// 👤 IL MIO ACCOUNT
+// ======================
+
+function openAccountPage() {
+
+  const popup = document.getElementById("accountPopup");
+
+  if (popup) {
+    popup.style.display = "flex";
+  }
+
+}
+
+function closeAccountPage() {
+
+  const popup = document.getElementById("accountPopup");
+
+  if (popup) {
+    popup.style.display = "none";
+  }
+
+}
+
+// ======================
 // 🔑 FIRMA CALENDARIO PDF
 // ======================
 
