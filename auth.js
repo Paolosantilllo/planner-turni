@@ -73,15 +73,23 @@ if (data.email !== user.email) {
   );
 
   console.log("📧 EMAIL USERS AGGIORNATA:", user.email);
+}
 
-  const employeesQuery = query(
-    collection(db, "employees"),
-    where("uid", "==", user.uid)
-  );
 
-  const employeesSnap = await getDocs(employeesQuery);
+// 👤 SINCRONIZZA EMAIL DIPENDENTE
 
-  for (const employeeDoc of employeesSnap.docs) {
+const employeesQuery = query(
+  collection(db, "employees"),
+  where("uid", "==", user.uid)
+);
+
+const employeesSnap = await getDocs(employeesQuery);
+
+for (const employeeDoc of employeesSnap.docs) {
+
+  const employeeData = employeeDoc.data();
+
+  if (employeeData.email !== user.email) {
 
     await updateDoc(
       employeeDoc.ref,
