@@ -4070,7 +4070,7 @@ function setupAdminUI() {
 // 👤 IL MIO ACCOUNT
 // ======================
 
-function openAccountPage() {
+window.openAccountPage = function() {
 
   const popup = document.getElementById("accountPopup");
 
@@ -4080,7 +4080,7 @@ function openAccountPage() {
 
 }
 
-function closeAccountPage() {
+window.closeAccountPage = function() {
 
   const popup = document.getElementById("accountPopup");
 
