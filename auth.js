@@ -9,6 +9,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
@@ -57,6 +58,18 @@ export async function initAuth(onReady) {
       window.location.href = "login.html";
       return;
     }
+
+if (data.email !== user.email) {
+
+  await updateDoc(
+    doc(db, "users", user.uid),
+    {
+      email: user.email
+    }
+  );
+
+  console.log("📧 EMAIL FIRESTORE AGGIORNATA:", user.email);
+}
 
     /* ✅ UTENTE VALIDO */
     CURRENT_USER = user.email;
