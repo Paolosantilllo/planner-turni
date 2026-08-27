@@ -4108,6 +4108,55 @@ window.openChangeEmail = function() {
 
 }
 
+window.saveNewEmail = async function() {
+
+  const input = document.getElementById("newEmail");
+
+  if (!input) return;
+
+  const newEmail = input.value.trim();
+
+  if (!newEmail) {
+    alert("Inserisci una nuova email.");
+    return;
+  }
+
+  try {
+
+    await updateEmail(auth.currentUser, newEmail);
+
+    alert("Email aggiornata con successo.");
+
+    closeChangeEmail();
+
+  } catch (error) {
+
+    console.error("❌ ERRORE CAMBIO EMAIL:", error);
+
+    if (error.code === "auth/requires-recent-login") {
+
+      alert(
+        "Per sicurezza devi effettuare nuovamente il login prima di cambiare email."
+      );
+
+    } else if (error.code === "auth/email-already-in-use") {
+
+      alert("Questa email è già utilizzata da un altro account.");
+
+    } else if (error.code === "auth/invalid-email") {
+
+      alert("L'email inserita non è valida.");
+
+    } else {
+
+      alert("Errore durante il cambio email.");
+
+    }
+
+  }
+
+}
+
 // ======================
 // 🔑 FIRMA CALENDARIO PDF
 // ======================
