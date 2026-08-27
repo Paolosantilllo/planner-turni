@@ -4118,15 +4118,24 @@ window.saveNewEmail = async function() {
   const newEmail = input.value.trim();
 
   if (!newEmail) {
+
     alert("Inserisci una nuova email.");
+
     return;
+
   }
 
   try {
 
-    await updateEmail(auth.currentUser, newEmail);
+    await verifyBeforeUpdateEmail(
+      auth.currentUser,
+      newEmail
+    );
 
-    alert("Email aggiornata con successo.");
+    alert(
+      "Abbiamo inviato una email di verifica al nuovo indirizzo. " +
+      "Controlla la posta e clicca sul link per completare il cambio."
+    );
 
     closeChangeEmail();
 
@@ -4142,15 +4151,21 @@ window.saveNewEmail = async function() {
 
     } else if (error.code === "auth/email-already-in-use") {
 
-      alert("Questa email è già utilizzata da un altro account.");
+      alert(
+        "Questa email è già utilizzata da un altro account."
+      );
 
     } else if (error.code === "auth/invalid-email") {
 
-      alert("L'email inserita non è valida.");
+      alert(
+        "L'email inserita non è valida."
+      );
 
     } else {
 
-      alert("Errore durante il cambio email.");
+      alert(
+        "Errore durante l'invio della verifica email."
+      );
 
     }
 
