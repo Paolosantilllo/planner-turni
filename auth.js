@@ -10,7 +10,11 @@ import {
   getDoc,
   setDoc,
   updateDoc,
-  arrayUnion
+  arrayUnion,
+  collection,
+  query,
+  where,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 import {
@@ -68,7 +72,30 @@ if (data.email !== user.email) {
     }
   );
 
-  console.log("📧 EMAIL FIRESTORE AGGIORNATA:", user.email);
+  console.log("📧 EMAIL USERS AGGIORNATA:", user.email);
+
+  const employeesQuery = query(
+    collection(db, "employees"),
+    where("uid", "==", user.uid)
+  );
+
+  const employeesSnap = await getDocs(employeesQuery);
+
+  for (const employeeDoc of employeesSnap.docs) {
+
+    await updateDoc(
+      employeeDoc.ref,
+      {
+        email: user.email
+      }
+    );
+
+    console.log(
+      "👤 EMAIL EMPLOYEE AGGIORNATA:",
+      employeeDoc.id,
+      user.email
+    );
+  }
 }
 
     /* ✅ UTENTE VALIDO */
