@@ -40,6 +40,7 @@ import { auth, secondaryAuth } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
   updateEmail,
+  verifyBeforeUpdateEmail,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
