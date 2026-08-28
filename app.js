@@ -4109,6 +4109,31 @@ window.openChangeEmail = function() {
 
 }
 
+// ======================
+// 🔑 APRI CAMBIO PASSWORD
+// ======================
+
+window.openChangePassword = function() {
+
+  const popup = document.getElementById("changePasswordPopup");
+
+  const newPassword = document.getElementById("newPassword");
+  const confirmPassword = document.getElementById("confirmPassword");
+
+  if (newPassword) {
+    newPassword.value = "";
+  }
+
+  if (confirmPassword) {
+    confirmPassword.value = "";
+  }
+
+  if (popup) {
+    popup.style.display = "flex";
+  }
+
+};
+
 window.saveNewEmail = async function() {
 
   const input = document.getElementById("newEmail");
