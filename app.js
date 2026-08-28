@@ -4944,16 +4944,46 @@ window.resetEmployeePassword = async function (id) {
     return;
   }
 
+  const adminUser = auth.currentUser;
+
+  if (!adminUser) {
+    alert("Utente amministratore non autenticato.");
+    return;
+  }
+
   try {
 
-    const resetPassword = httpsCallable(
-      functions,
-      "resetEmployeePassword"
+    const response = await fetch(
+      "/api/resetEmployeePassword",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          uid: emp.uid,
+          adminUid: adminUser.uid
+        })
+      }
     );
 
-    await resetPassword({
-      uid: emp.uid
-    });
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+
+      if (response.status === 403) {
+        alert(
+          "Non sei autorizzato a reimpostare le password."
+        );
+      } else {
+        alert(
+          result.error ||
+          "Errore durante il reset della password."
+        );
+      }
+
+      return;
+    }
 
     alert(
       `Password di ${emp.name} reimpostata con successo.\n\n` +
@@ -4967,17 +4997,9 @@ window.resetEmployeePassword = async function (id) {
       error
     );
 
-    if (error.code === "functions/permission-denied") {
-
-      alert("Non sei autorizzato a reimpostare le password.");
-
-    } else {
-
-      alert(
-        "Errore durante il reset della password."
-      );
-
-    }
+    alert(
+      "Errore di collegamento con il server."
+    );
 
   }
 
