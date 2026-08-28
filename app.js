@@ -4,7 +4,13 @@
 ====================== */
 
 import { initAuth, logout, CURRENT_EMPLOYEE } from "./auth.js";
-import { db, firestore } from "./firebase.js";
+
+import {
+  db,
+  firestore,
+  functions,
+  httpsCallable
+} from "./firebase.js";
 
 import {
   doc,
@@ -4918,6 +4924,66 @@ window.closeEmployeesPage = function () {
 };
 
 // ======================
+// 🔑 RESET PASSWORD DIPENDENTE
+// ======================
+
+window.resetEmployeePassword = async function (id) {
+
+  const emp = employeesData[id];
+
+  if (!emp) {
+    alert("Dipendente non trovato.");
+    return;
+  }
+
+  const conferma = confirm(
+    `Vuoi reimpostare la password di ${emp.name} a 123456?`
+  );
+
+  if (!conferma) {
+    return;
+  }
+
+  try {
+
+    const resetPassword = httpsCallable(
+      functions,
+      "resetEmployeePassword"
+    );
+
+    await resetPassword({
+      uid: emp.uid
+    });
+
+    alert(
+      `Password di ${emp.name} reimpostata con successo.\n\n` +
+      `La nuova password è: 123456`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE RESET PASSWORD:",
+      error
+    );
+
+    if (error.code === "functions/permission-denied") {
+
+      alert("Non sei autorizzato a reimpostare le password.");
+
+    } else {
+
+      alert(
+        "Errore durante il reset della password."
+      );
+
+    }
+
+  }
+
+};
+
+// ======================
 // LISTA NOMINATIVI
 // ======================
 
@@ -4940,10 +5006,9 @@ window.loadEmployeesList = function () {
         </div>
 
         <div class="employee-actions">
-
-          <button onclick="editEmployee('${id}')">✏️</button>
+         <button onclick="editEmployee('${id}')">✏️</button>
+         <button onclick="resetEmployeePassword('${id}')">🔑</button>
          <button onclick="deleteEmployeeFromCalendar('${id}')">🗑️</button>
-
         </div>
 
       </div>
