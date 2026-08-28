@@ -32,7 +32,6 @@ if (getApps().length === 0) {
 const auth = getAuth();
 const db = getFirestore();
 
-
 // ======================
 // 🔑 RESET PASSWORD
 // ======================
@@ -49,53 +48,65 @@ module.exports = async function handler(req, res) {
 
   try {
 
-    const {
-      uid,
-      adminUid
-    } = req.body;
+    // ======================
+    // 🔐 VERIFICA TOKEN ADMIN
+    // ======================
 
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: "Autenticazione richiesta"
+      });
+    }
+
+const idToken = authHeader.split("Bearer ")[1];
+
+let decodedToken;
+
+try {
+  decodedToken = await auth.verifyIdToken(idToken);
+} catch (error) {
+  return res.status(401).json({
+    error: "Token non valido o scaduto"
+  });
+}
+
+    // ======================
+    // 🔐 VERIFICA RUOLO ADMIN
+    // ======================
+
+    const adminDoc = await db
+      .collection("users")
+      .doc(decodedToken.uid)
+      .get();
+
+    if (!adminDoc.exists) {
+      return res.status(403).json({
+        error: "Amministratore non trovato"
+      });
+    }
+
+    const adminData = adminDoc.data();
+
+    if (adminData.role !== "ADMIN") {
+      return res.status(403).json({
+        error: "Non autorizzato"
+      });
+    }
 
     // ======================
     // 🔐 CONTROLLO DATI
     // ======================
 
-    if (!uid || !adminUid) {
+    const {
+      uid
+    } = req.body;
 
+    if (!uid) {
       return res.status(400).json({
-        error: "UID mancante"
+        error: "UID dipendente mancante"
       });
-
-    }
-
-
-    // ======================
-    // 🔐 VERIFICA ADMIN
-    // ======================
-
-    const adminDoc = await db
-      .collection("users")
-      .doc(adminUid)
-      .get();
-
-
-    if (!adminDoc.exists) {
-
-      return res.status(403).json({
-        error: "Admin non trovato"
-      });
-
-    }
-
-
-    const adminData = adminDoc.data();
-
-
-    if (adminData.role !== "ADMIN") {
-
-      return res.status(403).json({
-        error: "Non autorizzato"
-      });
-
     }
 
 
@@ -110,13 +121,12 @@ module.exports = async function handler(req, res) {
     });
 
 
-    console.log(
-      "🔑 PASSWORD RESET:",
-      uid,
-      "da ADMIN:",
-      adminUid
-    );
-
+console.log(
+  "🔑 PASSWORD RESET:",
+  uid,
+  "da ADMIN:",
+  decodedToken.uid
+);
 
     return res.status(200).json({
 

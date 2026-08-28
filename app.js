@@ -4942,28 +4942,30 @@ window.resetEmployeePassword = async function (id) {
     return;
   }
 
-  const adminUser = auth.currentUser;
+const adminUser = auth.currentUser;
 
-  if (!adminUser) {
-    alert("Utente amministratore non autenticato.");
-    return;
-  }
+if (!adminUser) {
+  alert("Utente amministratore non autenticato.");
+  return;
+}
 
-  try {
+try {
 
-    const response = await fetch(
-      "/api/resetEmployeePassword",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          uid: emp.uid,
-          adminUid: adminUser.uid
-        })
-      }
-    );
+  const idToken = await adminUser.getIdToken();
+
+  const response = await fetch(
+    "/api/resetEmployeePassword",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`
+      },
+      body: JSON.stringify({
+        uid: emp.uid
+      })
+    }
+  );
 
     const result = await response.json();
 
