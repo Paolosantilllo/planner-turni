@@ -194,6 +194,52 @@
 
 </div>
 
+<!-- POPUP CAMBIA PASSWORD -->
+
+<div class="popup" id="changePasswordPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>🔑 Cambia password</h2>
+
+      <button class="close-btn" onclick="closeChangePassword()">
+        ✕
+      </button>
+
+    </div>
+
+    <label>Nuova password</label>
+
+    <input
+      type="password"
+      id="newPassword"
+      placeholder="Inserisci la nuova password"
+      autocomplete="new-password"
+    >
+
+    <label>Conferma password</label>
+
+    <input
+      type="password"
+      id="confirmPassword"
+      placeholder="Ripeti la nuova password"
+      autocomplete="new-password"
+    >
+
+    <button class="save-btn" onclick="saveNewPassword()">
+      💾 Salva
+    </button>
+
+    <button class="save-btn" onclick="closeChangePassword()">
+      ✕ Chiudi
+    </button>
+
+  </div>
+
+</div>
+
 <!-- POPUP REPERIBILITÀ -->
 <div class="popup" id="popup">
 
