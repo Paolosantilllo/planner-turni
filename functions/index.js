@@ -57,6 +57,70 @@ exports.createEmployee = functions.https.onCall(async (data, context) => {
 
 });
 
+// ======================
+// 🔑 RESET PASSWORD DIPENDENTE
+// ======================
+
+exports.resetEmployeePassword = functions.https.onCall(async (data, context) => {
+
+  try {
+
+    // 🔐 Solo ADMIN
+    if (!context.auth || context.auth.token.role !== "ADMIN") {
+
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Non autorizzato"
+      );
+
+    }
+
+    const uid = data?.uid;
+
+    if (!uid) {
+
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "UID dipendente mancante"
+      );
+
+    }
+
+    // 🔑 Password predefinita
+    const DEFAULT_PASSWORD = "123456";
+
+    await admin.auth().updateUser(uid, {
+      password: DEFAULT_PASSWORD
+    });
+
+    console.log(
+      "🔑 PASSWORD RESET ESEGUITO:",
+      uid
+    );
+
+    return {
+      success: true
+    };
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE RESET PASSWORD:",
+      error
+    );
+
+    if (error instanceof functions.https.HttpsError) {
+      throw error;
+    }
+
+    throw new functions.https.HttpsError(
+      "internal",
+      "Errore durante il reset della password"
+    );
+
+  }
+
+});
 
 // ======================
 // PUSH AUTOMATICHE FCM
