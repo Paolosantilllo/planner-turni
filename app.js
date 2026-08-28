@@ -4134,6 +4134,20 @@ window.openChangePassword = function() {
 
 };
 
+// ======================
+// 🔑 CHIUDI CAMBIO PASSWORD
+// ======================
+
+window.closeChangePassword = function() {
+
+  const popup = document.getElementById("changePasswordPopup");
+
+  if (popup) {
+    popup.style.display = "none";
+  }
+
+};
+
 window.saveNewEmail = async function() {
 
   const input = document.getElementById("newEmail");
