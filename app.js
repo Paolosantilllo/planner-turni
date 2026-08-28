@@ -4149,6 +4149,78 @@ window.closeChangePassword = function() {
 
 };
 
+// ======================
+// 🔑 SALVA NUOVA PASSWORD
+// ======================
+
+window.saveNewPassword = async function() {
+
+  const newPasswordInput = document.getElementById("newPassword");
+  const confirmPasswordInput = document.getElementById("confirmPassword");
+
+  if (!newPasswordInput || !confirmPasswordInput) {
+    return;
+  }
+
+  const newPassword = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+
+  if (!newPassword || !confirmPassword) {
+    alert("Compila entrambi i campi.");
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    alert("La password deve contenere almeno 6 caratteri.");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    alert("Le password non coincidono.");
+    return;
+  }
+
+  const user = auth.currentUser;
+
+  if (!user) {
+    alert("Utente non autenticato.");
+    return;
+  }
+
+  try {
+
+    await updatePassword(user, newPassword);
+
+    alert("Password aggiornata con successo.");
+
+    closeChangePassword();
+
+  } catch (error) {
+
+    console.error("❌ ERRORE CAMBIO PASSWORD:", error);
+
+    if (error.code === "auth/requires-recent-login") {
+
+      alert(
+        "Per sicurezza devi effettuare nuovamente il login prima di cambiare password."
+      );
+
+    } else if (error.code === "auth/weak-password") {
+
+      alert(
+        "La password è troppo debole. Scegli una password più sicura."
+      );
+
+    } else {
+
+      alert("Errore durante il cambio password.");
+
+    }
+
+  }
+
+};
+
 window.saveNewEmail = async function() {
 
   const input = document.getElementById("newEmail");
