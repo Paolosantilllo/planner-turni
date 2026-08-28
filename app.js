@@ -7,9 +7,7 @@ import { initAuth, logout, CURRENT_EMPLOYEE } from "./auth.js";
 
 import {
   db,
-  firestore,
-  functions,
-  httpsCallable
+  firestore
 } from "./firebase.js";
 
 import {

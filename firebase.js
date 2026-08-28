@@ -29,10 +29,6 @@ import {
   getMessaging
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging.js";
 
-import {
-  getFunctions,
-  httpsCallable
-} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-functions.js";
 
 /* ======================
    CONFIG FIREBASE
@@ -67,8 +63,6 @@ export { secondaryAuth };
 export const db = getFirestore(app);
 export const messaging = getMessaging(app);
 
-export const functions = getFunctions(app);
-export { httpsCallable };
 
 /* ======================
    FIRESTORE API WRAPPER (IMPORTANTE)
