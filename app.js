@@ -5019,23 +5019,98 @@ window.loadEmployeesList = function () {
     const emp = employeesData[id];
 
     container.innerHTML += `
+
       <div class="employee-row">
 
         <div>
+
           <strong>${emp.name}</strong><br>
+
           <small>${emp.email || ""}</small><br>
+
           <small>${emp.role}</small>
+
+          <label style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            margin-top:8px;
+            font-size:14px;
+            cursor:pointer;
+          ">
+
+            <input
+              type="checkbox"
+              ${emp.hideFromCalendar === true ? "checked" : ""}
+              onchange="toggleHideFromCalendar('${id}', this.checked)"
+            >
+
+            Nascondi dal calendario
+
+          </label>
+
         </div>
 
         <div class="employee-actions">
-         <button onclick="editEmployee('${id}')">✏️</button>
-         <button onclick="resetEmployeePassword('${id}')">🔑</button>
-         <button onclick="deleteEmployeeFromCalendar('${id}')">🗑️</button>
+
+          <button onclick="editEmployee('${id}')">✏️</button>
+
+          <button onclick="resetEmployeePassword('${id}')">🔑</button>
+
+          <button onclick="deleteEmployeeFromCalendar('${id}')">🗑️</button>
+
         </div>
 
       </div>
     `;
   });
+
+};
+
+// ==============================
+// 👁️ NASCONDI DIPENDENTE DAL CALENDARIO
+// ==============================
+
+window.toggleHideFromCalendar = async function (id, checked) {
+
+  if (!window.IS_ADMIN) {
+    return;
+  }
+
+  try {
+
+    await firestore.updateDoc(
+      firestore.doc(db, "employees", id),
+      {
+        hideFromCalendar: checked
+      }
+    );
+
+    // Aggiorna anche i dati locali
+    if (employeesData[id]) {
+      employeesData[id].hideFromCalendar = checked;
+    }
+
+    console.log(
+      "👁️ Visibilità calendario aggiornata:",
+      employeesData[id]?.name || id,
+      checked ? "NASCOSTO" : "VISIBILE"
+    );
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore aggiornamento visibilità calendario:",
+      err
+    );
+
+    alert(
+      "Errore durante il salvataggio della modifica."
+    );
+
+    // Se il salvataggio fallisce, ricarica la lista
+    loadEmployeesList();
+  }
 
 };
 
