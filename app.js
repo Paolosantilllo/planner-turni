@@ -942,10 +942,19 @@ for (let day = 1; day <= daysInMonth; day++) {
 
 let events = (eventsByDate[date] || []).filter(e => {
 
+  // 👁️ FILTRO "TUTTI"
+  // Nasconde dal calendario i dipendenti
+  // marcati come "Nascondi dal calendario"
   if (selectedEmployee === "ALL") {
-    return true;
+
+    const emp = employeesData[e.employee];
+
+    return emp?.hideFromCalendar !== true;
   }
 
+  // 👤 DIPENDENTE SPECIFICO
+  // Se selezionato direttamente, viene sempre mostrato,
+  // anche se è marcato come nascosto.
   return e.employee === selectedEmployee;
 
 });
