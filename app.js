@@ -5465,3 +5465,89 @@ console.log("USERS CREATO");
     }
   }
 };
+
+// =====================================================
+// 📱 PULL TO REFRESH — AGGIORNAMENTO APP SU IPHONE
+// =====================================================
+
+(function setupPullToRefresh() {
+
+  let startY = 0;
+  let currentY = 0;
+  let pulling = false;
+  let refreshing = false;
+
+  const threshold = 80;
+
+  document.addEventListener("touchstart", (e) => {
+
+    if (window.scrollY > 0) return;
+
+    if (e.touches.length !== 1) return;
+
+    startY = e.touches[0].clientY;
+    currentY = startY;
+    pulling = true;
+
+  }, { passive: true });
+
+
+  document.addEventListener("touchmove", (e) => {
+
+    if (!pulling || refreshing) return;
+
+    currentY = e.touches[0].clientY;
+
+    const distance = currentY - startY;
+
+    if (distance <= 0) return;
+
+    // Evita di interferire con lo scroll normale
+    if (distance < threshold) return;
+
+  }, { passive: true });
+
+
+  document.addEventListener("touchend", async () => {
+
+    if (!pulling || refreshing) return;
+
+    const distance = currentY - startY;
+
+    pulling = false;
+
+    if (distance < threshold) return;
+
+    refreshing = true;
+
+    console.log("🔄 PULL TO REFRESH");
+
+    try {
+
+      // 🔄 Ricarica dipendenti da Firestore
+      await loadEmployeesFromFirestore();
+
+      // 🔄 Ricrea i dati del filtro
+      await populateEmployeeSelects();
+
+      // 🔄 Ridisegna il calendario
+      await renderCalendar();
+
+      console.log("✅ APP AGGIORNATA");
+
+    } catch (err) {
+
+      console.error(
+        "❌ Errore durante aggiornamento app:",
+        err
+      );
+
+    } finally {
+
+      refreshing = false;
+
+    }
+
+  }, { passive: true });
+
+})();
