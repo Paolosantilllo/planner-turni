@@ -78,6 +78,36 @@ initAuth(async (user) => {
 
   window.CURRENT_USER = user;
 
+  // 👁️ CARICA VISIBILITÀ PERSONALE SUPER ADMIN
+  hiddenEmployeesByAdmin = [];
+
+  if (user.uid === SUPER_ADMIN_UID) {
+    try {
+      const adminSnap = await getDoc(
+        doc(db, "users", user.uid)
+      );
+
+      if (adminSnap.exists()) {
+        const adminData = adminSnap.data();
+
+        if (Array.isArray(adminData.hiddenEmployees)) {
+          hiddenEmployeesByAdmin = adminData.hiddenEmployees;
+        }
+      }
+
+      console.log(
+        "👁️ Dipendenti nascosti dal Super Admin:",
+        hiddenEmployeesByAdmin
+      );
+
+    } catch (err) {
+      console.error(
+        "❌ Errore caricamento visibilità Super Admin:",
+        err
+      );
+    }
+  }
+
   // 🔥 prendo dipendente da UID Firebase
  const q = query(
   collection(db, "employees"),
@@ -122,6 +152,9 @@ window.IS_ADMIN = employee.role === "ADMIN";
 let currentDate = new Date();
 window.savedEvents = [];
 const savedEvents = window.savedEvents;
+
+// 👁️ Dipendenti nascosti privatamente dal Super Admin
+let hiddenEmployeesByAdmin = [];
 
 let unsubscribeEvents = null;
 let eventsByDate = {};
@@ -945,12 +978,18 @@ let events = (eventsByDate[date] || []).filter(e => {
   // 👁️ FILTRO "TUTTI"
   // Nasconde dal calendario i dipendenti
   // marcati come "Nascondi dal calendario"
-  if (selectedEmployee === "ALL") {
 
-    const emp = employeesData[e.employee];
-
-    return emp?.hideFromCalendar !== true;
+if (selectedEmployee === "ALL") {
+  // 👁️ Il nascondimento personale vale solo per il Super Admin
+  if (
+    window.CURRENT_USER?.uid === SUPER_ADMIN_UID &&
+    hiddenEmployeesByAdmin.includes(e.employee)
+  ) {
+    return false;
   }
+
+  return true;
+}
 
   // 👤 DIPENDENTE SPECIFICO
   // Se selezionato direttamente, viene sempre mostrato,
@@ -5050,7 +5089,10 @@ window.loadEmployeesList = function () {
 
             <input
               type="checkbox"
-              ${emp.hideFromCalendar === true ? "checked" : ""}
+${(
+  auth.currentUser?.uid === SUPER_ADMIN_UID &&
+  hiddenEmployeesByAdmin.includes(id)
+) ? "checked" : ""}
               onchange="toggleHideFromCalendar('${id}', this.checked)"
             >
 
@@ -5084,6 +5126,58 @@ window.toggleHideFromCalendar = async function (id, checked) {
 
   if (!window.IS_ADMIN) {
     return;
+  }
+
+  // 👁️ La visibilità è personale solo per il Super Admin
+  if (auth.currentUser?.uid === SUPER_ADMIN_UID) {
+
+    try {
+
+      if (checked) {
+
+        if (!hiddenEmployeesByAdmin.includes(id)) {
+          hiddenEmployeesByAdmin.push(id);
+        }
+
+      } else {
+
+        hiddenEmployeesByAdmin =
+          hiddenEmployeesByAdmin.filter(
+            employeeId => employeeId !== id
+          );
+
+      }
+
+      await firestore.setDoc(
+        firestore.doc(db, "users", auth.currentUser.uid),
+        {
+          hiddenEmployees: hiddenEmployeesByAdmin
+        },
+        { merge: true }
+      );
+
+      console.log(
+        "👁️ Visibilità personale aggiornata:",
+        hiddenEmployeesByAdmin
+      );
+
+      await renderCalendar();
+
+      return;
+
+    } catch (err) {
+
+      console.error(
+        "❌ Errore salvataggio visibilità personale:",
+        err
+      );
+
+      alert(
+        "Errore durante il salvataggio della visibilità."
+      );
+
+      return;
+    }
   }
 
   try {
