@@ -1575,3 +1575,238 @@ button:disabled{
     font-weight:bold;
 
 }
+
+/* =====================================================
+   🌙 MODALITÀ NOTTE AUTOMATICA — iOS DARK
+   Segue automaticamente la modalità del dispositivo
+===================================================== */
+
+@media (prefers-color-scheme: dark) {
+
+  /* SFONDO GENERALE */
+
+  body {
+    background: #000000;
+    color: #f2f2f7;
+  }
+
+  /* GIORNI DELLA SETTIMANA */
+
+  .weekdays {
+    background: #7f7f84;
+  }
+
+  .weekdays div {
+    color: #1c1c1e;
+  }
+
+  /* CALENDARIO */
+
+  .day {
+    background: #7f7f84;
+    color: #111;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+  }
+
+  /* NUMERO GIORNO */
+
+  .day-number {
+    color: #111;
+  }
+
+  /* FILTRO DIPENDENTE */
+
+  #employeeFilter {
+    background: #7f7f84;
+    color: #111;
+  }
+
+  /* CELLE VUOTE */
+
+  .empty-day {
+    background: #7f7f84;
+  }
+
+  /* POPUP */
+
+  .popup {
+    background: rgba(0,0,0,0.65);
+  }
+
+  .popup-content {
+    background: #2c2c2e;
+    color: #f2f2f7;
+  }
+
+  /* INPUT E SELECT */
+
+  .popup input,
+  .popup select {
+    background: #3a3a3c;
+    color: #f2f2f7;
+  }
+
+  /* MINI CALENDARIO */
+
+  .calendar-selector {
+    background: #3a3a3c;
+    color: #f2f2f7;
+  }
+
+  .mini-day {
+    background: #3a3a3c;
+    color: #f2f2f7;
+  }
+
+  .mini-weekdays div {
+    color: #98989d;
+  }
+
+  /* CARD RICHIESTE */
+
+  .request-card {
+    background: #2c2c2e;
+    color: #f2f2f7;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.30);
+  }
+
+  .request-dates {
+    color: #98989d;
+  }
+
+  .request-shift {
+    color: #f2f2f7;
+  }
+
+  .request-date {
+    color: #f2f2f7;
+  }
+
+  /* LOGIN */
+
+  .login-container {
+    background: #1c1c1e;
+  }
+
+  #loginBox {
+    background: #1c1c1e;
+  }
+
+  .login-box {
+    background: rgba(44,44,46,0.92);
+    color: #f2f2f7;
+  }
+
+  .login-box input {
+    background: #3a3a3c;
+    color: #f2f2f7;
+  }
+
+  /* AMMINISTRAZIONE */
+
+  .admin-page {
+    background: #1c1c1e;
+    color: #f2f2f7;
+  }
+
+  .employee-row {
+    border-bottom-color: #48484a;
+  }
+
+  .employee-month-stats {
+    background: #2c2c2e;
+    border-color: #48484a;
+    color: #f2f2f7;
+  }
+
+  /* STATISTICHE */
+
+  .stat-ok {
+    color: #30d158;
+  }
+
+  .stat-warning {
+    color: #ff9f0a;
+  }
+
+  .stat-danger {
+    color: #ff453a;
+  }
+
+  /* PDF */
+
+  #pdfPopup {
+    background: #1c1c1e;
+  }
+
+  #pdfPopup .popup-content {
+    background: #1c1c1e;
+  }
+
+  .pdf-header {
+    background: #2c2c2e;
+    color: #f2f2f7;
+  }
+
+  #pdfPopup .pdf-container {
+    background: #1c1c1e;
+  }
+
+  /* TESTI POPUP */
+
+  .close-btn {
+    color: #f2f2f7;
+  }
+
+  .request-title-popup,
+  .request-employee-popup,
+  .request-shift-popup,
+  .request-date-popup {
+    color: #f2f2f7;
+  }
+
+  /* RICHIESTA CAMBIO / NOTIFICHE */
+
+  .request-item,
+  .request-list,
+  .notifications-list {
+    color: #f2f2f7;
+  }
+
+  /* BORDI E DIVISORI */
+
+  hr {
+    border-color: #48484a;
+  }
+}
+
+/* =====================================================
+   🌙 CORREZIONE MODALITÀ NOTTE
+   ===================================================== */
+
+@media (prefers-color-scheme: dark) {
+
+  body {
+    background: #000000 !important;
+  }
+
+  .day,
+  .empty-day {
+    background: #7f7f84 !important;
+    color: #111 !important;
+  }
+
+  #employeeFilter {
+    background: #7f7f84 !important;
+    color: #111 !important;
+  }
+
+  .weekdays {
+    background: #7f7f84 !important;
+  }
+
+  .weekdays div {
+    color: #1c1c1e !important;
+  }
+
+}
