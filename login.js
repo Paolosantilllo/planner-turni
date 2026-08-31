@@ -29,12 +29,18 @@ const emailInput = document.getElementById("email");
 
 emailInput.addEventListener("blur", async () => {
 
-  const email = emailInput.value.trim();
+  const email = emailInput.value.trim().toLowerCase();
 
   const forgotPasswordBtn =
     document.getElementById("forgotPasswordBtn");
 
   if (!email || !forgotPasswordBtn) {
+    return;
+  }
+
+  // 👑 SUPER ADMIN
+  if (email === "paolosantillo@yahoo.it") {
+    forgotPasswordBtn.style.display = "block";
     return;
   }
 
@@ -70,7 +76,6 @@ emailInput.addEventListener("blur", async () => {
     );
 
     forgotPasswordBtn.style.display = "none";
-
   }
 
 });
