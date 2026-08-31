@@ -6,7 +6,8 @@
 import { auth } from "./firebase.js";
 
 import {
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 /* ======================
@@ -35,6 +36,36 @@ window.login = async function () {
     console.error("Errore login:", error);
 
     alert("Email o password errati");
+
+  }
+
+};
+
+
+/* ======================
+   🔑 RECUPERO PASSWORD
+====================== */
+
+window.resetPassword = async function () {
+
+  const email = document.getElementById("email").value.trim();
+
+  if (!email) {
+    alert("Inserisci prima la tua email");
+    return;
+  }
+
+  try {
+
+    await sendPasswordResetEmail(auth, email);
+
+    alert("📧 Email di recupero inviata. Controlla la tua casella di posta.");
+
+  } catch (error) {
+
+    console.error("Errore recupero password:", error);
+
+    alert("❌ Impossibile inviare l'email di recupero.");
 
   }
 
