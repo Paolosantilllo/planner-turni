@@ -39,54 +39,6 @@ function exportPDF() {
     "<h2>📄 Export PDF</h2>";
 }
 
-// ======================
-// 📊 EXPORT EXCEL
-// ======================
-async function exportExcel() {
-
-  const snapshot = await getDocs(
-    collection(db, "events")
-  );
-
-  let rows = [];
-
-  snapshot.forEach(docSnap => {
-
-    const data = docSnap.data();
-
-    rows.push({
-      Dipendente: data.employee,
-      Data: data.date,
-      Turno: data.shift
-    });
-
-  });
-
-
-  const ws = XLSX.utils.json_to_sheet(rows);
-
-
-  ws["!freeze"] = {
-    xSplit: 1,
-    ySplit: 0
-  };
-
-
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    ws,
-    "Turni"
-  );
-
-
-  XLSX.writeFile(
-    wb,
-    "Planner_Turni.xlsx"
-  );
-
-}
 
 // ======================
 // ⚙️ IMPOSTAZIONI
@@ -285,7 +237,6 @@ window.goHome = goHome;
 window.openEmployees = openEmployees;
 window.openStats = openStats;
 window.exportPDF = exportPDF;
-window.exportExcel = exportExcel;
 window.openSettings = openSettings;
 
 window.showAddEmployee = showAddEmployee;
