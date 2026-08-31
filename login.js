@@ -6,6 +6,17 @@
 import { auth } from "./firebase.js";
 
 import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+import { db } from "./firebase.js";
+
+import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -13,6 +24,56 @@ import {
 /* ======================
    LOGIN FUNZIONE
 ====================== */
+
+const emailInput = document.getElementById("email");
+
+emailInput.addEventListener("blur", async () => {
+
+  const email = emailInput.value.trim();
+
+  const forgotPasswordBtn =
+    document.getElementById("forgotPasswordBtn");
+
+  if (!email || !forgotPasswordBtn) {
+    return;
+  }
+
+  try {
+
+    const q = query(
+      collection(db, "users"),
+      where("email", "==", email)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (!snapshot.empty) {
+
+      const userData = snapshot.docs[0].data();
+
+      forgotPasswordBtn.style.display =
+        userData.emailChanged === true
+          ? "block"
+          : "none";
+
+    } else {
+
+      forgotPasswordBtn.style.display = "none";
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Errore controllo email:",
+      error
+    );
+
+    forgotPasswordBtn.style.display = "none";
+
+  }
+
+});
 
 window.login = async function () {
 

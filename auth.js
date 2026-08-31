@@ -75,6 +75,24 @@ if (data.email !== user.email) {
   console.log("📧 EMAIL USERS AGGIORNATA:", user.email);
 }
 
+if (
+  user.emailVerified &&
+  data.emailChanged !== true
+) {
+
+  await updateDoc(
+    doc(db, "users", user.uid),
+    {
+      emailChanged: true
+    }
+  );
+
+  console.log(
+    "📧 EMAIL PERSONALE VERIFICATA:",
+    user.email
+  );
+
+}
 
 // 👤 SINCRONIZZA EMAIL DIPENDENTE
 

@@ -5523,9 +5523,10 @@ await firestore.setDoc(
     uid: uid,
     email: email,
     employee: code,
-    role: role,
-    active: true,
-    createdAt: new Date()
+role: role,
+active: true,
+emailChanged: false,
+createdAt: new Date()
   }
 );
 
