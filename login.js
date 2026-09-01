@@ -136,3 +136,22 @@ window.resetPassword = async function () {
   }
 
 };
+
+/* ======================
+   👁️ MOSTRA / NASCONDI PASSWORD
+====================== */
+
+window.togglePassword = function () {
+  const passwordInput = document.getElementById("password");
+  const eyeButton = document.querySelector('[aria-label="Mostra password"]');
+
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    eyeButton.textContent = "🙈";
+    eyeButton.setAttribute("aria-label", "Nascondi password");
+  } else {
+    passwordInput.type = "password";
+    eyeButton.textContent = "👁️";
+    eyeButton.setAttribute("aria-label", "Mostra password");
+  }
+};

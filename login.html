@@ -40,12 +40,31 @@
       placeholder="Email"
     >
 
-    <input
-      type="password"
-      id="password"
-      placeholder="Password"
-    >
+<div style="position:relative; width:100%;">
+  <input
+    type="password"
+    id="password"
+    placeholder="Password"
+    style="width:100%; padding-right:45px; box-sizing:border-box;"
+  >
 
+  <button
+    type="button"
+    onclick="togglePassword()"
+    style="
+      position:absolute;
+      right:10px;
+      top:50%;
+      transform:translateY(-50%);
+      border:none;
+      background:none;
+      cursor:pointer;
+      font-size:20px;
+      padding:0;
+    "
+    aria-label="Mostra password"
+  >👁️</button>
+</div>
 
 <button
   id="forgotPasswordBtn"
