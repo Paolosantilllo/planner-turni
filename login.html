@@ -40,30 +40,38 @@
       placeholder="Email"
     >
 
-<div style="position:relative; width:100%;">
+<div class="password-wrapper">
+
   <input
     type="password"
     id="password"
     placeholder="Password"
-    style="width:100%; padding-right:45px; box-sizing:border-box;"
   >
 
-  <button
-    type="button"
+  <span
+    class="password-toggle"
     onclick="togglePassword()"
-    style="
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      border:none;
-      background:none;
-      cursor:pointer;
-      font-size:20px;
-      padding:0;
-    "
+    role="button"
+    tabindex="0"
     aria-label="Mostra password"
-  >👁️</button>
+  >
+    <svg
+      id="passwordEye"
+      xmlns="http://www.w3.org/2000/svg"
+      width="21"
+      height="21"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#333"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  </span>
+
 </div>
 
 <button
