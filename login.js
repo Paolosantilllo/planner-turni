@@ -143,25 +143,31 @@ window.resetPassword = async function () {
 
 window.togglePassword = function () {
   const passwordInput = document.getElementById("password");
-  const eyeButton = document.querySelector('[aria-label="Mostra password"], [aria-label="Nascondi password"]');
+  const eyeButton = document.querySelector(
+    '[aria-label="Mostra password"], [aria-label="Nascondi password"]'
+  );
   const eye = document.getElementById("passwordEye");
 
   if (passwordInput.type === "password") {
+
+    // 👁️ MOSTRA PASSWORD
     passwordInput.type = "text";
 
     eye.innerHTML = `
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
-      <line x1="3" y1="3" x2="21" y2="21"/>
+      <circle cx="12" cy="12" r="3"/>
     `;
 
     eyeButton.setAttribute("aria-label", "Nascondi password");
 
   } else {
+
+    // 👁️‍🗨️ NASCONDI PASSWORD
     passwordInput.type = "password";
 
     eye.innerHTML = `
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
-      <circle cx="12" cy="12" r="3"/>
+      <line x1="3" y1="3" x2="21" y2="21"/>
     `;
 
     eyeButton.setAttribute("aria-label", "Mostra password");
