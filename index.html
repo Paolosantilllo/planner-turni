@@ -677,6 +677,15 @@
   🎉 Turnazione Festivi
 </button>
 
+<!-- 🏛️ GIORNO DEL PATRONO -->
+<button
+  class="save-btn"
+  onclick="openPatronoPage();">
+
+  🏛️ Giorno del Patrono
+
+</button>
+
 <!-- 📦 ARCHIVIO -->
 
 <button
@@ -855,7 +864,49 @@
 
 </div>
 
- 
+<!-- 🏛️ PAGINA GIORNO DEL PATRONO -->
+
+<div id="patronoPage" class="admin-page" style="display:none;">
+
+  <div class="admin-header">
+
+    <button class="month-btn" onclick="closePatronoPage()">
+      ◀
+    </button>
+
+    <h2>🏛️ Giorno del Patrono</h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <label>Data del Patrono</label>
+
+    <input
+      type="text"
+      id="patronoDate"
+      placeholder="gg/mm"
+      maxlength="5">
+
+    <label>Nome del Patrono (facoltativo)</label>
+
+    <input
+      type="text"
+      id="patronoName"
+      placeholder="Nome del Patrono">
+
+    <button
+      class="save-btn"
+      onclick="savePatrono()">
+
+      💾 Salva
+
+    </button>
+
+  </div>
+
+</div> 
+
   <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>

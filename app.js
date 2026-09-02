@@ -69,6 +69,46 @@ window.confirmLogout = function () {
 
 const SUPER_ADMIN_UID = "BxOjzbbfzCRj8trObW6NFQuKCB32";
 
+let patronoDate = "";
+let patronoName = "";
+
+async function loadPatronoSettings() {
+
+  try {
+
+    const patronoSnap = await getDoc(
+      doc(db, "settings", "patrono")
+    );
+
+    if (patronoSnap.exists()) {
+
+      const data = patronoSnap.data();
+
+      patronoDate = data.date || "";
+      patronoName = data.name || "";
+
+    } else {
+
+      patronoDate = "";
+      patronoName = "";
+
+    }
+
+    console.log("🏛️ Patrono:", patronoDate, patronoName);
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore caricamento impostazioni Patrono:",
+      err
+    );
+
+    patronoDate = "";
+    patronoName = "";
+
+  }
+
+}
 
 /* ======================
    INIT AUTH
@@ -77,6 +117,8 @@ const SUPER_ADMIN_UID = "BxOjzbbfzCRj8trObW6NFQuKCB32";
 initAuth(async (user) => {
 
   window.CURRENT_USER = user;
+
+  await loadPatronoSettings();
 
   // 👁️ CARICA VISIBILITÀ PERSONALE SUPER ADMIN
   hiddenEmployeesByAdmin = [];
@@ -558,6 +600,25 @@ const holidays = [
    INFO GIORNO
 ====================== */
 
+function isPatronoHoliday(dateStr) {
+
+  if (!patronoDate) {
+    return false;
+  }
+
+  const [day, month] = patronoDate
+    .split("/")
+    .map(Number);
+
+  const d = new Date(dateStr);
+
+  return (
+    d.getDate() === day &&
+    d.getMonth() + 1 === month
+  );
+
+}
+
 function getDayInfo(dateStr) {
 
   const d = new Date(dateStr);
@@ -565,7 +626,9 @@ function getDayInfo(dateStr) {
   const dayNum = d.getDate();
   const month = d.getMonth() + 1;
 
-  const isHoliday = holidays.includes(`${dayNum}-${month}`);
+const isHoliday =
+  holidays.includes(`${dayNum}-${month}`) ||
+  isPatronoHoliday(dateStr);
 
   return {
     isSunday: day === 0,
@@ -691,9 +754,12 @@ function isHoliday(dateStr){
   const day = d.getDate();
   const month = d.getMonth() + 1;
 
-  return holidays.includes(`${day}-${month}`);
-}
+  return (
+    holidays.includes(`${day}-${month}`) ||
+    isPatronoHoliday(dateStr)
+  );
 
+}
 
 
 /* ======================
@@ -4966,6 +5032,117 @@ window.closeEmployeesPage = function () {
 
   document.getElementById("employeesPage").style.display = "none";
   document.getElementById("adminPage").style.display = "block";
+
+};
+
+// ======================
+// 🏛️ GIORNO DEL PATRONO
+// ======================
+
+window.openPatronoPage = async function () {
+
+  document.getElementById("adminPage").style.display = "none";
+
+  document.getElementById("patronoPage").style.display = "block";
+
+  const dateInput = document.getElementById("patronoDate");
+  const nameInput = document.getElementById("patronoName");
+
+  dateInput.value = "";
+  nameInput.value = "";
+
+  try {
+
+    const patronoSnap = await getDoc(
+      doc(db, "settings", "patrono")
+    );
+
+    if (patronoSnap.exists()) {
+
+      const data = patronoSnap.data();
+
+      dateInput.value = data.date || "";
+      nameInput.value = data.name || "";
+
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Errore caricamento Patrono:",
+      err
+    );
+
+    alert("❌ Errore nel caricamento del Patrono.");
+
+  }
+
+};
+
+window.closePatronoPage = function () {
+
+  document.getElementById("patronoPage").style.display = "none";
+
+  document.getElementById("adminPage").style.display = "block";
+
+};
+
+// ======================
+// 💾 SALVA GIORNO DEL PATRONO
+// ======================
+
+window.savePatrono = async function () {
+
+  const dateInput = document.getElementById("patronoDate").value.trim();
+  const nameInput = document.getElementById("patronoName").value.trim();
+
+  if (dateInput !== "") {
+
+    if (!/^\d{2}\/\d{2}$/.test(dateInput)) {
+      alert("Inserisci la data nel formato gg/mm.");
+      return;
+    }
+
+    const [day, month] = dateInput.split("/").map(Number);
+
+    const testDate = new Date(2024, month - 1, day);
+
+    if (
+      month < 1 ||
+      month > 12 ||
+      day < 1 ||
+      day > 31 ||
+      testDate.getMonth() !== month - 1 ||
+      testDate.getDate() !== day
+    ) {
+      alert("La data del Patrono non è valida.");
+      return;
+    }
+  }
+
+  try {
+
+    await setDoc(
+      doc(db, "settings", "patrono"),
+      {
+        date: dateInput,
+        name: nameInput,
+        updatedAt: serverTimestamp()
+      }
+    );
+
+patronoDate = dateInput;
+patronoName = nameInput;
+
+    alert("✅ Giorno del Patrono salvato.");
+
+  } catch (err) {
+
+    console.error("Errore salvataggio Patrono:", err);
+
+    alert("❌ Errore durante il salvataggio del Patrono.");
+
+  }
 
 };
 
