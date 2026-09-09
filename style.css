@@ -1916,3 +1916,384 @@ button:disabled{
   display: block;
   stroke: #333;
 }
+
+
+.shift-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.shift-select-wrapper select {
+  width: 100%;
+  padding-right: 52px;
+}
+
+.add-shift-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #007aff;
+  color: white;
+
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  z-index: 2;
+}
+
+.add-shift-btn:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+/* ======================
+   📊 RIEPILOGO PERSONALE
+   ====================== */
+
+.personal-summary-initial {
+  margin-top: 10px;
+}
+
+.personal-summary-initial h3 {
+  margin: 0 0 16px 0;
+  font-size: 17px;
+}
+
+.personal-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.personal-summary-row label {
+  width: 70px;
+  font-weight: 500;
+}
+
+.personal-summary-row input {
+  width: 90px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.personal-summary-row span {
+  font-size: 14px;
+  color: #666;
+}
+
+
+/* Pulsanti nuova dicitura */
+#saveNewShiftTypeBtn {
+  background: #007aff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-top: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+#cancelNewShiftTypeBtn {
+  background: #ff3b30;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-top: 8px;
+  margin-left: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+
+/* ======================
+   🕐 ORARI PERSONALI
+   ====================== */
+
+.personal-work-time-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.personal-work-time-row label {
+  font-weight: 500;
+}
+
+.personal-work-time-row input[type="time"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 17px;
+  background: white;
+}
+
+/* ======================
+   💶 ORE PAGATE
+   ====================== */
+
+.personal-summary-paid {
+  margin-top: 24px;
+}
+
+.personal-summary-paid h3 {
+  margin: 0 0 16px 0;
+  font-size: 17px;
+}
+
+.personal-summary-paid-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.personal-summary-paid-row label {
+  width: 90px;
+  font-weight: 500;
+}
+
+.personal-summary-paid-row input {
+  width: 90px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.personal-summary-paid-row span {
+  font-size: 14px;
+  color: #666;
+}
+
+/* ======================
+   📊 RIEPILOGO PERSONALE - AFFIANCAMENTO
+   ====================== */
+
+.personal-summary-columns {
+  display: flex;
+  align-items: flex-start;
+}
+
+.personal-summary-columns .personal-summary-initial,
+.personal-summary-columns .personal-summary-paid {
+  flex: 0 0 auto;
+}
+
+.personal-summary-columns .personal-summary-paid {
+  margin-top: 0;
+  margin-left: 30px;
+  padding-left: 30px;
+  border-left: 1px solid #ddd;
+}
+
+/* ======================
+   📊 RIEPILOGO PERSONALE - DIMENSIONI RESPONSIVE
+   ====================== */
+
+#personalSummaryPopup .popup-content {
+  width: 95%;
+  max-width: 1000px;
+  padding: 20px;
+  transform: none;
+  transform-origin: center center;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+
+  #personalSummaryPopup {
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  #personalSummaryPopup .popup-content {
+    width: calc(100vw - 8px);
+    max-width: none;
+    height: calc(100dvh - 8px);
+    max-height: calc(100dvh - 8px);
+    margin: 4px auto;
+    padding: 8px;
+    box-sizing: border-box;
+    overflow: hidden;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #personalSummaryPopup .popup-header {
+    flex: 0 0 auto;
+    margin-bottom: 8px;
+  }
+
+  #personalSummaryPopup #personalSummaryContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #personalSummaryPopup .personal-summary-columns {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 6px;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  #personalSummaryPopup .personal-summary-columns .personal-summary-initial {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #personalSummaryPopup .personal-summary-columns .personal-summary-paid {
+    flex: 0 0 auto;
+    width: auto;
+    margin-left: 6px;
+    padding-left: 6px;
+    padding-top: 0;
+    margin-top: 0;
+    border-left: 1px solid #ddd;
+    border-top: none;
+  }
+
+  #personalSummaryPopup .personal-summary-paid-row {
+    margin-bottom: 3px;
+  }
+
+  #personalSummaryPopup .personal-summary-paid-row input {
+    width: 55px;
+    padding: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  #personalSummaryPopup #personalMonteOre {
+    flex: 0 0 auto;
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+  }
+
+  #personalSummaryPopup .save-btn {
+    flex: 0 0 auto;
+    margin-top: 8px;
+    padding: 12px;
+  }
+
+}
+
+@media (max-width: 600px) and (orientation: landscape) {
+
+  #personalSummaryPopup .popup-content {
+    width: calc(100vw - 8px);
+    height: calc(100dvh - 8px);
+    max-height: calc(100dvh - 8px);
+    margin: 4px auto;
+    padding: 6px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+  }
+
+  #personalSummaryPopup .popup-header {
+    margin-bottom: 4px;
+  }
+
+  #personalSummaryPopup #personalSummaryContent {
+    display: block;
+    overflow: visible;
+  }
+
+  #personalSummaryPopup .personal-summary-columns {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+    width: 100%;
+    overflow: visible;
+  }
+
+  #personalSummaryPopup #personalMonteOre {
+    margin-top: 4px !important;
+    padding-top: 4px !important;
+  }
+
+  #personalSummaryPopup .save-btn {
+    margin-top: 4px;
+    padding: 10px;
+  }
+
+}
+
+/* ======================
+   📊 RIEPILOGO PERSONALE - ULTIMI FIX MOBILE
+   ====================== */
+
+@media (max-width: 600px) {
+
+  /* Box valori iniziali più compatte */
+  #personalSummaryPopup .personal-summary-row input {
+    width: 70px;
+  }
+
+  /* Il popup deve stare sopra la pagina Amministrazione */
+  #personalSummaryPopup {
+    z-index: 10000;
+  }
+
+}
+
+/* RIEPILOGO PERSONALE SOPRA LA PAGINA AMMINISTRAZIONE */
+#personalSummaryPopup {
+  z-index: 100000;
+}
+
+/* CHIUDI - DETTAGLI ORARIO PERSONALE */
+.popup-actions .save-btn{
+  width:100%;
+  margin-top:25px;
+  padding:16px;
+  box-sizing:border-box;
+}
+
+.details-close-btn{
+  flex:1;
+  width:100%;
+  margin-top:25px;
+  padding:16px;
+  border:none;
+  border-radius:18px;
+  background:#ff3b30;
+  color:white;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  box-sizing:border-box;
+}

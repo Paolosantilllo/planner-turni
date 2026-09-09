@@ -121,9 +121,20 @@ window.resetPassword = async function () {
     return;
   }
 
-  try {
+try {
 
-    await sendPasswordResetEmail(auth, email);
+  auth.languageCode = "it";
+
+  const actionCodeSettings = {
+    url: "https://planner-turni-seven.vercel.app/reset-password.html",
+    handleCodeInApp: false
+  };
+
+  await sendPasswordResetEmail(
+    auth,
+    email,
+    actionCodeSettings
+  );
 
     alert("📧 Email di recupero inviata. Controlla la tua casella di posta.");
 

@@ -146,6 +146,10 @@
 
     </div>
 
+<button class="save-btn" onclick="openPersonalSummary()">
+  📊 Riepilogo personale
+</button>
+
     <button class="save-btn" onclick="openChangeEmail()">
       📧 Cambia email
     </button>
@@ -154,9 +158,174 @@
       🔑 Cambia password
     </button>
 
-  </div>
+   </div>
+</div>
+
+<!-- POPUP RIEPILOGO PERSONALE -->
+
+<div class="popup" id="personalSummaryPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>📊 Riepilogo personale</h2>
+
+      <button class="close-btn" onclick="closePersonalSummary()">
+        ✕
+      </button>
+
+    </div>
+
+<div id="personalSummaryContent">
+
+  <div class="personal-summary-columns">
+
+    <div class="personal-summary-initial">
+
+      <h3>⚙️ Valori iniziali</h3>
+
+      <div class="personal-summary-row">
+        <label for="initialORD">ORD</label>
+        <input type="number" id="initialORD" min="0" step="1" placeholder="—">
+
+      </div>
+
+<div id="currentORD" class="personal-summary-current">
+  Disponibili: —
+</div>
+
+<div class="personal-summary-row">
+  <label for="initial937">937/77</label>
+  <input type="number" id="initial937" min="0" step="1" placeholder="—">
 
 </div>
+<div id="current937" class="personal-summary-current">
+  Disponibili: —
+</div>
+      <div class="personal-summary-row">
+        <label for="initialRFI">RFI</label>
+        <input type="number" id="initialRFI" min="0" step="1" placeholder="—">
+
+      </div>
+
+          <div id="currentRFI" class="personal-summary-current">
+            Disponibili: —
+          </div>
+
+      <div class="personal-summary-row">
+        <label for="initialORE">ORE</label>
+        <input type="number" id="initialORE" min="0" step="0.5" placeholder="—">
+
+      </div>
+
+    </div>
+
+    <div class="personal-summary-paid">
+
+      <h3>💶 Ore pagate</h3>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidJanuary">Gennaio</label>
+        <input type="text" id="paidJanuary" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidFebruary">Febbraio</label>
+        <input type="text" id="paidFebruary" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidMarch">Marzo</label>
+        <input type="text" id="paidMarch" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidApril">Aprile</label>
+        <input type="text" id="paidApril" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidMay">Maggio</label>
+        <input type="text" id="paidMay" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidJune">Giugno</label>
+        <input type="text" id="paidJune" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidJuly">Luglio</label>
+        <input type="text" id="paidJuly" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidAugust">Agosto</label>
+        <input type="text" id="paidAugust" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidSeptember">Settembre</label>
+        <input type="text" id="paidSeptember" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidOctober">Ottobre</label>
+        <input type="text" id="paidOctober" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidNovember">Novembre</label>
+        <input type="text" id="paidNovember" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+      <div class="personal-summary-paid-row">
+        <label for="paidDecember">Dicembre</label>
+        <input type="text" id="paidDecember" inputmode="decimal" placeholder="0,00">
+        <span>ore</span>
+      </div>
+
+    </div>
+
+  </div>
+
+<div id="personalMonteOre" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #ddd;">
+  <h3 style="margin: 0 0 12px 0; font-size: 17px;">⏱️ Monte ore</h3>
+
+  <div style="margin-bottom: 8px;">
+    <span id="personalMonteOreMonth">Mese: —</span>
+  </div>
+
+  <div>
+    <span id="personalMonteOreProgressive">Progressivo: —</span>
+  </div>
+</div>
+
+  <button class="save-btn" onclick="savePersonalSummary()">
+    💾 Salva valori iniziali
+  </button>
+
+</div>
+
+
+    </div>
+
+  </div>
+
+
+
 
 <!-- POPUP CAMBIA EMAIL -->
 <div class="popup" id="changeEmailPopup">
@@ -287,7 +456,7 @@
     </div>
 
 </div>
-    
+
     <label>Data Inizio</label>
     <input type="date" id="startDate">
 
@@ -305,7 +474,16 @@
       <option>LIC</option>
       <option>REC</option>
       <option value="MAL">MAL</option>
-    </select>
+      <option value="__NUOVA_DICITURA__">＋ NUOVA DICITURA</option>
+</select>
+
+<div id="newShiftTypeBox" style="display:none;">
+  <input type="text" id="newShiftTypeInput" placeholder="Nuova dicitura">
+  <div>
+    <button type="button" id="saveNewShiftTypeBtn">Salva</button>
+    <button type="button" id="cancelNewShiftTypeBtn">Elimina</button>
+  </div>
+</div>
 
     <button class="save-btn" onclick="saveShift()">
       Salva
@@ -341,8 +519,8 @@
     <!-- CAMBIO CON -->
     <label>Cambio con</label>
 
-    <select 
-      id="changeTo" 
+    <select
+      id="changeTo"
       onchange="loadChangeDays()">
     </select>
 
@@ -351,8 +529,8 @@
     <!-- REPERIBILITÀ -->
     <label>Reperibilità</label>
 
-    <select 
-      id="changeShift" 
+    <select
+      id="changeShift"
       onchange="loadChangeDays()">
 
       <option>REP</option>
@@ -519,7 +697,7 @@
   </div>
 
 </div>
-  
+
   <!-- POPUP AZIONE RICHIESTA -->
 <div class="popup" id="requestActionPopup">
 
@@ -541,14 +719,14 @@
 
     <div class="popup-actions">
 
-      <button 
+      <button
         class="btn-accept"
         id="actionAcceptBtn">
         ✅ Accetta
       </button>
 
 
-      <button 
+      <button
         class="btn-reject"
         id="actionRejectBtn">
         ❌ Rifiuta
@@ -603,7 +781,7 @@
   </div>
 
 </div>
-  
+
   <!-- POPUP PDF PREVIEW -->
 <div class="popup" id="pdfPopup">
 
@@ -656,6 +834,13 @@
 
   <div class="admin-menu">
 
+    <!-- 👤 IL MIO ACCOUNT -->
+    <button
+      class="save-btn"
+      onclick="openAccountPage(); closeAdminPage();">
+      👤 Il mio account
+    </button>
+
    <!-- 👥 GESTIONE NOMINATIVI -->
 <button
   class="save-btn"
@@ -669,7 +854,7 @@
   onclick="exportCfiPdf(); closeAdminPage();">
   📊 Totale CFI / CFI-REP
 </button>
-    
+
     <!-- 📊 Turnazione Festivi -->
 <button
   class="save-btn"
@@ -711,7 +896,7 @@
   ">
   📄 Esporta PDF
 </button>
-    
+
   </div>
 
 </div>
@@ -859,7 +1044,7 @@
   </div>
 
 </div>
-  
+
    </div>
 
 </div>
@@ -905,7 +1090,7 @@
 
   </div>
 
-</div> 
+</div>
 
   <!-- PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -926,3 +1111,115 @@ console.log("🚀 INDEX HTML CARICATO NUOVO");
 
 </body>
 </html>
+
+
+<!-- POPUP ORARI PERSONALI -->
+
+<div class="popup" id="personalWorkTimePopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>🕐 Orario personale</h2>
+
+      <button class="close-btn" onclick="closePersonalWorkTimePopup()">
+        ✕
+      </button>
+
+    </div>
+
+    <div id="personalWorkTimeDate"
+         style="margin-bottom: 16px; font-weight: 500;">
+    </div>
+
+<div
+  id="personalCFIMessage"
+  style="display:none; margin-bottom:16px; padding:10px; border-radius:6px; background:#f2f2f7;">
+</div>
+
+    <div class="personal-work-time-row">
+
+      <label for="personalStartTime">
+        Orario di ingresso
+      </label>
+
+      <input
+        type="time"
+        id="personalStartTime"
+        min="00:00"
+        max="23:59"
+        step="60"
+      >
+
+    </div>
+
+    <div class="personal-work-time-row">
+
+      <label for="personalEndTime">
+        Orario di uscita
+      </label>
+
+      <input
+        type="time"
+        id="personalEndTime"
+        min="00:00"
+        max="23:59"
+        step="60"
+      >
+
+    </div>
+
+    <button
+      class="save-btn"
+      onclick="savePersonalWorkTime()">
+      💾 Salva
+    </button>
+
+  </div>
+
+</div>
+
+<!-- ==============================
+     DETTAGLI ORARIO PERSONALE
+     ============================== -->
+<div class="popup" id="personalWorkTimeDetailsPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2 id="personalWorkTimeDetailsTitle">
+        Dettaglio
+      </h2>
+
+      <button
+        class="close-btn"
+        onclick="closePersonalWorkTimeDetailsPopup()">
+        ✕
+      </button>
+
+    </div>
+
+    <div id="personalWorkTimeDetailsContent">
+    </div>
+
+    <div class="popup-actions">
+
+      <button
+        class="save-btn"
+        onclick="editPersonalWorkTimeDetails()">
+        ✏️ Modifica
+      </button>
+
+      <button
+        class="details-close-btn"
+        onclick="closePersonalWorkTimeDetailsPopup()">
+        Chiudi
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

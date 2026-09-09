@@ -1,0 +1,27 @@
+{
+  "name": "planner-turni",
+  "version": "1.0.0",
+  "description": "1. Apri la cartella in VS Code 2. Installa estensione Live Server 3. Avvia index.html",
+  "main": "admin.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Paolosantilllo/planner-turni.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Paolosantilllo/planner-turni/issues"
+  },
+  "homepage": "https://github.com/Paolosantilllo/planner-turni#readme",
+  "dependencies": {
+    "firebase-admin": "^13.10.0"
+  },
+  "devDependencies": {
+    "vercel": "^59.9.1"
+  }
+}

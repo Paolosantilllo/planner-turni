@@ -170,14 +170,38 @@ const employee = snap.docs[0].data();
 
 window.CURRENT_EMPLOYEE = employee.code;
 window.CURRENT_EMPLOYEE_DATA = employee;
+console.time("⏱️ FINO A SHOW APP");
 
 window.IS_ADMIN = employee.role === "ADMIN";
 
-  document.getElementById("app").classList.add("show");
+console.timeEnd("⏱️ FINO A SHOW APP");
+ document.getElementById("app").classList.add("show");
 
   await populateEmployeeSelects();
-  setDefaultFilter();
+  await loadCustomShiftTypes();
+
+const startupShiftSelect = document.getElementById("shift");
+
+if (startupShiftSelect) {
+customShiftTypes.forEach(item => {
+
+  const option = document.createElement("option");
+
+  option.value = item.label;
+  option.textContent = item.label;
+  option.dataset.customShiftId = item.id;
+
+  startupShiftSelect.insertBefore(
+    option,
+    startupShiftSelect.querySelector('option[value="__NUOVA_DICITURA__"]')
+  );
+
+});
+}
+
+setDefaultFilter();
   loadEvents();
+loadPersonalWorkTimes();
   loadChangeRequests();
   loadNotificationBadge();
 
@@ -194,11 +218,48 @@ window.IS_ADMIN = employee.role === "ADMIN";
 let currentDate = new Date();
 window.savedEvents = [];
 const savedEvents = window.savedEvents;
+window.personalWorkTimes = [];
+
+const personalWorkTimes = window.personalWorkTimes;
+
+window.customShiftTypes = [];
+const customShiftTypes = window.customShiftTypes;
+
+// ======================
+// DICITURE PERSONALIZZATE
+// ======================
+
+async function loadCustomShiftTypes() {
+  try {
+    const snapshot = await firestore.getDocs(
+      firestore.collection(db, "customShiftTypes")
+    );
+
+    customShiftTypes.length = 0;
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+
+      if (data.label) {
+customShiftTypes.push({
+  id: docSnap.id,
+  label: data.label
+});
+      }
+    });
+
+    console.log("✔ Diciture personalizzate caricate:", customShiftTypes);
+
+  } catch (err) {
+    console.error("❌ Errore caricamento diciture personalizzate:", err);
+  }
+}
+
 
 // 👁️ Dipendenti nascosti privatamente dal Super Admin
 let hiddenEmployeesByAdmin = [];
-
 let unsubscribeEvents = null;
+let unsubscribePersonalWorkTimes = null;
 let eventsByDate = {};
 
 let monthlyStatsCache = {};
@@ -561,6 +622,14 @@ async function populateEmployeeSelects() {
 }
 
 employeeFilter.addEventListener("change", () => {
+  const loggedEmployee = employeesData[CURRENT_EMPLOYEE];
+
+  if (employeeFilter.value === "ALL" && loggedEmployee?.color) {
+    employeeFilter.style.border = `2px solid ${loggedEmployee.color}`;
+  } else {
+    employeeFilter.style.border = "";
+  }
+
   renderCalendar();
 });
 // ======================
@@ -568,6 +637,12 @@ employeeFilter.addEventListener("change", () => {
 // ======================
 
 function setDefaultFilter() {
+
+  const loggedEmployee = employeesData[CURRENT_EMPLOYEE];
+
+  if (loggedEmployee?.color) {
+    employeeFilter.style.borderColor = loggedEmployee.color;
+  }
 
   const role =
     EMPLOYEES[window.CURRENT_EMPLOYEE]?.role;
@@ -767,6 +842,7 @@ function isHoliday(dateStr){
 ====================== */
 
 function loadEvents() {
+console.time("⏱️ LOAD EVENTS");
 
   // chiude il vecchio listener
   if (unsubscribeEvents) {
@@ -776,6 +852,7 @@ function loadEvents() {
   unsubscribeEvents = firestore.onSnapshot(
 firestore.collection(db, "events"),
     (snap) => {
+console.timeEnd("⏱️ LOAD EVENTS");
 
       window.savedEvents.length = 0;
       eventsByDate = {};
@@ -852,8 +929,60 @@ console.log(
 );
 
 
-      renderCalendar();
+console.time("⏱️ RENDER CALENDARIO");
+renderCalendar();
+console.timeEnd("⏱️ RENDER CALENDARIO");
 
+    }
+
+  );
+
+}
+
+// ======================
+// 🕐 CARICA ORARI PERSONALI
+// ======================
+
+function loadPersonalWorkTimes() {
+
+  if (!window.CURRENT_EMPLOYEE) {
+    return;
+  }
+
+  if (unsubscribePersonalWorkTimes) {
+    unsubscribePersonalWorkTimes();
+  }
+
+  unsubscribePersonalWorkTimes = firestore.onSnapshot(
+
+    query(
+      collection(db, "personalWorkTimes"),
+      where(
+        "employee",
+        "==",
+        window.CURRENT_EMPLOYEE
+      )
+    ),
+
+    (snap) => {
+
+      personalWorkTimes.length = 0;
+
+      snap.forEach(docSnap => {
+
+        personalWorkTimes.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+
+      });
+
+      console.log(
+        "🕐 ORARI PERSONALI CARICATI:",
+        personalWorkTimes
+      );
+
+      renderCalendar();
 
     }
 
@@ -1122,8 +1251,58 @@ if (dayInfo.isSunday || dayInfo.isHoliday) {
 
 
 box.onclick = () => {
-  if (!window.IS_ADMIN) return;
+
+  // 👤 DIPENDENTE
+  if (!window.IS_ADMIN) {
+
+    const shift = getPersonalDayShift(date);
+
+    if (
+      shift === "LIC" ||
+      shift === "REC" ||
+      shift === "MAL"
+    ) {
+
+      alert(
+        "❌ Non puoi inserire un orario personale in questa giornata.\n\n" +
+        "La giornata risulta " + shift + " e quindi non sei presente al lavoro."
+      );
+
+      return;
+    }
+
+
+    console.log(
+      "🕐 Giorno personale:",
+      date,
+      "Sigla:",
+      shift
+    );
+
+    openPersonalWorkTimePopup(date);
+
+    return;
+  }
+
+  // 👨‍💼 ADMIN
+  // Se l'ADMIN ha selezionato il proprio nome,
+  // apre direttamente l'orario personale.
+
+  if (
+    selectedEmployee !== "ALL" &&
+    selectedEmployee === window.CURRENT_EMPLOYEE
+  ) {
+
+    openPersonalWorkTimePopup(date);
+
+    return;
+  }
+
+  // ADMIN + TUTTI / altro dipendente
+  // comportamento originale invariato
+
   openPopupWithDate(date, events);
+
 };
 
 const num = document.createElement("div");
@@ -1150,6 +1329,52 @@ if (dayNumber === 6 && !dayInfo.isHoliday) {
 num.innerText = day;
 
 box.appendChild(num);
+// ======================
+// 🕐 ORARIO PERSONALE
+// ======================
+// STRA e rec sono visibili solamente
+// nel calendario del dipendente interessato.
+// Con filtro TUTTI non vengono mostrati.
+
+if (
+  selectedEmployee !== "ALL" &&
+  selectedEmployee === window.CURRENT_EMPLOYEE
+) {
+
+  const personalTime =
+    personalWorkTimes.find(item =>
+      item &&
+      item.employee === window.CURRENT_EMPLOYEE &&
+      item.date === date
+    );
+
+  if (
+    personalTime &&
+    (
+      personalTime.type === "STRA" ||
+      personalTime.type === "rec"
+    )
+  ) {
+
+    const personalEl =
+      document.createElement("div");
+
+    personalEl.classList.add("event");
+    personalEl.style.color = "#000";
+    personalEl.innerText =
+      personalTime.type;
+
+    personalEl.onclick = (event) => {
+      event.stopPropagation();
+
+      openPersonalWorkTimeDetailsPopup(personalTime);
+    };
+
+    box.appendChild(personalEl);
+  }
+}
+
+
 
 
 // ======================
@@ -1304,6 +1529,240 @@ window.openPopupWithDate = function(date, events = []) {
 };
 
 
+// ======================
+// ➕ NUOVA DICITURA
+// ======================
+
+const shiftSelect = document.getElementById("shift");
+const newShiftTypeBox = document.getElementById("newShiftTypeBox");
+const newShiftTypeInput = document.getElementById("newShiftTypeInput");
+const saveNewShiftTypeBtn = document.getElementById("saveNewShiftTypeBtn");
+const cancelNewShiftTypeBtn = document.getElementById("cancelNewShiftTypeBtn");
+
+if (shiftSelect) {
+  shiftSelect.addEventListener("change", function () {
+
+    if (this.value === "__NUOVA_DICITURA__") {
+
+      shiftSelect.style.display = "none";
+
+      if (newShiftTypeBox) {
+        newShiftTypeBox.style.display = "block";
+      }
+
+      if (newShiftTypeInput) {
+        newShiftTypeInput.value = "";
+        newShiftTypeInput.focus();
+      }
+
+    } else {
+
+      if (newShiftTypeBox) {
+        newShiftTypeBox.style.display = "none";
+      }
+
+      shiftSelect.style.display = "";
+    }
+  });
+}
+
+if (saveNewShiftTypeBtn) {
+  saveNewShiftTypeBtn.addEventListener("click", async function () {
+
+    const label = newShiftTypeInput
+      ? newShiftTypeInput.value.trim()
+      : "";
+
+    if (!label) {
+      alert("Inserisci una dicitura");
+      return;
+    }
+
+    if (!window.IS_ADMIN) {
+      alert("Non autorizzato");
+      return;
+    }
+
+    try {
+      const newDocRef = await firestore.addDoc(
+        firestore.collection(db, "customShiftTypes"),
+        {
+          label: label,
+          createdAt: new Date()
+        }
+      );
+
+alert("Dicitura salvata");
+
+// Aggiunge subito la nuova dicitura al menu
+
+if (shiftSelect && !customShiftTypes.some(item => item.label === label)) {
+
+  customShiftTypes.push({
+    id: newDocRef.id,
+    label: label
+  });
+
+  const option = document.createElement("option");
+
+  option.value = label;
+  option.textContent = label;
+  option.dataset.customShiftId = newDocRef.id;
+
+  shiftSelect.insertBefore(
+
+    option,
+
+    shiftSelect.querySelector('option[value="__NUOVA_DICITURA__"]')
+
+  );
+
+}
+
+if (newShiftTypeInput) {
+  newShiftTypeInput.value = "";
+}
+
+      if (newShiftTypeBox) {
+        newShiftTypeBox.style.display = "none";
+      }
+
+      if (shiftSelect) {
+        shiftSelect.value = "";
+        shiftSelect.style.display = "";
+      }
+
+    } catch (err) {
+      console.error("❌ Errore salvataggio dicitura:", err);
+      alert("Errore durante il salvataggio");
+    }
+  });
+}
+
+if (cancelNewShiftTypeBtn) {
+  cancelNewShiftTypeBtn.addEventListener("click", function () {
+
+    if (newShiftTypeInput) {
+      newShiftTypeInput.value = "";
+    }
+
+    if (newShiftTypeBox) {
+      newShiftTypeBox.style.display = "none";
+    }
+
+    if (shiftSelect) {
+      shiftSelect.value = "";
+      shiftSelect.style.display = "";
+    }
+  });
+}
+
+// ======================
+// 👈 SWIPE DICITURA PERSONALIZZATA
+// ======================
+
+let shiftSwipeStartX = 0;
+let shiftSwipeStartY = 0;
+
+if (shiftSelect) {
+
+  shiftSelect.addEventListener("touchstart", function (e) {
+
+    if (e.touches.length !== 1) return;
+
+    const selectedOption =
+      shiftSelect.options[shiftSelect.selectedIndex];
+
+    if (!selectedOption || !selectedOption.dataset.customShiftId) {
+      return;
+    }
+
+    shiftSwipeStartX = e.touches[0].clientX;
+    shiftSwipeStartY = e.touches[0].clientY;
+
+  }, { passive: true });
+
+
+shiftSelect.addEventListener("touchend", async function (e) {
+
+    if (!shiftSwipeStartX) return;
+
+    const selectedOption =
+      shiftSelect.options[shiftSelect.selectedIndex];
+
+    if (!selectedOption || !selectedOption.dataset.customShiftId) {
+      shiftSwipeStartX = 0;
+      shiftSwipeStartY = 0;
+      return;
+    }
+
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+
+    const diffX = endX - shiftSwipeStartX;
+    const diffY = endY - shiftSwipeStartY;
+
+    shiftSwipeStartX = 0;
+    shiftSwipeStartY = 0;
+
+    if (
+      diffX < -60 &&
+      Math.abs(diffX) > Math.abs(diffY)
+    ) {
+
+      console.log(
+        "👈 Swipe su dicitura personalizzata:",
+        selectedOption.value
+      );
+
+const conferma = confirm(
+  'Vuoi eliminare la dicitura "' + selectedOption.value + '"?\n\nOK = Elimina\nAnnulla = Mantieni'
+);
+
+if (!conferma) {
+  return;
+}
+
+try {
+
+  const customShiftId = selectedOption.dataset.customShiftId;
+
+  if (!customShiftId) {
+    alert("Errore: dicitura non riconosciuta");
+    return;
+  }
+
+  await firestore.deleteDoc(
+    firestore.doc(db, "customShiftTypes", customShiftId)
+  );
+
+  // Rimuove la dicitura dall'array locale
+  const index = customShiftTypes.findIndex(
+    item => item.id === customShiftId
+  );
+
+  if (index !== -1) {
+    customShiftTypes.splice(index, 1);
+  }
+
+  // Rimuove la dicitura dal menu
+  selectedOption.remove();
+
+  shiftSelect.value = "";
+
+  alert("Dicitura eliminata");
+
+} catch (err) {
+
+  console.error("❌ Errore eliminazione dicitura:", err);
+  alert("Errore durante l'eliminazione");
+
+}
+    }
+
+  }, { passive: true });
+
+}
 
 /* ======================
    SALVATAGGIO
@@ -1375,6 +1834,9 @@ if (employeeEvents.length > 0) {
   existingShifts.includes("REP");
 
 
+const hasFREP =
+  existingShifts.includes("FREP");
+
   const hasREC =
   existingShifts.includes("REC");
 
@@ -1382,10 +1844,14 @@ if (employeeEvents.length > 0) {
 
   // unica combinazione consentita REP + REC
 
-  const allowedCombo =
-    (shift === "REP" && hasREC) ||
-    (shift === "REC" && hasREP);
-
+const allowedCombo =
+  (shift === "REP" && hasREC) ||
+  (shift === "REC" && hasREP) ||
+  (
+    shift === "STRA" &&
+    existingShifts.length === 1 &&
+    (hasREP || hasFREP)
+  );
 
 
   if(!allowedCombo){
@@ -2694,6 +3160,29 @@ window.readNotification = async function(notificationId){
 
     console.log("✅ Notifica eliminata");
 
+const snap = await firestore.getDocs(
+  firestore.collection(db, "notifications")
+);
+
+let count = 0;
+
+snap.forEach(doc => {
+  const n = doc.data();
+
+  if (n.employee === CURRENT_EMPLOYEE) {
+    count++;
+  }
+});
+
+const registration = await navigator.serviceWorker.ready;
+
+if (registration.active) {
+  registration.active.postMessage({
+    type: "UPDATE_BADGE",
+    count: count
+  });
+}
+
   }catch(err){
 
     console.error(
@@ -3552,8 +4041,7 @@ if(action === "ACCEPT"){
 
 
   notificationText =
-  `✅ La richiesta di cambio è stata accettata da ${employeesData[req.toEmployee]?.name}ed inoltrata all'Admin`;
-
+`✅ La richiesta di cambio è stata accettata da ${employeesData[CURRENT_EMPLOYEE]?.name} ed inoltrata all'Admin`;
 
 
 }
@@ -3570,8 +4058,7 @@ else{
 
 
  notificationText =
-  `❌ La richiesta di cambio è stata rifiutata da ${employeesData[req.toEmployee]?.name}`;
-
+`❌ La richiesta di cambio è stata rifiutata da ${employeesData[CURRENT_EMPLOYEE]?.name}`;
 }
 
 
@@ -3629,7 +4116,6 @@ console.log(
   notificationText
 );
 
-alert("DEBUG: invio PUSH a " + req.fromEmployee);
 
 try {   
 
@@ -4211,6 +4697,1359 @@ window.closeAccountPage = function() {
   }
 
 }
+
+// ======================
+// ⏱️ CONVERSIONE ORE PERSONALI
+// ======================
+
+window.parsePersonalHours = function(value) {
+
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const text = String(value).trim().replace(",", ".");
+
+  if (!text) {
+    return null;
+  }
+
+  const parts = text.split(".");
+
+  const hours = Number(parts[0]);
+
+  if (!Number.isFinite(hours) || hours < 0) {
+    return null;
+  }
+
+  let minutes = 0;
+
+  if (parts.length > 1) {
+
+    const minuteText = parts[1].padEnd(2, "0").slice(0, 2);
+
+    minutes = Number(minuteText);
+
+    if (
+      !Number.isFinite(minutes) ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      return null;
+    }
+  }
+
+  return hours * 60 + minutes;
+
+};
+
+window.formatPersonalHours = function(minutes) {
+
+  if (
+    minutes === null ||
+    minutes === undefined ||
+    !Number.isFinite(Number(minutes))
+  ) {
+    return "";
+  }
+
+  const totalMinutes = Math.round(Number(minutes));
+
+  const hours =
+    Math.floor(totalMinutes / 60);
+
+  const remainingMinutes =
+    totalMinutes % 60;
+
+  return (
+    String(hours) +
+    "," +
+    String(remainingMinutes).padStart(2, "0")
+  );
+
+};
+
+// ======================
+// 🧮 CALCOLO MONTE ORE PERSONALE
+// ======================
+
+window.calculatePersonalMonteOre = function(year, month) {
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    return null;
+  }
+
+  const summary =
+    window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  const initialOREByMonth =
+    summary.initialOREByMonth || {};
+
+  const targetMonthKey =
+    year + "-" +
+    String(month + 1).padStart(2, "0");
+
+  // ======================
+  // TROVA IL PUNTO DI PARTENZA
+  // ======================
+  //
+  // Un nuovo punto di partenza esiste
+  // SOLO quando il valore iniziale cambia
+  // rispetto all'ultimo valore salvato.
+  //
+  // Esempio:
+  // Settembre = 5  -> partenza
+  // Ottobre   = 5  -> continua
+  // Novembre  = 20 -> NUOVA partenza
+  //
+
+  const monthlyEntries =
+    Object.keys(initialOREByMonth)
+      .filter(key => {
+        const value =
+          initialOREByMonth[key];
+
+        return (
+          key <= targetMonthKey &&
+          value !== null &&
+          value !== undefined &&
+          Number.isFinite(Number(value))
+        );
+      })
+      .sort();
+
+  if (monthlyEntries.length === 0) {
+    return 0;
+  }
+
+  let resetMonthKey =
+    monthlyEntries[0];
+
+  let resetInitialMinutes =
+    Number(initialOREByMonth[resetMonthKey]) * 60;
+
+  let previousValue =
+    Number(initialOREByMonth[resetMonthKey]);
+
+  for (let i = 1; i < monthlyEntries.length; i++) {
+
+    const key =
+      monthlyEntries[i];
+
+    const value =
+      Number(initialOREByMonth[key]);
+
+    // Se il valore è realmente cambiato,
+    // questo mese diventa il nuovo punto
+    // di partenza e tutto ciò che viene
+    // prima viene ignorato.
+    if (value !== previousValue) {
+
+      resetMonthKey =
+        key;
+
+      resetInitialMinutes =
+        value * 60;
+
+      previousValue =
+        value;
+    }
+  }
+
+  // ======================
+  // MESE DI PARTENZA
+  // ======================
+
+  const [resetYear, resetMonthNumber] =
+    resetMonthKey.split("-").map(Number);
+
+  const resetMonth =
+    resetMonthNumber - 1;
+
+  let totalMinutes =
+    resetInitialMinutes;
+
+  // ======================
+  // EVENTI
+  // ======================
+  //
+  // Consideriamo solamente gli eventi
+  // dal mese di partenza fino al mese
+  // richiesto.
+  //
+
+  window.savedEvents.forEach(ev => {
+
+    if (
+      !ev ||
+      ev.employee !== employee ||
+      !ev.date
+    ) {
+      return;
+    }
+
+    const dateObj =
+      new Date(ev.date);
+
+    if (
+      Number.isNaN(dateObj.getTime())
+    ) {
+      return;
+    }
+
+    const eventYear =
+      dateObj.getFullYear();
+
+    const eventMonth =
+      dateObj.getMonth();
+
+    // Prima del nuovo punto di partenza:
+    // IGNORA.
+    if (
+      eventYear < resetYear ||
+      (
+        eventYear === resetYear &&
+        eventMonth < resetMonth
+      )
+    ) {
+      return;
+    }
+
+    // Dopo il mese richiesto:
+    // IGNORA.
+    if (
+      eventYear > year ||
+      (
+        eventYear === year &&
+        eventMonth > month
+      )
+    ) {
+      return;
+    }
+
+    const shift =
+      ev.shift;
+
+    // ======================
+    // REP / FREP
+    // ======================
+
+    if (
+      shift === "REP" ||
+      shift === "FREP"
+    ) {
+
+      const day =
+        dateObj.getDay();
+
+      if (day >= 1 && day <= 4) {
+        totalMinutes += 37;
+      }
+      else if (day === 5) {
+        totalMinutes += 60;
+      }
+      else if (day === 6) {
+        totalMinutes += 80;
+      }
+
+      return;
+    }
+
+    // ======================
+    // REC
+    // ======================
+
+    if (shift === "REC") {
+
+      const day =
+        dateObj.getDay();
+
+      if (day >= 1 && day <= 4) {
+        totalMinutes -= 8 * 60;
+      }
+      else if (day === 5) {
+        totalMinutes -= 4 * 60;
+      }
+    }
+
+  });
+
+  // ======================
+  // ORARI PERSONALI
+  // ======================
+
+  personalWorkTimes.forEach(item => {
+
+    if (
+      !item ||
+      item.employee !== employee ||
+      !item.date
+    ) {
+      return;
+    }
+
+    const dateObj =
+      new Date(item.date);
+
+    if (
+      Number.isNaN(dateObj.getTime())
+    ) {
+      return;
+    }
+
+    const itemYear =
+      dateObj.getFullYear();
+
+    const itemMonth =
+      dateObj.getMonth();
+
+    // Prima del punto di partenza:
+    // IGNORA.
+    if (
+      itemYear < resetYear ||
+      (
+        itemYear === resetYear &&
+        itemMonth < resetMonth
+      )
+    ) {
+      return;
+    }
+
+    // Dopo il mese richiesto:
+    // IGNORA.
+    if (
+      itemYear > year ||
+      (
+        itemYear === year &&
+        itemMonth > month
+      )
+    ) {
+      return;
+    }
+
+    const difference =
+      Number(item.differenceMinutes);
+
+    if (!Number.isFinite(difference)) {
+      return;
+    }
+
+    totalMinutes +=
+      difference;
+
+  });
+
+  // ======================
+  // ORE PAGATE
+  // ======================
+
+  const paidHours =
+    summary.paidHours || {};
+
+  const paidMonths = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  // Le ore pagate vengono sottratte
+  // dal mese di partenza fino al mese
+  // richiesto.
+  for (
+    let currentYear = resetYear;
+    currentYear <= year;
+    currentYear++
+  ) {
+
+    const firstMonth =
+      currentYear === resetYear
+        ? resetMonth
+        : 0;
+
+    const lastMonth =
+      currentYear === year
+        ? month
+        : 11;
+
+    for (
+      let currentMonth = firstMonth;
+      currentMonth <= lastMonth;
+      currentMonth++
+    ) {
+
+      const paidValue =
+        paidHours[
+          paidMonths[currentMonth]
+        ];
+
+      if (
+        paidValue !== null &&
+        paidValue !== undefined &&
+        Number.isFinite(Number(paidValue))
+      ) {
+
+        totalMinutes -=
+          Number(paidValue);
+
+      }
+
+    }
+  }
+
+  return totalMinutes;
+};
+
+// ======================
+// 🟢 CALCOLO ORD
+// ======================
+
+window.calculatePersonalORD = function(year) {
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    return null;
+  }
+
+  const summary =
+    window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  // Se il valore iniziale non è stato inserito,
+  // non effettuiamo alcun conteggio.
+  if (
+    summary.initialORD === null ||
+    summary.initialORD === undefined ||
+    !Number.isFinite(Number(summary.initialORD))
+  ) {
+    return null;
+  }
+
+  const initialORD =
+    Number(summary.initialORD);
+
+  const activationAt =
+    summary.personalSummaryActivationAt || null;
+
+  // Senza momento di attivazione non contiamo nulla.
+  if (!activationAt) {
+    return initialORD;
+  }
+
+  const activationDate =
+    new Date(activationAt);
+
+  if (Number.isNaN(activationDate.getTime())) {
+    return initialORD;
+  }
+
+  let usedORD = 0;
+
+  window.savedEvents.forEach(ev => {
+
+    if (
+      !ev ||
+      ev.employee !== employee ||
+      ev.shift !== "LIC" ||
+      !ev.date
+    ) {
+      return;
+    }
+
+    const eventDate =
+      new Date(
+        ev.date + "T00:00:00"
+      );
+
+    if (
+      Number.isNaN(eventDate.getTime()) ||
+      eventDate.getFullYear() !== year
+    ) {
+      return;
+    }
+
+    // Contiamo solo LIC creati dopo
+    // il salvataggio dei valori iniziali.
+    if (!ev.createdAt) {
+      return;
+    }
+
+    let createdDate = null;
+
+    if (
+      typeof ev.createdAt.toDate ===
+      "function"
+    ) {
+      createdDate =
+        ev.createdAt.toDate();
+    }
+    else if (
+      ev.createdAt instanceof Date
+    ) {
+      createdDate =
+        ev.createdAt;
+    }
+    else if (
+      typeof ev.createdAt ===
+      "string"
+    ) {
+      createdDate =
+        new Date(ev.createdAt);
+    }
+
+    if (
+      !createdDate ||
+      Number.isNaN(createdDate.getTime())
+    ) {
+      return;
+    }
+
+    if (createdDate < activationDate) {
+      return;
+    }
+
+    // ORD viene scalato solo nei giorni
+    // lavorativi lunedì-venerdì e non festivi.
+    const info =
+      getDayInfo(ev.date);
+
+    if (
+      info.isHoliday ||
+      info.isSunday ||
+      info.isWeekday !== true ||
+      new Date(ev.date + "T00:00:00").getDay() === 6
+    ) {
+      return;
+    }
+
+    usedORD++;
+  });
+
+  return initialORD - usedORD;
+};
+
+// ======================
+// 🟣 CALCOLO 937 / 77
+// ======================
+
+
+// ======================
+// 🔵 CALCOLO RFI
+// ======================
+
+window.calculatePersonalRFI = function(year) {
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    return null;
+  }
+
+  const summary =
+    window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  // Se il valore iniziale non è stato inserito,
+  // non effettuiamo alcun conteggio.
+  if (
+    summary.initialRFI === null ||
+    summary.initialRFI === undefined ||
+    !Number.isFinite(Number(summary.initialRFI))
+  ) {
+    return null;
+  }
+
+  const initialRFI =
+    Number(summary.initialRFI);
+
+  const activationAt =
+    summary.personalSummaryActivationAt || null;
+
+  // Senza momento di attivazione non contiamo nulla.
+  if (!activationAt) {
+    return initialRFI;
+  }
+
+  const activationDate =
+    new Date(activationAt);
+
+  if (Number.isNaN(activationDate.getTime())) {
+    return initialRFI;
+  }
+
+  let usedRFI = 0;
+
+  window.savedEvents.forEach(ev => {
+
+    if (
+      !ev ||
+      ev.employee !== employee ||
+      ev.shift !== "RFI" ||
+      !ev.date
+    ) {
+      return;
+    }
+
+    const eventDate =
+      new Date(
+        ev.date + "T00:00:00"
+      );
+
+    if (
+      Number.isNaN(eventDate.getTime()) ||
+      eventDate.getFullYear() !== year
+    ) {
+      return;
+    }
+
+    // Contiamo solo RFI creati dopo
+    // l'ultimo salvataggio della tabella.
+    if (!ev.createdAt) {
+      return;
+    }
+
+    let createdDate = null;
+
+    if (
+      typeof ev.createdAt.toDate ===
+      "function"
+    ) {
+      createdDate =
+        ev.createdAt.toDate();
+    }
+    else if (
+      ev.createdAt instanceof Date
+    ) {
+      createdDate =
+        ev.createdAt;
+    }
+    else if (
+      typeof ev.createdAt ===
+      "string"
+    ) {
+      createdDate =
+        new Date(ev.createdAt);
+    }
+
+    if (
+      !createdDate ||
+      Number.isNaN(createdDate.getTime())
+    ) {
+      return;
+    }
+
+    if (createdDate < activationDate) {
+      return;
+    }
+
+    usedRFI++;
+  });
+
+  return initialRFI - usedRFI;
+};
+
+
+window.calculatePersonal937 = function(year) {
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    return null;
+  }
+
+  const summary =
+    window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  let initial937 = 4;
+
+  // ======================
+  // ANNO DI ATTIVAZIONE
+  // ======================
+
+const activationAt =
+  summary.personalSummaryActivationAt || null;
+
+if (activationAt) {
+
+  const activationDate =
+    new Date(activationAt);
+
+  const activationYear =
+    activationDate.getFullYear();
+
+  if (year === activationYear) {
+
+      if (
+        summary.initial937 !== null &&
+        summary.initial937 !== undefined &&
+        Number.isFinite(
+          Number(summary.initial937)
+        )
+      ) {
+        initial937 =
+          Number(summary.initial937);
+      }
+    }
+  }
+
+  // ======================
+  // CONTEGGIO 937 UTILIZZATI
+  // ======================
+
+  let used937 = 0;
+
+  window.savedEvents.forEach(ev => {
+
+    if (
+      !ev ||
+      ev.employee !== employee ||
+      ev.shift !== "937" ||
+      !ev.date
+    ) {
+      return;
+    }
+
+    const eventDate =
+      new Date(
+        ev.date + "T00:00:00"
+      );
+
+    if (
+      eventDate.getFullYear() !== year
+    ) {
+      return;
+    }
+
+    // Nel primo anno contiamo solo
+    // i 937 creati dopo l'attivazione
+if (
+  activationAt &&
+  year ===
+    new Date(activationAt).getFullYear()
+) {
+      if (!ev.createdAt) {
+        return;
+      }
+
+      let createdDate = null;
+
+      if (
+        typeof ev.createdAt.toDate ===
+        "function"
+      ) {
+        createdDate =
+          ev.createdAt.toDate();
+      }
+      else if (
+        ev.createdAt instanceof Date
+      ) {
+        createdDate =
+          ev.createdAt;
+      }
+      else if (
+        typeof ev.createdAt ===
+        "string"
+      ) {
+        createdDate =
+          new Date(ev.createdAt);
+      }
+
+      if (
+        !createdDate ||
+        Number.isNaN(
+          createdDate.getTime()
+        )
+      ) {
+        return;
+      }
+if (
+  createdDate <
+  new Date(activationAt)
+) {
+  return;
+}
+    }
+
+    used937++;
+  });
+
+  return initial937 - used937;
+};
+
+// ======================
+// 📊 RIEPILOGO PERSONALE
+// ======================
+
+window.openPersonalSummary = async function() {
+
+  const user = auth.currentUser;
+
+  if (!user) {
+
+    alert("Utente non autenticato");
+
+    return;
+
+  }
+
+  try {
+
+    const userRef =
+      firestore.doc(db, "users", user.uid);
+
+    const userSnap =
+      await firestore.getDoc(userRef);
+
+    const summary =
+      userSnap.exists()
+        ? userSnap.data().personalSummary
+        : null;
+window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
+  // ======================
+  // 🟣 AGGIORNA 937 / 77
+  // ======================
+
+  const current937Element =
+    document.getElementById("current937");
+
+  if (current937Element) {
+
+    const current937 =
+      calculatePersonal937(
+        currentDate.getFullYear()
+      );
+
+    current937Element.textContent =
+      current937 === null
+        ? "Disponibili: —"
+        : "Disponibili: " +
+          current937 +
+          " " +
+          (
+            current937 === 1
+              ? "giorno"
+              : "giorni"
+          );
+  }
+
+  // ======================
+  // 🔵 AGGIORNA RFI
+  // ======================
+
+  const currentRFIElement =
+    document.getElementById("currentRFI");
+
+  if (currentRFIElement) {
+
+    const currentRFI =
+      calculatePersonalRFI(
+        currentDate.getFullYear()
+      );
+
+    currentRFIElement.textContent =
+      currentRFI === null
+        ? "Disponibili: —"
+        : "Disponibili: " +
+          currentRFI +
+          " " +
+          (
+            currentRFI === 1
+              ? "giorno"
+              : "giorni"
+          );
+  }
+
+  // ======================
+  // 🟢 AGGIORNA ORD
+  // ======================
+
+  const currentORDElement =
+    document.getElementById("currentORD");
+
+  if (currentORDElement) {
+
+    const currentORD =
+      calculatePersonalORD(
+        currentDate.getFullYear()
+      );
+
+    currentORDElement.textContent =
+      currentORD === null
+        ? "Disponibili: —"
+        : "Disponibili: " +
+          currentORD +
+          " " +
+          (
+            currentORD === 1
+              ? "giorno"
+              : "giorni"
+          );
+  }
+
+  // ======================
+  // ⏱️ AGGIORNA MONTE ORE
+  // ======================
+
+  const summaryYear =
+    currentDate.getFullYear();
+
+  const summaryMonth =
+    currentDate.getMonth();
+
+  const progressiveTotal =
+    calculatePersonalMonteOre(
+      summaryYear,
+      summaryMonth
+    );
+
+  const previousTotal =
+    summaryMonth === 0
+      ? 0
+      : calculatePersonalMonteOre(
+          summaryYear,
+          summaryMonth - 1
+        );
+
+  // ======================
+  // DETERMINA IL TOTALE DEL MESE
+  // ======================
+  //
+  // Se questo mese contiene un nuovo
+  // valore iniziale realmente diverso
+  // dal precedente, il mese riparte
+  // dalla nuova base e quindi mostra
+  // direttamente il nuovo risultato.
+  //
+  // Se invece il valore è uguale al
+  // precedente, il progressivo continua
+  // normalmente e il mese mostra solo
+  // la variazione del mese.
+  //
+
+  const initialOREByMonthForDisplay =
+    window.CURRENT_USER_PERSONAL_SUMMARY?.initialOREByMonth || {};
+
+  const currentOREMonthKey =
+    summaryYear + "-" +
+    String(summaryMonth + 1).padStart(2, "0");
+
+  const currentInitialORE =
+    initialOREByMonthForDisplay[currentOREMonthKey];
+
+  let previousInitialORE = null;
+
+  const previousOREMonthKeys =
+    Object.keys(initialOREByMonthForDisplay)
+      .filter(key => key < currentOREMonthKey)
+      .sort();
+
+  if (previousOREMonthKeys.length > 0) {
+    const previousKey =
+      previousOREMonthKeys[previousOREMonthKeys.length - 1];
+
+    const previousValue =
+      initialOREByMonthForDisplay[previousKey];
+
+    if (
+      previousValue !== null &&
+      previousValue !== undefined &&
+      Number.isFinite(Number(previousValue))
+    ) {
+      previousInitialORE =
+        Number(previousValue);
+    }
+  }
+
+  const isNewOREReset =
+    currentInitialORE !== null &&
+    currentInitialORE !== undefined &&
+    Number.isFinite(Number(currentInitialORE)) &&
+    (
+      previousInitialORE === null ||
+      Number(currentInitialORE) !== previousInitialORE
+    );
+
+  const monthlyTotal =
+    isNewOREReset
+      ? progressiveTotal
+      : progressiveTotal - previousTotal;
+
+  const monthNames = [
+    "Gennaio",
+    "Febbraio",
+    "Marzo",
+    "Aprile",
+    "Maggio",
+    "Giugno",
+    "Luglio",
+    "Agosto",
+    "Settembre",
+    "Ottobre",
+    "Novembre",
+    "Dicembre"
+  ];
+
+  const monthElement =
+    document.getElementById(
+      "personalMonteOreMonth"
+    );
+
+  const progressiveElement =
+    document.getElementById(
+      "personalMonteOreProgressive"
+    );
+
+  const formatMonteOre = function(minutes) {
+
+    if (
+      minutes === null ||
+      minutes === undefined ||
+      !Number.isFinite(Number(minutes))
+    ) {
+      return "—";
+    }
+
+    const numericMinutes =
+      Math.round(Number(minutes));
+
+    if (numericMinutes === 0) {
+      return "0,00";
+    }
+
+    const sign =
+      numericMinutes > 0 ? "+" : "-";
+
+    return (
+      sign +
+      formatPersonalHours(
+        Math.abs(numericMinutes)
+      )
+    );
+  };
+
+  if (monthElement) {
+    monthElement.textContent =
+      "Mese " +
+      monthNames[summaryMonth] +
+      ": " +
+      formatMonteOre(monthlyTotal);
+  }
+
+  if (progressiveElement) {
+    progressiveElement.textContent =
+      "Progressivo: " +
+      formatMonteOre(progressiveTotal);
+  };
+
+    const initialORD =
+      document.getElementById("initialORD");
+
+    const initial937 =
+      document.getElementById("initial937");
+
+    const initialRFI =
+      document.getElementById("initialRFI");
+
+    const initialORE =
+      document.getElementById("initialORE");
+
+    if (initialORD) {
+
+      initialORD.value =
+        summary?.initialORD ?? "";
+
+    }
+
+    if (initial937) {
+
+      initial937.value =
+        summary?.initial937 ?? "";
+
+    }
+
+    if (initialRFI) {
+
+      initialRFI.value =
+        summary?.initialRFI ?? "";
+
+    }
+
+    if (initialORE) {
+
+      const currentOREMonthKey =
+        summaryYear + "-" +
+        String(summaryMonth + 1).padStart(2, "0");
+
+      const initialOREByMonth =
+        summary?.initialOREByMonth || {};
+
+      initialORE.value =
+        initialOREByMonth[currentOREMonthKey] ??
+        summary?.initialORE ??
+        "";
+
+    }
+
+    const paidMonths = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+
+    paidMonths.forEach(month => {
+
+      const input =
+        document.getElementById("paid" + month);
+
+      if (!input) return;
+
+      const minutes =
+        summary?.paidHours?.[month];
+
+      input.value =
+        minutes === null ||
+        minutes === undefined
+          ? ""
+          : formatPersonalHours(minutes);
+
+    });
+
+    const popup =
+      document.getElementById("personalSummaryPopup");
+
+    if (popup) {
+
+      popup.style.display = "flex";
+
+    }
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore caricamento riepilogo personale:",
+      err
+    );
+
+    alert(
+      "Errore durante il caricamento del riepilogo"
+    );
+
+  }
+
+}
+
+// ======================
+// 💾 SALVA VALORI INIZIALI
+// ======================
+
+window.savePersonalSummary = async function() {
+
+  const user = auth.currentUser;
+
+  if (!user) {
+
+    alert("Utente non autenticato");
+
+    return;
+
+  }
+
+  const ordValue =
+    document.getElementById("initialORD")?.value ?? "";
+
+  const value937 =
+    document.getElementById("initial937")?.value ?? "";
+
+  const rfiValue =
+    document.getElementById("initialRFI")?.value ?? "";
+
+  const oreValue =
+    document.getElementById("initialORE")?.value ?? "";
+
+  const currentOREMonthKey =
+    new Date().getFullYear() + "-" +
+    String(new Date().getMonth() + 1).padStart(2, "0");
+
+  // Momento comune di attivazione per RFI, 937/77 e ORD.
+  // Viene aggiornato ogni volta che il dipendente salva la tabella.
+  const personalSummaryActivationAt =
+    new Date().toISOString();
+
+  const paidMonths = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  const paidHours = {};
+
+  for (const month of paidMonths) {
+
+    const input =
+      document.getElementById("paid" + month);
+
+    const value =
+      input?.value ?? "";
+
+    if (value.trim() === "") {
+
+      paidHours[month] = null;
+
+      continue;
+
+    }
+
+    const minutes =
+      parsePersonalHours(value);
+
+    if (minutes === null) {
+
+      alert(
+        "Controlla le ore pagate inserite per " +
+        month + ".\n\n" +
+        "Usa il formato H,MM. Esempio: 1,30"
+      );
+
+      return;
+
+    }
+
+    paidHours[month] = minutes;
+
+  }
+
+  try {
+
+    await firestore.setDoc(
+
+      firestore.doc(
+        db,
+        "users",
+        user.uid
+      ),
+
+      {
+
+        personalSummary: {
+
+          personalSummaryActivationAt:
+            personalSummaryActivationAt,
+
+          initialORD:
+            ordValue === ""
+              ? null
+              : Number(ordValue),
+
+initial937:
+  value937 === ""
+    ? null
+    : Number(value937),
+
+          initialRFI:
+            rfiValue === ""
+              ? null
+              : Number(rfiValue),
+
+          initialORE:
+            oreValue === ""
+              ? null
+              : Number(oreValue),
+
+          initialOREByMonth: {
+
+            ...(window.CURRENT_USER_PERSONAL_SUMMARY?.initialOREByMonth || {}),
+
+            [currentOREMonthKey]:
+
+              oreValue === ""
+
+                ? null
+
+                : Number(oreValue)
+
+          },
+
+          paidHours:
+            paidHours
+
+        }
+
+      },
+
+      {
+        merge: true
+      }
+
+    );
+
+    // Aggiorna immediatamente il riepilogo
+    // senza chiudere il popup.
+    await window.openPersonalSummary();
+
+    alert(
+      "Riepilogo personale salvato"
+    );
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore salvataggio riepilogo personale:",
+      err
+    );
+
+    alert(
+      "Errore durante il salvataggio"
+    );
+
+  }
+
+}
+
+// ======================
+// ❌ CHIUDI RIEPILOGO PERSONALE
+// ======================
+
+window.closePersonalSummary = function() {
+
+  const popup =
+    document.getElementById("personalSummaryPopup");
+
+  if (popup) {
+    popup.style.display = "none";
+  }
+
+};
 
 window.openChangeEmail = function() {
 
@@ -4989,6 +6828,8 @@ window.openArchiveFestivi = async function () {
 // ======================
 
 async function loadEmployeesFromFirestore() {
+console.time("⏱️ LOAD EMPLOYEES");
+
   try {
 
     window.employeesData = window.employeesData || {};
@@ -5000,6 +6841,7 @@ async function loadEmployeesFromFirestore() {
 const snapshot = await firestore.getDocs(
   firestore.collection(db, "employees")
 );
+console.timeEnd("⏱️ LOAD EMPLOYEES");
 
     snapshot.forEach(doc => {
       employeesData[doc.id] = doc.data();
@@ -5489,6 +7331,7 @@ window.deleteEmployeeFromCalendar = async function (id) {
     await loadEmployeesFromFirestore();
     loadEmployeesList();
     await populateEmployeeSelects();
+      setDefaultFilter();
     await renderCalendar();
 
   } catch (err) {
@@ -5724,6 +7567,7 @@ console.log("USERS CREATO");
     await loadEmployeesFromFirestore();
     loadEmployeesList();
     await populateEmployeeSelects();
+      setDefaultFilter();
     await renderCalendar();
 
   } catch (err) {
@@ -5801,6 +7645,7 @@ console.log("USERS CREATO");
 
       // 🔄 Ricrea i dati del filtro
       await populateEmployeeSelects();
+      setDefaultFilter();
 
       // 🔄 Ridisegna il calendario
       await renderCalendar();
@@ -5823,3 +7668,748 @@ console.log("USERS CREATO");
   }, { passive: true });
 
 })();
+
+// ======================
+// 🕐 ORARI PERSONALI
+// ======================
+
+let personalWorkTimeDetailsData = null;
+
+window.closePersonalWorkTimeDetailsPopup = function() {
+
+  const popup =
+    document.getElementById(
+      "personalWorkTimeDetailsPopup"
+    );
+
+  if (popup) {
+    popup.style.display = "none";
+  }
+
+  personalWorkTimeDetailsData = null;
+};
+
+
+window.openPersonalWorkTimeDetailsPopup = function(
+  personalTime
+) {
+
+  if (!personalTime) {
+    return;
+  }
+
+  personalWorkTimeDetailsData = personalTime;
+
+  const title =
+    document.getElementById(
+      "personalWorkTimeDetailsTitle"
+    );
+
+  const content =
+    document.getElementById(
+      "personalWorkTimeDetailsContent"
+    );
+
+  const popup =
+    document.getElementById(
+      "personalWorkTimeDetailsPopup"
+    );
+
+  const typeLabel =
+    personalTime.type === "STRA"
+      ? "STRAORDINARIO"
+      : "PERMESSO";
+
+  const differenceMinutes =
+    Math.abs(
+      personalTime.differenceMinutes || 0
+    );
+
+  const hours =
+    Math.floor(differenceMinutes / 60);
+
+  const minutes =
+    differenceMinutes % 60;
+
+  const differenceText =
+    `${hours}h ${String(minutes).padStart(2, "0")}min`;
+
+  if (title) {
+    title.textContent = typeLabel;
+  }
+
+  if (content) {
+    content.innerHTML =
+      `<div style="line-height:1.8;">` +
+      `<div><strong>Entrata:</strong> ${personalTime.start}</div>` +
+      `<div><strong>Uscita:</strong> ${personalTime.end}</div>` +
+      `<div style="margin-top:8px;">` +
+      `<strong>Differenza:</strong> ${differenceText}` +
+      `</div>` +
+      `</div>`;
+  }
+
+  if (popup) {
+    popup.style.display = "flex";
+  }
+};
+
+
+window.editPersonalWorkTimeDetails = function() {
+
+  const data =
+    personalWorkTimeDetailsData;
+
+  if (!data) {
+    return;
+  }
+
+  closePersonalWorkTimeDetailsPopup();
+
+  openPersonalWorkTimePopup(
+    data.date,
+    {
+      start: data.start,
+      end: data.end
+    }
+  );
+};
+
+
+window.openPersonalWorkTimePopup = function(date, editData = null) {
+
+  const popup =
+    document.getElementById("personalWorkTimePopup");
+
+  const dateElement =
+    document.getElementById("personalWorkTimeDate");
+
+  const cfiMessage =
+    document.getElementById("personalCFIMessage");
+
+  const startInput =
+    document.getElementById("personalStartTime");
+
+  const endRow =
+    document.querySelector(
+      "#personalEndTime"
+    )?.closest(".personal-work-time-row");
+
+  const shift =
+    getPersonalDayShift(date);
+
+  if (dateElement) {
+    dateElement.textContent = date;
+  }
+
+  // ======================
+  // 🟢 CFI / CFI/REP
+  // ======================
+
+  if (
+    shift === "CFI" ||
+    shift === "CFI/REP"
+  ) {
+
+    if (cfiMessage) {
+      cfiMessage.style.display = "block";
+      cfiMessage.textContent =
+        "Inserisci l'orario di ingresso per sapere da che ora puoi uscire per rendere valida la " +
+        shift + ".";
+    }
+
+    if (endRow) {
+      endRow.style.display = "none";
+    }
+
+  } else {
+
+    if (cfiMessage) {
+      cfiMessage.style.display = "none";
+      cfiMessage.textContent = "";
+    }
+
+    if (endRow) {
+      endRow.style.display = "";
+    }
+
+  }
+
+  if (startInput) {
+    startInput.value =
+      editData?.start || "";
+  }
+
+  const endInput =
+    document.getElementById("personalEndTime");
+
+  if (endInput) {
+    endInput.value =
+      editData?.end || "";
+  }
+
+  if (popup) {
+    popup.style.display = "flex";
+  }
+
+};
+
+window.closePersonalWorkTimePopup = function() {
+
+  const popup =
+    document.getElementById("personalWorkTimePopup");
+
+  if (popup) {
+    popup.style.display = "none";
+  }
+
+};
+
+// ======================
+// 🕐 IDENTIFICA SIGLA GIORNO PERSONALE
+// ======================
+
+window.getPersonalDayShift = function(date) {
+
+  const employee = window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    return null;
+  }
+
+  const dayEvents = window.savedEvents.filter(ev =>
+    ev &&
+    ev.employee === employee &&
+    ev.date === date
+  );
+
+  if (!dayEvents.length) {
+    return null;
+  }
+
+  const priority = [
+    "LIC",
+    "REC",
+    "MAL",
+    "CFI/REP",
+    "CFI",
+    "REP",
+    "FREP"
+  ];
+
+  for (const shift of priority) {
+
+    if (dayEvents.some(ev => ev.shift === shift)) {
+      return shift;
+    }
+
+  }
+
+  return null;
+
+};
+
+// ======================
+// 🟢 CALCOLO USCITA MINIMA CFI
+// ======================
+
+window.calculateCFIMinExit = function(startTime, date) {
+
+  if (!startTime || !date) {
+    return null;
+  }
+
+  const parts = startTime.split(":");
+
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+
+  const info = getDayInfo(date);
+  const dateObj = new Date(date);
+  const dayOfWeek = dateObj.getDay();
+
+  let minimumMinutes;
+
+  // ======================
+  // 🟢 SABATO / DOMENICA / FESTIVO
+  // ======================
+
+  if (
+    dayOfWeek === 6 ||
+    info.isSunday ||
+    info.isHoliday
+  ) {
+
+    minimumMinutes = 4 * 60;
+
+  }
+
+  // ======================
+  // 🟢 VENERDÌ
+  // ======================
+
+  else if (dayOfWeek === 5) {
+
+    minimumMinutes = 8 * 60 + 30;
+
+  }
+
+  // ======================
+  // 🟢 LUNEDÌ → GIOVEDÌ
+  // ======================
+
+  else {
+
+    minimumMinutes = 10 * 60 + 30;
+
+  }
+
+  const totalMinutes =
+    hours * 60 +
+    minutes +
+    minimumMinutes;
+
+  const resultHours =
+    Math.floor(totalMinutes / 60) % 24;
+
+  const resultMinutes =
+    totalMinutes % 60;
+
+  return (
+    String(resultHours).padStart(2, "0") +
+    ":" +
+    String(resultMinutes).padStart(2, "0")
+  );
+
+};
+
+// ======================
+// 🟢 AGGIORNA ORA MINIMA USCITA CFI
+// ======================
+
+const personalStartTimeInput =
+  document.getElementById("personalStartTime");
+
+if (personalStartTimeInput) {
+
+  personalStartTimeInput.addEventListener("change", function() {
+
+    const dateElement =
+      document.getElementById("personalWorkTimeDate");
+
+    const cfiMessage =
+      document.getElementById("personalCFIMessage");
+
+    if (!dateElement || !cfiMessage) {
+      return;
+    }
+
+    const date =
+      dateElement.textContent.trim();
+
+    const shift =
+      getPersonalDayShift(date);
+
+    if (
+      shift !== "CFI" &&
+      shift !== "CFI/REP"
+    ) {
+      return;
+    }
+
+    const startTime =
+      this.value;
+
+    if (!startTime) {
+      cfiMessage.textContent =
+        "Inserisci l'orario di ingresso per sapere da che ora puoi uscire per rendere valida la " +
+        shift + ".";
+      return;
+    }
+
+    const minExit =
+calculateCFIMinExit(startTime, date);
+    if (!minExit) {
+      return;
+    }
+
+    cfiMessage.textContent =
+      "🟢 Sei entrato alle " +
+      startTime +
+      ". Per rendere valida la " +
+      shift +
+      " puoi uscire dalle " +
+      minExit +
+      " in poi.";
+
+  });
+
+}
+
+// ======================
+// 🕐 CALCOLO ORE PERSONALI
+// ======================
+
+window.calculatePersonalWorkTime = function(date, startTime, endTime) {
+
+  if (!date || !startTime || !endTime) {
+    return null;
+  }
+
+  const startParts = startTime.split(":");
+  const endParts = endTime.split(":");
+
+  if (
+    startParts.length !== 2 ||
+    endParts.length !== 2
+  ) {
+    return null;
+  }
+
+  const startMinutes =
+    Number(startParts[0]) * 60 +
+    Number(startParts[1]);
+
+  const endMinutes =
+    Number(endParts[0]) * 60 +
+    Number(endParts[1]);
+
+  if (
+    !Number.isFinite(startMinutes) ||
+    !Number.isFinite(endMinutes) ||
+    endMinutes <= startMinutes
+  ) {
+    return null;
+  }
+
+  const dateObj = new Date(date + "T00:00:00");
+  const dayOfWeek = dateObj.getDay();
+
+  let normalMinutes = 0;
+  let workedMinutes =
+    endMinutes - startMinutes;
+
+  // ======================
+  // LUNEDÌ → GIOVEDÌ
+  // ======================
+
+  if (
+    dayOfWeek >= 1 &&
+    dayOfWeek <= 4
+  ) {
+
+    normalMinutes = 8 * 60;
+
+    // Pausa pranzo di 30 minuti
+    workedMinutes -= 30;
+
+  }
+
+  // ======================
+  // VENERDÌ
+  // ======================
+
+  else if (dayOfWeek === 5) {
+
+    normalMinutes = 4 * 60;
+
+  }
+
+  // ======================
+  // SABATO / DOMENICA
+  // ======================
+
+  else {
+
+    return {
+      workedMinutes,
+      normalMinutes: 0,
+      differenceMinutes: workedMinutes,
+      type: workedMinutes > 0 ? "STRA" : null
+    };
+
+  }
+
+  const differenceMinutes =
+    workedMinutes - normalMinutes;
+
+  let type = null;
+
+  if (differenceMinutes > 0) {
+    type = "STRA";
+  } else if (differenceMinutes < 0) {
+    type = "rec";
+  }
+
+  return {
+    workedMinutes,
+    normalMinutes,
+    differenceMinutes,
+    type
+  };
+
+};
+
+
+// ======================
+// 💾 SALVATAGGIO ORARIO PERSONALE
+// ======================
+
+window.savePersonalWorkTime = async function() {
+
+  const dateElement =
+    document.getElementById("personalWorkTimeDate");
+
+  const startInput =
+    document.getElementById("personalStartTime");
+
+  const endInput =
+    document.getElementById("personalEndTime");
+
+  if (!dateElement || !startInput) {
+    return;
+  }
+
+  const date =
+    dateElement.textContent.trim();
+
+  const startTime =
+    startInput.value;
+
+  const shift =
+    getPersonalDayShift(date);
+
+  // ======================
+  // ❌ GIORNATE NON PRESENZA
+  // ======================
+
+  if (
+    shift === "LIC" ||
+    shift === "REC" ||
+    shift === "MAL"
+  ) {
+
+    alert(
+      "Non puoi inserire un orario personale in questa giornata.\n\n" +
+      "La giornata risulta " +
+      shift +
+      " e quindi non sei presente al lavoro."
+    );
+
+    return;
+  }
+
+  // ======================
+  // 🟢 CFI / CFI/REP
+  // ======================
+
+  if (
+    shift === "CFI" ||
+    shift === "CFI/REP"
+  ) {
+
+    if (!startTime) {
+
+      alert(
+        "Inserisci l'orario di ingresso."
+      );
+
+      return;
+    }
+
+    const minExit =
+calculateCFIMinExit(startTime, date);
+    if (!minExit) {
+
+      alert(
+        "Orario di ingresso non valido."
+      );
+
+      return;
+    }
+
+    alert(
+      "Per rendere valida la " +
+      shift +
+      " puoi uscire dalle " +
+      minExit +
+      " in poi."
+    );
+
+    return;
+  }
+
+  // ======================
+  // 🕐 GIORNATA NORMALE
+  // ======================
+
+  const endTime =
+    endInput?.value || "";
+
+  if (
+    !startTime ||
+    !endTime
+  ) {
+
+    alert(
+      "Inserisci sia l'orario di ingresso sia l'orario di uscita."
+    );
+
+    return;
+  }
+
+  const result =
+    calculatePersonalWorkTime(
+      date,
+      startTime,
+      endTime
+    );
+
+  if (!result) {
+
+    alert(
+      "Controlla gli orari inseriti."
+    );
+
+    return;
+  }
+
+  // ======================
+  // 👤 DIPENDENTE CORRENTE
+  // ======================
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+
+    alert(
+      "Dipendente non identificato."
+    );
+
+    return;
+  }
+
+  const personalWorkTimeId =
+    employee + "_" + date;
+
+  const personalWorkTimeRef =
+    firestore.doc(
+      db,
+      "personalWorkTimes",
+      personalWorkTimeId
+    );
+
+  // ======================
+  // ⚪ ORARIO ESATTO
+  // ======================
+
+  if (result.type === null) {
+
+    try {
+
+      await firestore.deleteDoc(
+        personalWorkTimeRef
+      );
+
+      alert(
+        "Orario salvato.\n\n" +
+        "Nessuna differenza dall'orario normale."
+      );
+
+    } catch (err) {
+
+      console.error(
+        "❌ Errore eliminazione orario personale:",
+        err
+      );
+
+      alert(
+        "Errore durante il salvataggio."
+      );
+    }
+
+    return;
+  }
+
+  // ======================
+  // 💾 SALVA STRA / rec
+  // ======================
+
+  try {
+
+    await firestore.setDoc(
+      personalWorkTimeRef,
+      {
+        employee: employee,
+        date: date,
+        start: startTime,
+        end: endTime,
+        type: result.type,
+        workedMinutes: result.workedMinutes,
+        normalMinutes: result.normalMinutes,
+        differenceMinutes: result.differenceMinutes,
+        updatedAt: new Date()
+      },
+      {
+        merge: true
+      }
+    );
+
+    let message =
+      "Orario salvato.\n\n" +
+      "Ingresso: " +
+      startTime +
+      "\n" +
+      "Uscita: " +
+      endTime +
+      "\n" +
+      "Ore lavorate: " +
+      (result.workedMinutes / 60).toFixed(2) +
+      "\n";
+
+    if (result.type === "STRA") {
+
+      message +=
+        "\nSTRA: +" +
+        (result.differenceMinutes / 60).toFixed(2) +
+        " ore";
+
+    } else if (result.type === "rec") {
+
+      message +=
+        "\nrec: " +
+        (result.differenceMinutes / 60).toFixed(2) +
+        " ore";
+    }
+
+    alert(message);
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore salvataggio orario personale:",
+      err
+    );
+
+    alert(
+      "Errore durante il salvataggio dell'orario."
+    );
+  }
+
+};

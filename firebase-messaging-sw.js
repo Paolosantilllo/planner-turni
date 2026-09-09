@@ -53,36 +53,6 @@ const body =
   "";
 
 
-
- self.registration.showNotification(
-  title,
-  {
-
-    body: body,
-
-   icon: "/planner-turni/icon-192.png",
-badge: "/planner-turni/icon-192.png",
-
-    data: data,   // 👈 QUESTO è giusto
-
-    vibrate: [
-      200,
-      100,
-      200
-    ],
-
-    actions:[
-        {
-          action:"open",
-          title:"Apri"
-        }
-      ]
-
-    }
-
-  );
-
-
 });
 
 
@@ -200,5 +170,27 @@ requestId
 );
 
 
+
+});
+
+self.addEventListener("message", (event) => {
+
+  if (event.data?.type === "UPDATE_BADGE") {
+
+    const count = Number(event.data.count || 0);
+
+    badgeCount = count;
+
+    if (self.navigator && "setAppBadge" in self.navigator) {
+
+      if (count > 0) {
+        self.navigator.setAppBadge(count);
+      } else if ("clearAppBadge" in self.navigator) {
+        self.navigator.clearAppBadge();
+      }
+
+    }
+
+  }
 
 });
