@@ -5709,9 +5709,9 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       "personalMonteOreMonth"
     );
 
-  const progressiveElement =
+  const untilTodayElement =
     document.getElementById(
-      "personalMonteOreProgressive"
+      "personalMonteOreUntilToday"
     );
 
   const formatMonteOre = function(minutes) {
@@ -5744,17 +5744,128 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
   if (monthElement) {
     monthElement.textContent =
-      "Mese " +
-      monthNames[summaryMonth] +
-      ": " +
+      "Totale mese: " +
       formatMonteOre(monthlyTotal);
   }
 
-  if (progressiveElement) {
-    progressiveElement.textContent =
-      "Progressivo: " +
-      formatMonteOre(progressiveTotal);
-  };
+  if (untilTodayElement) {
+    const today = new Date();
+
+    const todayYear =
+      today.getFullYear();
+
+    const todayMonth =
+      today.getMonth();
+
+    const todayDay =
+      today.getDate();
+
+    if (
+      summaryYear === todayYear &&
+      summaryMonth === todayMonth
+    ) {
+      let totalUntilToday =
+        calculatePersonalMonteOre(
+          summaryYear,
+          summaryMonth
+        );
+
+      window.savedEvents.forEach(ev => {
+        if (
+          !ev ||
+          ev.employee !== window.CURRENT_EMPLOYEE ||
+          !ev.date
+        ) {
+          return;
+        }
+
+        const dateObj =
+          new Date(ev.date);
+
+        if (
+          Number.isNaN(dateObj.getTime())
+        ) {
+          return;
+        }
+
+        if (
+          dateObj.getFullYear() !== summaryYear ||
+          dateObj.getMonth() !== summaryMonth ||
+          dateObj.getDate() <= todayDay
+        ) {
+          return;
+        }
+
+        if (
+          ev.shift === "REP" ||
+          ev.shift === "FREP"
+        ) {
+          const day =
+            dateObj.getDay();
+
+          if (day >= 1 && day <= 4) {
+            totalUntilToday -= 37;
+          } else if (day === 5) {
+            totalUntilToday -= 60;
+          } else if (day === 6) {
+            totalUntilToday -= 80;
+          }
+        }
+
+        if (ev.shift === "REC") {
+          const day =
+            dateObj.getDay();
+
+          if (day >= 1 && day <= 4) {
+            totalUntilToday += 8 * 60;
+          } else if (day === 5) {
+            totalUntilToday += 4 * 60;
+          }
+        }
+      });
+
+      personalWorkTimes.forEach(item => {
+        if (
+          !item ||
+          item.employee !== window.CURRENT_EMPLOYEE ||
+          !item.date
+        ) {
+          return;
+        }
+
+        const dateObj =
+          new Date(item.date);
+
+        if (
+          Number.isNaN(dateObj.getTime())
+        ) {
+          return;
+        }
+
+        if (
+          dateObj.getFullYear() !== summaryYear ||
+          dateObj.getMonth() !== summaryMonth ||
+          dateObj.getDate() <= todayDay
+        ) {
+          return;
+        }
+
+        const difference =
+          Number(item.differenceMinutes);
+
+        if (Number.isFinite(difference)) {
+          totalUntilToday -= difference;
+        }
+      });
+
+      untilTodayElement.textContent =
+        "Totale ore fino ad oggi: " +
+        formatMonteOre(totalUntilToday);
+    } else {
+      untilTodayElement.textContent =
+        "Totale ore fino ad oggi: —";
+    }
+  }
 
     const initialORD =
       document.getElementById("initialORD");
