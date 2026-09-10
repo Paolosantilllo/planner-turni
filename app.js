@@ -4831,7 +4831,7 @@ window.calculatePersonalMonteOre = function(year, month) {
     monthlyEntries[0];
 
   let resetInitialMinutes =
-    Number(initialOREByMonth[resetMonthKey]) * 60;
+    Number(initialOREByMonth[resetMonthKey]);
 
   let previousValue =
     Number(initialOREByMonth[resetMonthKey]);
