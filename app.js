@@ -5909,10 +5909,17 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       const initialOREByMonth =
         summary?.initialOREByMonth || {};
 
-      initialORE.value =
+      const initialOREMinutes =
         initialOREByMonth[currentOREMonthKey] ??
         summary?.initialORE ??
         "";
+
+      initialORE.value =
+        initialOREMinutes === "" ||
+        initialOREMinutes === null ||
+        initialOREMinutes === undefined
+          ? ""
+          : formatPersonalHours(initialOREMinutes);
 
     }
 
