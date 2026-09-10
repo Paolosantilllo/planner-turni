@@ -53,7 +53,9 @@ export const SHIFT_COLORS = {
 
  LIC: "#FFEB3B",
  REC: "#FFEB3B",
+ rec: "#F8CCD0",
 
- MAL: "#E0E0E0"
+ MAL: "#E0E0E0",
+ STRA: "#BFE3F5"
 
 };
