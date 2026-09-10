@@ -1361,6 +1361,8 @@ if (
 
     personalEl.classList.add("event");
     personalEl.style.color = "#000";
+    personalEl.style.backgroundColor =
+      SHIFT_COLORS[personalTime.type];
     personalEl.innerText =
       personalTime.type;
 
