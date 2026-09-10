@@ -5984,9 +5984,9 @@ initial937:
               : Number(rfiValue),
 
           initialORE:
-            oreValue === ""
+            oreValue.trim() === ""
               ? null
-              : Number(oreValue),
+              : parsePersonalHours(oreValue),
 
           initialOREByMonth: {
 
@@ -5994,11 +5994,11 @@ initial937:
 
             [currentOREMonthKey]:
 
-              oreValue === ""
+              oreValue.trim() === ""
 
                 ? null
 
-                : Number(oreValue)
+                : parsePersonalHours(oreValue)
 
           },
 
