@@ -1467,6 +1467,27 @@ fragment.appendChild(box);
 
 }
  calendar.appendChild(fragment);
+
+// ======================
+// 📊 TOTALE STRA FINO AD OGGI
+// ======================
+
+const personalStraTotalElement =
+  document.getElementById("personalStraTotal");
+
+if (personalStraTotalElement) {
+  const totalStra =
+    window.calculatePersonalStraUntilToday();
+
+  if (totalStra === null) {
+    personalStraTotalElement.textContent =
+      "Totale STRA fino ad oggi: —";
+  } else {
+    personalStraTotalElement.textContent =
+      "Totale STRA fino ad oggi: " +
+      formatMonteOre(totalStra);
+  }
+}
 };
   // ======================
  // NAVIGAZIONE MESI
@@ -4772,6 +4793,112 @@ window.formatPersonalHours = function(minutes) {
 };
 
 // ======================
+// 🧮 TOTALE STRA FINO AD OGGI
+// ======================
+
+window.calculatePersonalStraUntilToday = function() {
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    return null;
+  }
+
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  const yearStart = new Date(
+    today.getFullYear(),
+    0,
+    1
+  );
+
+  let totalMinutes = 0;
+
+  // ======================
+  // ORARI PERSONALI
+  // ======================
+
+  personalWorkTimes.forEach(item => {
+
+    if (
+      !item ||
+      item.employee !== employee ||
+      !item.date
+    ) {
+      return;
+    }
+
+    const dateObj =
+      new Date(item.date + "T00:00:00");
+
+    if (
+      Number.isNaN(dateObj.getTime()) ||
+      dateObj < yearStart ||
+      dateObj > todayStart
+    ) {
+      return;
+    }
+
+    const difference =
+      Number(item.differenceMinutes);
+
+    if (!Number.isFinite(difference)) {
+      return;
+    }
+
+    // STRA aggiunge il positivo.
+    // rec è già negativo e quindi riduce
+    // il monte ore.
+    totalMinutes += difference;
+  });
+
+  // ======================
+  // REC INSERITI DALL'ADMIN
+  // ======================
+
+  window.savedEvents.forEach(ev => {
+
+    if (
+      !ev ||
+      ev.employee !== employee ||
+      !ev.date ||
+      ev.shift !== "REC"
+    ) {
+      return;
+    }
+
+    const dateObj =
+      new Date(ev.date + "T00:00:00");
+
+    if (
+      Number.isNaN(dateObj.getTime()) ||
+      dateObj < yearStart ||
+      dateObj > todayStart
+    ) {
+      return;
+    }
+
+    const day =
+      dateObj.getDay();
+
+    if (day >= 1 && day <= 4) {
+      totalMinutes -= 8 * 60;
+    }
+    else if (day === 5) {
+      totalMinutes -= 4 * 60;
+    }
+  });
+
+  return totalMinutes;
+};
+
+// ======================
 // 🧮 CALCOLO MONTE ORE PERSONALE
 // ======================
 
@@ -5704,11 +5831,6 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     "Dicembre"
   ];
 
-  const monthElement =
-    document.getElementById(
-      "personalMonteOreMonth"
-    );
-
   const untilTodayElement =
     document.getElementById(
       "personalMonteOreUntilToday"
@@ -5741,12 +5863,6 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       )
     );
   };
-
-  if (monthElement) {
-    monthElement.textContent =
-      "Totale mese: " +
-      formatMonteOre(monthlyTotal);
-  }
 
   if (untilTodayElement) {
     const today = new Date();
