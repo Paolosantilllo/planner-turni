@@ -1496,9 +1496,27 @@ if (personalStraTotalElement) {
       personalStraTotalElement.textContent =
         "Totale STRA fino ad oggi: —";
     } else {
+      const totalStraMinutes =
+        Math.round(Number(totalStra));
+
+      const sign =
+        totalStraMinutes < 0 ? "-" : "";
+
+      const absoluteMinutes =
+        Math.abs(totalStraMinutes);
+
+      const hours =
+        Math.floor(absoluteMinutes / 60);
+
+      const minutes =
+        absoluteMinutes % 60;
+
       personalStraTotalElement.textContent =
         "Totale STRA fino ad oggi: " +
-        formatMonteOre(totalStra);
+        sign +
+        String(hours) +
+        "," +
+        String(minutes).padStart(2, "0");
     }
   }
 }
