@@ -4844,11 +4844,45 @@ window.calculatePersonalStraUntilToday = function() {
     today.getDate()
   );
 
-  const yearStart = new Date(
-    today.getFullYear(),
-    0,
-    1
-  );
+  // Trova il primo orario personale valido
+  // inserito da questo dipendente.
+  let startDate = null;
+
+  personalWorkTimes.forEach(item => {
+
+    if (
+      !item ||
+      item.employee !== employee ||
+      !item.date ||
+      !item.start ||
+      !item.end
+    ) {
+      return;
+    }
+
+    const dateObj =
+      new Date(item.date + "T00:00:00");
+
+    if (
+      Number.isNaN(dateObj.getTime()) ||
+      dateObj > todayStart
+    ) {
+      return;
+    }
+
+    if (
+      !startDate ||
+      dateObj < startDate
+    ) {
+      startDate = dateObj;
+    }
+  });
+
+  // Nessun orario personale inserito:
+  // non c'è ancora nulla da conteggiare.
+  if (!startDate) {
+    return 0;
+  }
 
   let totalMinutes = 0;
 
@@ -4871,7 +4905,7 @@ window.calculatePersonalStraUntilToday = function() {
 
     if (
       Number.isNaN(dateObj.getTime()) ||
-      dateObj < yearStart ||
+      dateObj < startDate ||
       dateObj > todayStart
     ) {
       return;
@@ -4910,7 +4944,7 @@ window.calculatePersonalStraUntilToday = function() {
 
     if (
       Number.isNaN(dateObj.getTime()) ||
-      dateObj < yearStart ||
+      dateObj < startDate ||
       dateObj > todayStart
     ) {
       return;
