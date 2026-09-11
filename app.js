@@ -1476,16 +1476,30 @@ const personalStraTotalElement =
   document.getElementById("personalStraTotal");
 
 if (personalStraTotalElement) {
-  const totalStra =
-    window.calculatePersonalStraUntilToday();
 
-  if (totalStra === null) {
-    personalStraTotalElement.textContent =
-      "Totale STRA fino ad oggi: —";
+  const selectedEmployee =
+    employeeFilter.value;
+
+  const isOwnEmployeeCalendar =
+    selectedEmployee !== "ALL" &&
+    selectedEmployee === window.CURRENT_EMPLOYEE;
+
+  if (!isOwnEmployeeCalendar) {
+    personalStraTotalElement.style.display = "none";
   } else {
-    personalStraTotalElement.textContent =
-      "Totale STRA fino ad oggi: " +
-      formatMonteOre(totalStra);
+    personalStraTotalElement.style.display = "block";
+
+    const totalStra =
+      window.calculatePersonalStraUntilToday();
+
+    if (totalStra === null) {
+      personalStraTotalElement.textContent =
+        "Totale STRA fino ad oggi: —";
+    } else {
+      personalStraTotalElement.textContent =
+        "Totale STRA fino ad oggi: " +
+        formatMonteOre(totalStra);
+    }
   }
 }
 };
@@ -5975,11 +5989,11 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       });
 
       untilTodayElement.textContent =
-        "Totale ore fino ad oggi: " +
+        "Totale di STRA + REP: " +
         formatMonteOre(totalUntilToday);
     } else {
       untilTodayElement.textContent =
-        "Totale ore fino ad oggi: —";
+        "Totale di STRA + REP: —";
     }
   }
 
