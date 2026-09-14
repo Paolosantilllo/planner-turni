@@ -25,6 +25,18 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  const expectedSecret = process.env.CFI_CRON_SECRET;
+  const authorization = req.headers.authorization || "";
+
+  if (
+    !expectedSecret ||
+    authorization !== "Bearer " + expectedSecret
+  ) {
+    return res.status(401).json({
+      error: "Unauthorized"
+    });
+  }
+
   try {
 
     const now = new Date();
