@@ -2065,10 +2065,41 @@ if (finalShift === "FREP") {
     )
   );
 }
-    await Promise.all(writes);
+await Promise.all(writes);
 
-    closePopup();
-    console.log("✔ Salvataggio completato");
+// 🔵 AGGIORNA RFI NEL RIEPILOGO SE È APERTO
+const personalSummaryPopup =
+  document.getElementById("personalSummaryPopup");
+
+if (
+  personalSummaryPopup &&
+  personalSummaryPopup.style.display !== "none"
+) {
+  const currentRFIElement =
+    document.getElementById("currentRFI");
+
+  if (currentRFIElement) {
+    const currentRFI =
+      calculatePersonalRFI(
+        currentDate.getFullYear()
+      );
+
+    currentRFIElement.textContent =
+      currentRFI === null
+        ? "Disponibili: —"
+        : "Disponibili: " +
+          currentRFI +
+          " " +
+          (
+            currentRFI === 1
+              ? "giorno"
+              : "giorni"
+          );
+  }
+}
+
+closePopup();
+console.log("✔ Salvataggio completato");
 
   } catch (err) {
     console.error(err);
