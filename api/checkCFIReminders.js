@@ -142,26 +142,27 @@ module.exports = async function handler(req, res) {
         response.successCount
       );
 
-      // Segna il promemoria come già inviato
-      await reminderDoc.ref.update({
-
-        sent: true,
-
-        sentAt: new Date()
-
-      });
+      // Segna il promemoria come inviato solo se almeno una notifica è stata accettata
+      if (response.successCount > 0) {
+        await reminderDoc.ref.update({
+          sent: true,
+          sentAt: new Date()
+        });
+      }
 
       sentCount += response.successCount;
+
+      console.log(
+        "📨 RISULTATO FCM CFI:",
+        JSON.stringify(response.responses)
+      );
     }
 
     return res.status(200).json({
-
       success: true,
-
       sent: sentCount,
-
-      reminders: snapshot.size
-
+      reminders: snapshot.size,
+      details: "Controllo FCM completato"
     });
 
   } catch (error) {
