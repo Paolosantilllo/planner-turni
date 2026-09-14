@@ -65,6 +65,7 @@ module.exports = async function handler(req, res) {
     }
 
     let sentCount = 0;
+    let failureCount = 0;
 
     for (const reminderDoc of snapshot.docs) {
 
@@ -151,18 +152,36 @@ module.exports = async function handler(req, res) {
       }
 
       sentCount += response.successCount;
+      failureCount += response.failureCount;
+
+      const fcmErrors = response.responses
+        .filter(result => !result.success)
+        .map(result => result.error?.code || "unknown");
 
       console.log(
         "📨 RISULTATO FCM CFI:",
-        JSON.stringify(response.responses)
+        JSON.stringify({
+          successCount: response.successCount,
+          failureCount: response.failureCount,
+          errors: fcmErrors
+        })
       );
+
+      if (fcmErrors.length > 0) {
+        console.log(
+          "❌ ERRORI FCM CFI:",
+          JSON.stringify(fcmErrors)
+        );
+      }
     }
 
     return res.status(200).json({
       success: true,
       sent: sentCount,
       reminders: snapshot.size,
-      details: "Controllo FCM completato"
+      details: "Controllo FCM completato",
+      successCount: sentCount,
+      failureCount: failureCount
     });
 
   } catch (error) {
