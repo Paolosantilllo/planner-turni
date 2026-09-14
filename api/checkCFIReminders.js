@@ -66,6 +66,7 @@ module.exports = async function handler(req, res) {
 
     let sentCount = 0;
     let failureCount = 0;
+    const diagnostics = [];
 
     for (const reminderDoc of snapshot.docs) {
 
@@ -173,6 +174,15 @@ module.exports = async function handler(req, res) {
           JSON.stringify(fcmErrors)
         );
       }
+
+      diagnostics.push({
+        employee: reminder.employee,
+        date: reminder.date,
+        minExit: reminder.minExit,
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+        errors: fcmErrors
+      });
     }
 
     return res.status(200).json({
@@ -181,7 +191,8 @@ module.exports = async function handler(req, res) {
       reminders: snapshot.size,
       details: "Controllo FCM completato",
       successCount: sentCount,
-      failureCount: failureCount
+      failureCount: failureCount,
+      diagnostics: diagnostics
     });
 
   } catch (error) {
