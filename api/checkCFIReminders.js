@@ -144,14 +144,43 @@ module.exports = async function handler(req, res) {
         response.successCount
       );
 
-      // Segna il promemoria come inviato solo se almeno una notifica è stata accettata
-      if (response.successCount > 0) {
-        await reminderDoc.ref.update({
-          sent: true,
-          sentAt: new Date()
-        });
-      }
+// Segna il promemoria come inviato solo se almeno una notifica è stata accettata
+if (response.successCount > 0) {
 
+  await reminderDoc.ref.update({
+    sent: true,
+    sentAt: new Date()
+  });
+
+  // 🔔 CREA ANCHE LA NOTIFICA INTERNA DELL'APP
+  const notificationId =
+    "cfi_" +
+    reminder.employee +
+    "_" +
+    reminder.date;
+
+  await db
+    .collection("notifications")
+    .doc(notificationId)
+    .set({
+      employee: reminder.employee,
+      message:
+        "🟢 CFI: puoi uscire. " +
+        "Hai raggiunto l'orario minimo (" +
+        reminder.minExit +
+        ").",
+      read: false,
+      createdAt: new Date(),
+      type: "cfiReminder",
+      date: reminder.date,
+      minExit: reminder.minExit
+    });
+
+  console.log(
+    "🔔 NOTIFICA INTERNA CFI CREATA:",
+    notificationId
+  );
+}
       sentCount += response.successCount;
       failureCount += response.failureCount;
 
