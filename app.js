@@ -8544,16 +8544,81 @@ calculateCFIMinExit(startTime, date);
 
       return;
     }
+const employee = window.CURRENT_EMPLOYEE;
 
-    alert(
-      "Per rendere valida la " +
-      shift +
-      " puoi uscire dalle " +
-      minExit +
-      " in poi."
+if (!employee) {
+  alert("Dipendente non identificato.");
+  return;
+}
+
+// ======================
+// 🔔 SALVA PROMEMORIA CFI
+// ======================
+
+try {
+
+  const reminderId =
+    employee + "_" + date;
+
+  const reminderRef =
+    firestore.doc(
+      db,
+      "cfiReminders",
+      reminderId
     );
 
-    return;
+  // L'orario viene interpretato nell'ora locale
+  // del dispositivo, quindi in Italia Europe/Rome.
+  const reminderDateTime =
+    new Date(
+      date + "T" + minExit + ":00"
+    );
+
+  await firestore.setDoc(
+    reminderRef,
+    {
+      employee: employee,
+      date: date,
+      startTime: startTime,
+      minExit: minExit,
+      reminderAt: reminderDateTime,
+      shift: shift,
+      sent: false,
+      updatedAt: new Date()
+    },
+    {
+      merge: true
+    }
+  );
+
+  alert(
+    "🟢 Sei entrato alle " +
+    startTime +
+    ".\n\n" +
+    "Per rendere valida la " +
+    shift +
+    " puoi uscire dalle " +
+    minExit +
+    " in poi.\n\n" +
+    "🔔 Ti arriverà una notifica alle " +
+    minExit +
+    "."
+  );
+
+} catch (error) {
+
+  console.error(
+    "❌ Errore salvataggio promemoria CFI:",
+    error
+  );
+
+  alert(
+    "Errore durante la programmazione del promemoria CFI."
+  );
+}
+
+return;
+
   }
 
   // ======================
