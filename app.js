@@ -177,6 +177,9 @@ window.IS_ADMIN = employee.role === "ADMIN";
 console.timeEnd("⏱️ FINO A SHOW APP");
  document.getElementById("app").classList.add("show");
 
+  setDefaultFilter();
+  renderCalendar();
+
   await populateEmployeeSelects();
   await loadCustomShiftTypes();
 
@@ -199,8 +202,7 @@ customShiftTypes.forEach(item => {
 });
 }
 
-setDefaultFilter();
-  loadEvents();
+loadEvents();
 loadPersonalWorkTimes();
   loadChangeRequests();
   loadNotificationBadge();
