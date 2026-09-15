@@ -2210,7 +2210,7 @@ button:disabled{
 
 }
 
-@media (max-width: 600px) and (orientation: landscape) {
+@media (orientation: landscape) and (max-height: 600px) {
 
   #personalSummaryPopup .popup-content {
     width: calc(100vw - 8px);
@@ -2296,4 +2296,113 @@ button:disabled{
   font-weight:600;
   cursor:pointer;
   box-sizing:border-box;
+}
+
+/* ================================
+   🕐 ORARIO PERSONALE - RESPONSIVE
+   ================================ */
+
+#personalWorkTimePopup {
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+#personalWorkTimePopup .popup-content {
+  box-sizing: border-box;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+/* In orizzontale, quando lo schermo è basso */
+@media (orientation: landscape) and (max-height: 600px) {
+  #personalWorkTimePopup {
+    align-items: flex-start;
+    padding: 8px;
+  }
+
+  #personalWorkTimePopup .popup-content {
+    width: 90%;
+    max-width: 500px;
+    max-height: calc(100vh - 16px);
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  #personalWorkTimePopup .popup-header {
+    margin-bottom: 12px;
+  }
+
+  #personalWorkTimePopup .personal-work-time-row {
+    margin-bottom: 10px;
+  }
+
+  #personalWorkTimePopup .save-btn {
+    margin-top: 15px;
+    padding: 12px;
+  }
+}
+
+/* ================================
+   📊 RIEPILOGO PERSONALE - LANDSCAPE
+   ================================ */
+
+@media (orientation: landscape) and (max-height: 600px) {
+
+  #personalSummaryPopup {
+    align-items: flex-start;
+    justify-content: center;
+    padding: 8px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  #personalSummaryPopup .popup-content {
+    width: 94%;
+    max-width: 700px;
+    height: auto !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: 0 auto;
+    padding: 12px;
+    box-sizing: border-box;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+  }
+
+  #personalSummaryPopup #personalSummaryContent {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  #personalSummaryPopup .personal-summary-columns {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  #personalSummaryPopup .personal-summary-columns .personal-summary-initial {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  #personalSummaryPopup .personal-summary-columns .personal-summary-paid {
+    flex: 0 0 auto;
+    margin-left: 8px;
+    padding-left: 8px;
+  }
+
+  #personalSummaryPopup #personalMonteOre {
+    margin-top: 8px !important;
+    padding-top: 8px !important;
+  }
+
+  #personalSummaryPopup .save-btn {
+    margin-top: 10px;
+    padding: 12px;
+  }
 }
