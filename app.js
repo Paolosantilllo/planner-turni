@@ -8162,9 +8162,16 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
     if (cfiMessage) {
       cfiMessage.style.display = "block";
-      cfiMessage.textContent =
-        "Inserisci l'orario di ingresso per sapere da che ora puoi uscire per rendere valida la " +
-        shift + ".";
+
+      if (editData?.start && editData?.end) {
+        cfiMessage.textContent =
+          "🟢 Ingresso: " + editData.start +
+          " | Uscita: " + editData.end;
+      } else {
+        cfiMessage.textContent =
+          "Inserisci l'orario di ingresso per sapere da che ora puoi uscire per rendere valida la " +
+          shift + ".";
+      }
     }
 
     if (endRow) {
