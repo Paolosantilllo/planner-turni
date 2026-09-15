@@ -1281,7 +1281,14 @@ box.onclick = () => {
       shift
     );
 
-    openPersonalWorkTimePopup(date);
+    const existingPersonalTime =
+      personalWorkTimes.find(item =>
+        item &&
+        item.employee === window.CURRENT_EMPLOYEE &&
+        item.date === date
+      );
+
+    openPersonalWorkTimePopup(date, existingPersonalTime);
 
     return;
   }
@@ -1295,7 +1302,14 @@ box.onclick = () => {
     selectedEmployee === window.CURRENT_EMPLOYEE
   ) {
 
-    openPersonalWorkTimePopup(date);
+    const existingPersonalTime =
+      personalWorkTimes.find(item =>
+        item &&
+        item.employee === window.CURRENT_EMPLOYEE &&
+        item.date === date
+      );
+
+    openPersonalWorkTimePopup(date, existingPersonalTime);
 
     return;
   }
