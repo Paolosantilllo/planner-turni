@@ -114,6 +114,46 @@ async function loadPatronoSettings() {
    INIT AUTH
 ====================== */
 
+async function loadPersonalSummary() {
+
+  try {
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      window.CURRENT_USER_PERSONAL_SUMMARY = {};
+      return;
+    }
+
+    const userSnap =
+      await getDoc(
+        doc(db, "users", user.uid)
+      );
+
+    const summary =
+      userSnap.exists()
+        ? userSnap.data().personalSummary
+        : null;
+
+    window.CURRENT_USER_PERSONAL_SUMMARY =
+      summary || {};
+
+    console.log(
+      "📊 Riepilogo personale caricato:",
+      window.CURRENT_USER_PERSONAL_SUMMARY
+    );
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore caricamento riepilogo personale:",
+      err
+    );
+
+    window.CURRENT_USER_PERSONAL_SUMMARY = {};
+  }
+}
+
 initAuth(async (user) => {
 
   window.CURRENT_USER = user;
@@ -178,6 +218,7 @@ console.timeEnd("⏱️ FINO A SHOW APP");
  document.getElementById("app").classList.add("show");
 
   setDefaultFilter();
+  await loadPersonalSummary();
   renderCalendar();
 
   await populateEmployeeSelects();
@@ -4885,56 +4926,59 @@ window.calculatePersonalStraUntilToday = function() {
   }
 
   const today = new Date();
-  const todayStart = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
 
-  // Trova il primo orario personale valido
-  // inserito da questo dipendente.
-  let startDate = null;
+  const summaryYear =
+    today.getFullYear();
 
-  personalWorkTimes.forEach(item => {
+  const summaryMonth =
+    today.getMonth();
 
-    if (
-      !item ||
-      item.employee !== employee ||
-      !item.date ||
-      !item.start ||
-      !item.end
-    ) {
-      return;
-    }
+  const todayStart =
+    new Date(
+      summaryYear,
+      summaryMonth,
+      today.getDate()
+    );
 
-    const dateObj =
-      new Date(item.date + "T00:00:00");
-
-    if (
-      Number.isNaN(dateObj.getTime()) ||
-      dateObj > todayStart
-    ) {
-      return;
-    }
-
-    if (
-      !startDate ||
-      dateObj < startDate
-    ) {
-      startDate = dateObj;
-    }
-  });
-
-  // Nessun orario personale inserito:
-  // non c'è ancora nulla da conteggiare.
-  if (!startDate) {
-    return 0;
-  }
-
-  let totalMinutes = 0;
+  const monthStart =
+    new Date(
+      summaryYear,
+      summaryMonth,
+      1
+    );
 
   // ======================
-  // ORARI PERSONALI
+  // ORE INIZIALI DEL MESE
+  // ======================
+
+  const summary =
+    window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  const initialOREByMonth =
+    summary.initialOREByMonth || {};
+
+  const monthKey =
+    summaryYear +
+    "-" +
+    String(summaryMonth + 1).padStart(2, "0");
+
+  let totalMinutes =
+    Number(initialOREByMonth[monthKey]);
+
+  // Se il valore mensile non è disponibile,
+  // usa il valore ORE iniziale salvato.
+  if (!Number.isFinite(totalMinutes)) {
+    totalMinutes =
+      Number(summary.initialORE);
+  }
+
+  if (!Number.isFinite(totalMinutes)) {
+    totalMinutes = 0;
+  }
+
+  // ======================
+  // STRA + rec INSERITI
+  // DAL DIPENDENTE
   // ======================
 
   personalWorkTimes.forEach(item => {
@@ -4952,8 +4996,15 @@ window.calculatePersonalStraUntilToday = function() {
 
     if (
       Number.isNaN(dateObj.getTime()) ||
-      dateObj < startDate ||
+      dateObj < monthStart ||
       dateObj > todayStart
+    ) {
+      return;
+    }
+
+    if (
+      item.type !== "STRA" &&
+      item.type !== "rec"
     ) {
       return;
     }
@@ -4965,9 +5016,8 @@ window.calculatePersonalStraUntilToday = function() {
       return;
     }
 
-    // STRA aggiunge il positivo.
-    // rec è già negativo e quindi riduce
-    // il monte ore.
+    // STRA è positivo.
+    // rec è già negativo.
     totalMinutes += difference;
   });
 
@@ -4991,7 +5041,7 @@ window.calculatePersonalStraUntilToday = function() {
 
     if (
       Number.isNaN(dateObj.getTime()) ||
-      dateObj < startDate ||
+      dateObj < monthStart ||
       dateObj > todayStart
     ) {
       return;
@@ -5993,13 +6043,22 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       summaryYear === todayYear &&
       summaryMonth === todayMonth
     ) {
+      const initialOREByMonthForUntilToday =
+        window.CURRENT_USER_PERSONAL_SUMMARY?.initialOREByMonth || {};
+
+      const currentOREMonthKey =
+        summaryYear + "-" +
+        String(summaryMonth + 1).padStart(2, "0");
+
       let totalUntilToday =
-        calculatePersonalMonteOre(
-          summaryYear,
-          summaryMonth
-        );
+        Number(initialOREByMonthForUntilToday[currentOREMonthKey]);
+
+      if (!Number.isFinite(totalUntilToday)) {
+        totalUntilToday = 0;
+      }
 
       window.savedEvents.forEach(ev => {
+
         if (
           !ev ||
           ev.employee !== window.CURRENT_EMPLOYEE ||
@@ -6012,48 +6071,51 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
           new Date(ev.date);
 
         if (
-          Number.isNaN(dateObj.getTime())
-        ) {
-          return;
-        }
-
-        if (
+          Number.isNaN(dateObj.getTime()) ||
           dateObj.getFullYear() !== summaryYear ||
           dateObj.getMonth() !== summaryMonth ||
-          dateObj.getDate() <= todayDay
+          dateObj.getDate() > todayDay
         ) {
           return;
         }
 
-        if (
-          ev.shift === "REP" ||
-          ev.shift === "FREP"
-        ) {
+        // ======================
+        // REP
+        // ======================
+
+        if (ev.shift === "REP") {
+
           const day =
             dateObj.getDay();
 
           if (day >= 1 && day <= 4) {
-            totalUntilToday -= 37;
+            totalUntilToday += 37;
           } else if (day === 5) {
-            totalUntilToday -= 60;
+            totalUntilToday += 60;
           } else if (day === 6) {
-            totalUntilToday -= 80;
+            totalUntilToday += 80;
           }
         }
 
+        // ======================
+        // REC INSERITO DALL'ADMIN
+        // ======================
+
         if (ev.shift === "REC") {
+
           const day =
             dateObj.getDay();
 
           if (day >= 1 && day <= 4) {
-            totalUntilToday += 8 * 60;
+            totalUntilToday -= 8 * 60;
           } else if (day === 5) {
-            totalUntilToday += 4 * 60;
+            totalUntilToday -= 4 * 60;
           }
         }
       });
 
       personalWorkTimes.forEach(item => {
+
         if (
           !item ||
           item.employee !== window.CURRENT_EMPLOYEE ||
@@ -6066,33 +6128,37 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
           new Date(item.date);
 
         if (
-          Number.isNaN(dateObj.getTime())
-        ) {
-          return;
-        }
-
-        if (
+          Number.isNaN(dateObj.getTime()) ||
           dateObj.getFullYear() !== summaryYear ||
           dateObj.getMonth() !== summaryMonth ||
-          dateObj.getDate() <= todayDay
+          dateObj.getDate() > todayDay
         ) {
           return;
         }
 
-        const difference =
-          Number(item.differenceMinutes);
+        // ======================
+        // STRA e rec inseriti dal dipendente
+        // ======================
 
-        if (Number.isFinite(difference)) {
-          totalUntilToday -= difference;
+        if (
+          item.type === "STRA" ||
+          item.type === "rec"
+        ) {
+          const difference =
+            Number(item.differenceMinutes);
+
+          if (Number.isFinite(difference)) {
+            totalUntilToday += difference;
+          }
         }
       });
 
       untilTodayElement.textContent =
-        "Totale di STRA + REP: " +
+        "Totale di STRA + REP fino ad oggi: " +
         formatMonteOre(totalUntilToday);
     } else {
       untilTodayElement.textContent =
-        "Totale di STRA + REP: —";
+        "Totale di STRA + REP fino ad oggi: —";
     }
   }
 
