@@ -8584,6 +8584,32 @@ if (!employee) {
   return;
 }
 
+// 💾 SALVA INGRESSO E USCITA CFI
+const personalWorkTimeId =
+  employee + "_" + date;
+
+const personalWorkTimeRef =
+  firestore.doc(
+    db,
+    "personalWorkTimes",
+    personalWorkTimeId
+  );
+
+await firestore.setDoc(
+  personalWorkTimeRef,
+  {
+    employee: employee,
+    date: date,
+    start: startTime,
+    end: minExit,
+    type: shift,
+    updatedAt: new Date()
+  },
+  {
+    merge: true
+  }
+);
+
 // ======================
 // 🔔 SALVA PROMEMORIA CFI
 // ======================
