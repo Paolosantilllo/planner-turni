@@ -1018,7 +1018,9 @@ function loadEvents() {
 
     (snap) => {
 
-      console.timeEnd("⏱️ LOAD EVENTS");
+      if (firstEventsSnapshot) {
+        console.timeEnd("⏱️ LOAD EVENTS");
+      }
 
       let changes = 0;
 
