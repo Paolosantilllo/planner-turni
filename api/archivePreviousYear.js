@@ -47,7 +47,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const today = new Date('2027-01-01T02:00:00+01:00');
+    const today = new Date();
 
     // In automatico archivia sempre l'anno appena concluso.
     // Per il test è possibile indicare ?year=2026.
