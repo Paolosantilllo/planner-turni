@@ -1506,27 +1506,6 @@ box.onclick = () => {
   // In modalità archivio il click non deve mai
   // entrare nella normale modifica degli eventi.
   if (archiveCalendarMode) {
-
-    if (!events.length) {
-      return;
-    }
-
-    const selectedEvent = events[0];
-
-    console.log(
-      "📦 CLICK TURNO ARCHIVIATO:",
-      selectedEvent.date,
-      selectedEvent.employee,
-      selectedEvent.shift
-    );
-
-    alert(
-      "📦 Turno archiviato\\n\\n" +
-      "Data: " + selectedEvent.date + "\\n" +
-      "Dipendente: " + selectedEvent.employee + "\\n" +
-      "Turno: " + selectedEvent.shift
-    );
-
     return;
   }
 
@@ -1726,9 +1705,29 @@ events.forEach(ev => {
         return;
       }
 
-      alert(
-        "✏️ Turno selezionato per la modifica.\\n\\n" +
-        "Per ora non è stata effettuata nessuna modifica."
+      const popup = document.getElementById("popup");
+      const employeeSelect = document.getElementById("employee");
+      const shiftSelect = document.getElementById("shift");
+
+      document.getElementById("startDate").value =
+        archiveEvent.date;
+
+      document.getElementById("endDate").value =
+        archiveEvent.date;
+
+      employeeSelect.value =
+        archiveEvent.employee;
+
+      shiftSelect.value =
+        archiveEvent.shift;
+
+      updateEmployeeMonthStats();
+
+      popup.style.display = "flex";
+
+      console.log(
+        "✏️ MODIFICA TURNO ARCHIVIATO APERTA:",
+        archiveEvent
       );
     };
   }
