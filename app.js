@@ -305,6 +305,10 @@ let unsubscribeEvents = null;
 let unsubscribePersonalWorkTimes = null;
 let eventsByDate = {};
 
+let archiveCalendarMode = false;
+let archiveCalendarData = null;
+let archiveCalendarYear = null;
+
 let monthlyStatsCache = {};
 let lastRenderMonth = "";
 
@@ -1410,7 +1414,11 @@ for (let day = 1; day <= daysInMonth; day++) {
 
   const selectedEmployee = employeeFilter.value;
 
-let events = (eventsByDate[date] || []).filter(e => {
+let sourceEvents = archiveCalendarMode
+  ? (archiveCalendarData?.[date] || [])
+  : (eventsByDate[date] || []);
+
+let events = sourceEvents.filter(e => {
 
   // 👁️ FILTRO "TUTTI"
   // Nasconde dal calendario i dipendenti
@@ -1493,6 +1501,34 @@ if (dayInfo.isSunday || dayInfo.isHoliday) {
 
 
 box.onclick = () => {
+
+  // 📦 CALENDARIO ARCHIVIO
+  // In modalità archivio il click non deve mai
+  // entrare nella normale modifica degli eventi.
+  if (archiveCalendarMode) {
+
+    if (!events.length) {
+      return;
+    }
+
+    const selectedEvent = events[0];
+
+    console.log(
+      "📦 CLICK TURNO ARCHIVIATO:",
+      selectedEvent.date,
+      selectedEvent.employee,
+      selectedEvent.shift
+    );
+
+    alert(
+      "📦 Turno archiviato\\n\\n" +
+      "Data: " + selectedEvent.date + "\\n" +
+      "Dipendente: " + selectedEvent.employee + "\\n" +
+      "Turno: " + selectedEvent.shift
+    );
+
+    return;
+  }
 
   // 👤 DIPENDENTE
   if (!window.IS_ADMIN) {
@@ -1666,6 +1702,37 @@ events.forEach(ev => {
 
   el.classList.add("event");
 
+  // 📦 In archivio associamo alla pillola il suo turno specifico
+  if (archiveCalendarMode) {
+    el._archiveEvent = ev;
+
+    el.onclick = (event) => {
+      event.stopPropagation();
+
+      const archiveEvent = el._archiveEvent;
+
+      if (!archiveEvent) {
+        return;
+      }
+
+      const conferma = confirm(
+        "📦 Vuoi modificare questo turno?\\n\\n" +
+        "Data: " + archiveEvent.date + "\\n" +
+        "Dipendente: " + archiveEvent.employee + "\\n" +
+        "Turno: " + archiveEvent.shift
+      );
+
+      if (!conferma) {
+        return;
+      }
+
+      alert(
+        "✏️ Turno selezionato per la modifica.\\n\\n" +
+        "Per ora non è stata effettuata nessuna modifica."
+      );
+    };
+  }
+
 
  const emp = employeesData[ev.employee];
 
@@ -1782,6 +1849,23 @@ if (personalStraTotalElement) {
  // ======================
 window.nextMonth = function(){
 
+  // 📦 CALENDARIO ARCHIVIO: resta nell'anno archiviato
+  if (archiveCalendarMode) {
+
+    if (currentDate.getMonth() >= 11) {
+      return;
+    }
+
+    currentDate = new Date(
+      archiveCalendarYear,
+      currentDate.getMonth() + 1,
+      1
+    );
+
+    renderCalendar();
+    return;
+  }
+
   currentDate =
   new Date(
     currentDate.getFullYear(),
@@ -1792,7 +1876,25 @@ window.nextMonth = function(){
   renderCalendar();
 
 };
+
 window.prevMonth = function(){
+
+  // 📦 CALENDARIO ARCHIVIO: resta nell'anno archiviato
+  if (archiveCalendarMode) {
+
+    if (currentDate.getMonth() <= 0) {
+      return;
+    }
+
+    currentDate = new Date(
+      archiveCalendarYear,
+      currentDate.getMonth() - 1,
+      1
+    );
+
+    renderCalendar();
+    return;
+  }
 
   currentDate =
   new Date(
@@ -7442,14 +7544,7 @@ window.openArchiveFestivi = async function () {
 // 📅 ARCHIVIO TURNazione COMPLETA
 // ======================
 
-window.openArchiveTurnazione = async function () {
-
-  const year = window.currentArchiveYear;
-
-  if (!year) {
-    alert("❌ Nessun anno selezionato.");
-    return;
-  }
+window.loadArchiveCalendar = async function (year) {
 
   try {
 
@@ -7462,83 +7557,172 @@ window.openArchiveTurnazione = async function () {
     const archiveSnap = await getDoc(archiveRef);
 
     if (!archiveSnap.exists()) {
-      alert(
-        `❌ Nessun archivio trovato per il ${year}.`
-      );
-      return;
+      alert(`❌ Nessun archivio trovato per il ${year}.`);
+      return false;
     }
 
     const data = archiveSnap.data();
-    const rows = [...(data.turnazione || [])];
 
-    rows.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
+    archiveCalendarData = {};
 
-      if (dateA - dateB !== 0) {
-        return dateA - dateB;
+    (data.turnazione || []).forEach(ev => {
+
+      if (!ev || !ev.date || !ev.employee || !ev.shift) {
+        return;
       }
 
-      const nameA =
-        data.employeeNames?.[a.employee] ||
-        employeesData[a.employee]?.name ||
-        a.employee ||
-        "";
+      if (!archiveCalendarData[ev.date]) {
+        archiveCalendarData[ev.date] = [];
+      }
 
-      const nameB =
-        data.employeeNames?.[b.employee] ||
-        employeesData[b.employee]?.name ||
-        b.employee ||
-        "";
+      archiveCalendarData[ev.date].push({
+        employee: ev.employee,
+        date: ev.date,
+        shift: ev.shift
+      });
 
-      return nameA.localeCompare(nameB, "it");
     });
 
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
+    archiveCalendarYear = Number(year);
+    archiveCalendarMode = true;
 
-    pdf.setFontSize(16);
-    pdf.text(
-      `Turnazione Completa ${year}`,
-      14,
-      15
+    currentDate = new Date(
+      archiveCalendarYear,
+      0,
+      1
     );
 
-    const body = rows.map(row => [
-      formatDateIT(row.date),
-      data.employeeNames?.[row.employee] ||
-        employeesData[row.employee]?.name ||
-        row.employee ||
-        "",
-      row.shift || ""
-    ]);
-
-    pdf.autoTable({
-      head: [[
-        "Data",
-        "Dipendente",
-        "Turno"
-      ]],
-      body,
-      startY: 25
-    });
-
-    await openPdfPreview(
-      pdf,
-      `Turnazione_Completa_${year}.pdf`
+    console.log(
+      "📅 CALENDARIO ARCHIVIO CARICATO:",
+      archiveCalendarYear,
+      "Eventi:",
+      (data.turnazione || []).length
     );
+
+    return true;
 
   } catch (error) {
 
     console.error(
-      "❌ ERRORE ARCHIVIO TURNazione:",
+      "❌ ERRORE CARICAMENTO CALENDARIO ARCHIVIO:",
       error
     );
 
     alert(
-      "❌ Errore durante la visualizzazione della turnazione archiviata."
+      "❌ Errore durante il caricamento del calendario archivio."
     );
+
+    return false;
+
   }
+
+};
+
+
+// ======================
+// 📅 CALENDARIO ARCHIVIO
+// ======================
+
+window.closeArchiveCalendar = function () {
+
+  archiveCalendarMode = false;
+  archiveCalendarData = null;
+
+  const backBtn =
+    document.getElementById("archiveBackBtn");
+
+  if (backBtn) {
+    backBtn.style.display = "none";
+  }
+
+  // Ripristina Admin e Logout
+  const adminBtn =
+    document.getElementById("adminBtn");
+
+  if (adminBtn) {
+    adminBtn.style.display = IS_ADMIN ? "flex" : "none";
+  }
+
+  const logoutBtn =
+    document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.style.display = "";
+  }
+
+  document.getElementById("app").style.display = "none";
+
+  document.getElementById("archiveYearPage").style.display =
+    "block";
+
+  console.log(
+    "📦 USCITA DAL CALENDARIO ARCHIVIO:",
+    archiveCalendarYear
+  );
+
+  archiveCalendarYear = null;
+
+};
+
+window.openArchiveTurnazione = async function () {
+
+  const year = window.currentArchiveYear;
+
+  if (!year) {
+    alert("❌ Nessun anno selezionato.");
+    return;
+  }
+
+  const loaded = await window.loadArchiveCalendar(year);
+
+  if (!loaded) {
+    return;
+  }
+
+  // Nasconde la pagina dell'archivio annuale
+  document.getElementById("archiveYearPage").style.display =
+    "none";
+
+  // Mostra il calendario principale
+  document.getElementById("app").style.display = "block";
+
+  // Nasconde Admin e Logout nel calendario storico
+  const adminBtn =
+    document.getElementById("adminBtn");
+
+  if (adminBtn) {
+    adminBtn.style.display = "none";
+  }
+
+  const logoutBtn =
+    document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.style.display = "none";
+  }
+
+  // Mostra il pulsante per tornare all'archivio
+  const backBtn =
+    document.getElementById("archiveBackBtn");
+
+  if (backBtn) {
+    backBtn.style.display = "inline-block";
+  }
+
+  // Mostra il primo mese dell'anno archiviato
+  currentDate = new Date(
+    Number(year),
+    0,
+    1
+  );
+
+  renderCalendar();
+
+  console.log(
+    "📅 CALENDARIO STORICO APERTO:",
+    year
+  );
+
 };
 
 // ======================

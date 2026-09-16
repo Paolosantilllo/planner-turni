@@ -9,5 +9,11 @@
       "source": "/api/(.*)",
       "destination": "/api/$1"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/archivePreviousYear",
+      "schedule": "0 1 1 1 *"
+    }
   ]
 }

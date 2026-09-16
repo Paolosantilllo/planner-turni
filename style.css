@@ -2406,3 +2406,19 @@ button:disabled{
     padding: 12px;
   }
 }
+
+/* ==============================
+   PULSANTE RITORNO ARCHIVIO
+   ============================== */
+
+.archive-back-btn {
+  right: 20px !important;
+  bottom: 20px !important;
+  width: auto !important;
+  min-width: 110px !important;
+  padding: 0 14px !important;
+  color: #000 !important;
+  background: #f2f2f7 !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}

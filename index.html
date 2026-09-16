@@ -34,9 +34,11 @@
 
     <h1 id="monthTitle"></h1>
 
+
+
     <button class="month-btn" onclick="nextMonth()">▶</button>
 
-    <button id="logoutBtn" class="logout-btn" onclick="confirmLogout()">
+    <button id="logoutBtn" class="logout-btn" data-normal-logout="true" onclick="confirmLogout()">
   Logout
 </button>
   </header>
@@ -118,6 +120,14 @@
 
 
 <!-- ROTELLINA SOLO ADMIN -->
+<button
+  id="archiveBackBtn"
+  class="admin-floating-btn archive-back-btn"
+  style="display:none"
+  onclick="closeArchiveCalendar()">
+  ‹ Archivio
+</button>
+
 <button
   id="adminBtn"
   class="admin-floating-btn"
