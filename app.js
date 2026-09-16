@@ -7394,7 +7394,8 @@ window.openArchiveFestivi = async function () {
 
       getHolidayName(row.date),
 
-      employeesData[row.employee]?.name ||
+      data.employeeNames?.[row.employee] ||
+        employeesData[row.employee]?.name ||
         row.employee ||
         "",
 
@@ -7435,6 +7436,109 @@ window.openArchiveFestivi = async function () {
 
   }
 
+};
+
+// ======================
+// 📅 ARCHIVIO TURNazione COMPLETA
+// ======================
+
+window.openArchiveTurnazione = async function () {
+
+  const year = window.currentArchiveYear;
+
+  if (!year) {
+    alert("❌ Nessun anno selezionato.");
+    return;
+  }
+
+  try {
+
+    const archiveRef = doc(
+      db,
+      "annualArchives",
+      String(year)
+    );
+
+    const archiveSnap = await getDoc(archiveRef);
+
+    if (!archiveSnap.exists()) {
+      alert(
+        `❌ Nessun archivio trovato per il ${year}.`
+      );
+      return;
+    }
+
+    const data = archiveSnap.data();
+    const rows = [...(data.turnazione || [])];
+
+    rows.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+
+      if (dateA - dateB !== 0) {
+        return dateA - dateB;
+      }
+
+      const nameA =
+        data.employeeNames?.[a.employee] ||
+        employeesData[a.employee]?.name ||
+        a.employee ||
+        "";
+
+      const nameB =
+        data.employeeNames?.[b.employee] ||
+        employeesData[b.employee]?.name ||
+        b.employee ||
+        "";
+
+      return nameA.localeCompare(nameB, "it");
+    });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    pdf.setFontSize(16);
+    pdf.text(
+      `Turnazione Completa ${year}`,
+      14,
+      15
+    );
+
+    const body = rows.map(row => [
+      formatDateIT(row.date),
+      data.employeeNames?.[row.employee] ||
+        employeesData[row.employee]?.name ||
+        row.employee ||
+        "",
+      row.shift || ""
+    ]);
+
+    pdf.autoTable({
+      head: [[
+        "Data",
+        "Dipendente",
+        "Turno"
+      ]],
+      body,
+      startY: 25
+    });
+
+    await openPdfPreview(
+      pdf,
+      `Turnazione_Completa_${year}.pdf`
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ ERRORE ARCHIVIO TURNazione:",
+      error
+    );
+
+    alert(
+      "❌ Errore durante la visualizzazione della turnazione archiviata."
+    );
+  }
 };
 
 // ======================
