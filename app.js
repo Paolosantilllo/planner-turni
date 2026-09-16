@@ -884,97 +884,294 @@ function isHoliday(dateStr){
    CARICA EVENTI FIREBASE
 ====================== */
 
-function loadEvents() {
-console.time("⏱️ LOAD EVENTS");
+// ======================
+// 💾 CACHE LOCALE CALENDARIO
+// ======================
 
-  // chiude il vecchio listener
-  if (unsubscribeEvents) {
-    unsubscribeEvents();
+const EVENTS_CACHE_KEY = "planner_turni_events_cache";
+
+function saveEventsToCache() {
+  try {
+    localStorage.setItem(
+      EVENTS_CACHE_KEY,
+      JSON.stringify(savedEvents)
+    );
+    console.log(
+      "💾 CACHE EVENTI SALVATA:",
+      savedEvents.length
+    );
+  } catch (err) {
+    console.error(
+      "❌ Errore salvataggio cache eventi:",
+      err
+    );
+  }
+}
+
+function loadEventsFromCache() {
+  try {
+    const cached = localStorage.getItem(
+      EVENTS_CACHE_KEY
+    );
+
+    if (!cached) {
+      console.log("💾 Nessuna cache eventi presente");
+      return false;
+    }
+
+    const parsed = JSON.parse(cached);
+
+    if (!Array.isArray(parsed)) {
+      console.warn("⚠️ Cache eventi non valida");
+      return false;
+    }
+
+    window.savedEvents.length = 0;
+    eventsByDate = {};
+    monthlyStatsCache = {};
+
+    parsed.forEach(ev => {
+
+      savedEvents.push(ev);
+
+      if (!eventsByDate[ev.date]) {
+        eventsByDate[ev.date] = [];
+      }
+
+      eventsByDate[ev.date].push(ev);
+
+      const d = new Date(ev.date);
+
+      const key =
+        `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
+
+      if (!monthlyStatsCache[key]) {
+        monthlyStatsCache[key] = {
+          REP: 0,
+          FREP: 0,
+          CFI: 0,
+          "CFI/REP": 0
+        };
+      }
+
+      if (
+        monthlyStatsCache[key][ev.shift] !== undefined
+      ) {
+        monthlyStatsCache[key][ev.shift]++;
+      }
+
+    });
+
+    window.savedEvents = savedEvents;
+
+    console.log(
+      "💾 EVENTI CARICATI DALLA CACHE:",
+      savedEvents.length
+    );
+
+    return true;
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore caricamento cache eventi:",
+      err
+    );
+
+    return false;
+  }
+}
+
+function loadEvents() {
+
+  console.time("⏱️ LOAD EVENTS");
+
+  // ======================
+  // 💾 CARICA SUBITO LA CACHE
+  // ======================
+
+  const hasCache = loadEventsFromCache();
+
+  if (hasCache) {
+    console.log(
+      "⚡ Calendario mostrato dalla cache:",
+      savedEvents.length
+    );
+
+    renderCalendar();
   }
 
+  // ======================
+  // 🔥 UN SOLO LISTENER FIREBASE
+  // ======================
+
+  if (unsubscribeEvents) {
+    console.log("ℹ️ Listener eventi già attivo");
+    return;
+  }
+
+  let firstEventsSnapshot = true;
+
   unsubscribeEvents = firestore.onSnapshot(
-firestore.collection(db, "events"),
+
+    firestore.collection(db, "events"),
+
     (snap) => {
-console.timeEnd("⏱️ LOAD EVENTS");
 
-      window.savedEvents.length = 0;
-      eventsByDate = {};
-      monthlyStatsCache = {};
+      console.timeEnd("⏱️ LOAD EVENTS");
 
+      let changes = 0;
 
-      snap.forEach(doc => {
+      // Al primo snapshot Firebase contiene tutti gli eventi attuali.
+      // Eliminiamo dalla cache quelli che nel frattempo sono stati cancellati.
+      if (firstEventsSnapshot) {
+        const serverIds = new Set(
+          snap.docs.map(doc => doc.id)
+        );
+
+        for (let i = savedEvents.length - 1; i >= 0; i--) {
+          if (!serverIds.has(savedEvents[i].id)) {
+            savedEvents.splice(i, 1);
+            changes++;
+          }
+        }
+
+        firstEventsSnapshot = false;
+      }
+
+      snap.docChanges().forEach(change => {
+
+        const doc = change.doc;
 
         const ev = {
           id: doc.id,
           ...doc.data()
         };
 
-
-        savedEvents.push(ev);
-
-
-        // indicizzazione per data
-        if (!eventsByDate[ev.date]) {
-          eventsByDate[ev.date] = [];
-        }
-
-        eventsByDate[ev.date].push(ev);
-
-
+        const index = savedEvents.findIndex(
+          existing => existing.id === ev.id
+        );
 
         // ======================
-        // CACHE STATISTICHE MENSILI
+        // ➕ NUOVO EVENTO
         // ======================
 
-        const d = new Date(ev.date);
+        if (change.type === "added") {
 
-        const key =
-          `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
-
-
-        if (!monthlyStatsCache[key]) {
-
-          monthlyStatsCache[key] = {
-
-            REP: 0,
-            FREP: 0,
-            CFI: 0,
-            "CFI/REP": 0
-
-          };
+          if (index === -1) {
+            savedEvents.push(ev);
+            changes++;
+          }
 
         }
 
+        // ======================
+        // ✏️ EVENTO MODIFICATO
+        // ======================
 
-        if (
-          monthlyStatsCache[key][ev.shift] !== undefined
-        ) {
+        else if (change.type === "modified") {
 
-          monthlyStatsCache[key][ev.shift]++;
+          if (index !== -1) {
+            savedEvents[index] = ev;
+          } else {
+            savedEvents.push(ev);
+          }
+
+          changes++;
 
         }
 
+        // ======================
+        // 🗑️ EVENTO ELIMINATO
+        // ======================
+
+        else if (change.type === "removed") {
+
+          if (index !== -1) {
+            savedEvents.splice(index, 1);
+            changes++;
+          }
+
+        }
 
       });
 
+      // ======================
+      // 🔄 RICOSTRUISCE INDICI
+      // ======================
 
-      console.log(
-        "EVENTI CARICATI:",
-        savedEvents.length
+      if (changes > 0) {
+
+        eventsByDate = {};
+        monthlyStatsCache = {};
+
+        savedEvents.forEach(ev => {
+
+          if (!eventsByDate[ev.date]) {
+            eventsByDate[ev.date] = [];
+          }
+
+          eventsByDate[ev.date].push(ev);
+
+          const d = new Date(ev.date);
+
+          const key =
+            `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
+
+          if (!monthlyStatsCache[key]) {
+            monthlyStatsCache[key] = {
+              REP: 0,
+              FREP: 0,
+              CFI: 0,
+              "CFI/REP": 0
+            };
+          }
+
+          if (
+            monthlyStatsCache[key][ev.shift] !== undefined
+          ) {
+            monthlyStatsCache[key][ev.shift]++;
+          }
+
+        });
+
+        window.savedEvents = savedEvents;
+
+        // ======================
+        // 💾 AGGIORNA CACHE
+        // ======================
+
+        saveEventsToCache();
+
+        console.log(
+          "🔄 EVENTI AGGIORNATI:",
+          changes,
+          "| TOTALE:",
+          savedEvents.length
+        );
+
+        console.time("⏱️ RENDER CALENDARIO");
+
+        renderCalendar();
+
+        console.timeEnd("⏱️ RENDER CALENDARIO");
+
+      } else {
+
+        console.log(
+          "ℹ️ Nessuna modifica agli eventi"
+        );
+
+      }
+
+    },
+
+    (error) => {
+
+      console.error(
+        "❌ Errore listener eventi:",
+        error
       );
-
-
-window.savedEvents = savedEvents;
-
-console.log(
-  "WINDOW EVENTS:",
-  window.savedEvents.length
-);
-
-
-console.time("⏱️ RENDER CALENDARIO");
-renderCalendar();
-console.timeEnd("⏱️ RENDER CALENDARIO");
 
     }
 
@@ -1590,7 +1787,7 @@ window.nextMonth = function(){
     1
   );
 
-  loadEvents();
+  renderCalendar();
 
 };
 window.prevMonth = function(){
@@ -1602,7 +1799,7 @@ window.prevMonth = function(){
     1
   );
 
-  loadEvents();
+  renderCalendar();
 
 };
 
