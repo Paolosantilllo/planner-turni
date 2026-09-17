@@ -308,6 +308,7 @@ let eventsByDate = {};
 let archiveCalendarMode = false;
 let archiveCalendarData = null;
 let archiveCalendarYear = null;
+let normalCalendarDateBeforeArchive = null;
 
 let monthlyStatsCache = {};
 let lastRenderMonth = "";
@@ -987,13 +988,11 @@ function loadEventsFromCache() {
 }
 
 function loadEvents() {
-
   console.time("⏱️ LOAD EVENTS");
 
   // ======================
   // 💾 CARICA SUBITO LA CACHE
   // ======================
-
   const hasCache = loadEventsFromCache();
 
   if (hasCache) {
@@ -1001,188 +1000,290 @@ function loadEvents() {
       "⚡ Calendario mostrato dalla cache:",
       savedEvents.length
     );
-
     renderCalendar();
   }
 
   // ======================
-  // 🔥 UN SOLO LISTENER FIREBASE
+  // 📅 LISTENER MENSILI
   // ======================
-
-  if (unsubscribeEvents) {
-    console.log("ℹ️ Listener eventi già attivo");
-    return;
+  if (!window._monthlyEventListeners) {
+    window._monthlyEventListeners = {};
   }
 
-  let firstEventsSnapshot = true;
+  loadedMonths = loadedMonths || {};
 
-  unsubscribeEvents = firestore.onSnapshot(
+  // ======================
+  // 🔄 RICOSTRUISCE GLI INDICI
+  // ======================
+  function rebuildEventIndexes() {
+    eventsByDate = {};
+    monthlyStatsCache = {};
 
-    firestore.collection(db, "events"),
+    savedEvents.forEach(ev => {
+      if (!ev.date) return;
 
-    (snap) => {
-
-      if (firstEventsSnapshot) {
-        console.timeEnd("⏱️ LOAD EVENTS");
+      if (!eventsByDate[ev.date]) {
+        eventsByDate[ev.date] = [];
       }
 
-      let changes = 0;
+      eventsByDate[ev.date].push(ev);
 
-      // Al primo snapshot Firebase contiene tutti gli eventi attuali.
-      // Eliminiamo dalla cache quelli che nel frattempo sono stati cancellati.
-      if (firstEventsSnapshot) {
-        const serverIds = new Set(
-          snap.docs.map(doc => doc.id)
+      const d = new Date(ev.date);
+      const key =
+        `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
+
+      if (!monthlyStatsCache[key]) {
+        monthlyStatsCache[key] = {
+          REP: 0,
+          FREP: 0,
+          CFI: 0,
+          "CFI/REP": 0
+        };
+      }
+
+      if (
+        monthlyStatsCache[key][ev.shift] !== undefined
+      ) {
+        monthlyStatsCache[key][ev.shift]++;
+      }
+    });
+
+    window.savedEvents = savedEvents;
+  }
+
+  // ======================
+  // 📅 CARICA UN SOLO MESE
+  // ======================
+  window.loadCalendarMonth = function(year, month) {
+
+    const monthKey =
+      `${year}-${String(month + 1).padStart(2, "0")}`;
+
+    if (loadedMonths[monthKey]) {
+      console.log(
+        "📦 MESE GIÀ CARICATO:",
+        monthKey
+      );
+      return;
+    }
+
+    if (window._monthlyEventListeners[monthKey]) {
+      return;
+    }
+
+    const startDate =
+      `${year}-${String(month + 1).padStart(2, "0")}-01`;
+
+    const nextMonth =
+      new Date(year, month + 1, 1);
+
+    const endDate =
+      `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}-01`;
+
+    console.log(
+      "🔥 CARICO SOLO IL MESE:",
+      monthKey
+    );
+
+    const q = query(
+      collection(db, "events"),
+      where("date", ">=", startDate),
+      where("date", "<", endDate)
+    );
+
+    window._monthlyEventListeners[monthKey] = onSnapshot(
+      q,
+      (snap) => {
+
+        let changes = 0;
+
+        const monthEventIds = new Set(
+          snap.docs.map(docSnap => docSnap.id)
         );
 
-        for (let i = savedEvents.length - 1; i >= 0; i--) {
-          if (!serverIds.has(savedEvents[i].id)) {
+        // ======================
+        // 🗑️ RIMUOVE EVENTI CANCELLATI
+        // ======================
+        for (
+          let i = savedEvents.length - 1;
+          i >= 0;
+          i--
+        ) {
+          const ev = savedEvents[i];
+
+          if (
+            ev.date &&
+            ev.date >= startDate &&
+            ev.date < endDate &&
+            !monthEventIds.has(ev.id)
+          ) {
             savedEvents.splice(i, 1);
             changes++;
           }
         }
 
-        firstEventsSnapshot = false;
-      }
-
-      snap.docChanges().forEach(change => {
-
-        const doc = change.doc;
-
-        const ev = {
-          id: doc.id,
-          ...doc.data()
-        };
-
-        const index = savedEvents.findIndex(
-          existing => existing.id === ev.id
-        );
-
         // ======================
-        // ➕ NUOVO EVENTO
+        // 🔄 AGGIORNA LE MODIFICHE
         // ======================
+        snap.docChanges().forEach(change => {
 
-        if (change.type === "added") {
+          const docSnap = change.doc;
 
-          if (index === -1) {
-            savedEvents.push(ev);
+          const ev = {
+            id: docSnap.id,
+            ...docSnap.data()
+          };
+
+          const index =
+            savedEvents.findIndex(
+              existing => existing.id === ev.id
+            );
+
+          if (change.type === "added") {
+
+            if (index === -1) {
+              savedEvents.push(ev);
+              changes++;
+            }
+
+          } else if (change.type === "modified") {
+
+            if (index !== -1) {
+              savedEvents[index] = ev;
+            } else {
+              savedEvents.push(ev);
+            }
+
             changes++;
+
+          } else if (change.type === "removed") {
+
+            if (index !== -1) {
+              savedEvents.splice(index, 1);
+              changes++;
+            }
           }
-
-        }
-
-        // ======================
-        // ✏️ EVENTO MODIFICATO
-        // ======================
-
-        else if (change.type === "modified") {
-
-          if (index !== -1) {
-            savedEvents[index] = ev;
-          } else {
-            savedEvents.push(ev);
-          }
-
-          changes++;
-
-        }
-
-        // ======================
-        // 🗑️ EVENTO ELIMINATO
-        // ======================
-
-        else if (change.type === "removed") {
-
-          if (index !== -1) {
-            savedEvents.splice(index, 1);
-            changes++;
-          }
-
-        }
-
-      });
-
-      // ======================
-      // 🔄 RICOSTRUISCE INDICI
-      // ======================
-
-      if (changes > 0) {
-
-        eventsByDate = {};
-        monthlyStatsCache = {};
-
-        savedEvents.forEach(ev => {
-
-          if (!eventsByDate[ev.date]) {
-            eventsByDate[ev.date] = [];
-          }
-
-          eventsByDate[ev.date].push(ev);
-
-          const d = new Date(ev.date);
-
-          const key =
-            `${ev.employee}_${d.getFullYear()}_${d.getMonth()}`;
-
-          if (!monthlyStatsCache[key]) {
-            monthlyStatsCache[key] = {
-              REP: 0,
-              FREP: 0,
-              CFI: 0,
-              "CFI/REP": 0
-            };
-          }
-
-          if (
-            monthlyStatsCache[key][ev.shift] !== undefined
-          ) {
-            monthlyStatsCache[key][ev.shift]++;
-          }
-
         });
 
-        window.savedEvents = savedEvents;
+        loadedMonths[monthKey] = true;
 
-        // ======================
-        // 💾 AGGIORNA CACHE
-        // ======================
+        rebuildEventIndexes();
 
+        if (changes > 0 || !hasCache) {
+
+          saveEventsToCache();
+
+          console.log(
+            "🔄 MESE AGGIORNATO:",
+            monthKey,
+            "| CAMBI:",
+            changes,
+            "| TOTALE:",
+            savedEvents.length
+          );
+
+          renderCalendar();
+        }
+
+        console.log(
+          "✅ MESE CARICATO:",
+          monthKey
+        );
+      },
+      (error) => {
+        console.error(
+          "❌ Errore caricamento mese",
+          monthKey,
+          error
+        );
+      }
+    );
+  };
+
+  // ======================
+  // 🌍 PRIMA APERTURA:
+  // SCARICA TUTTO UNA SOLA VOLTA
+  // ======================
+  if (!hasCache) {
+
+    console.log(
+      "🌍 NESSUNA CACHE: sincronizzazione completa iniziale"
+    );
+
+    const fullQuery = collection(db, "events");
+
+    const initialUnsubscribe = onSnapshot(
+      fullQuery,
+      (snap) => {
+
+        savedEvents = [];
+
+        snap.docs.forEach(docSnap => {
+          savedEvents.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        rebuildEventIndexes();
         saveEventsToCache();
 
         console.log(
-          "🔄 EVENTI AGGIORNATI:",
-          changes,
-          "| TOTALE:",
-          savedEvents.length
+          "💾 SINCRONIZZAZIONE INIZIALE COMPLETA:",
+          savedEvents.length,
+          "eventi"
         );
 
-        console.time("⏱️ RENDER CALENDARIO");
+        // Chiudiamo subito il listener globale.
+        initialUnsubscribe();
+
+        // Ora teniamo aperto solamente il mese corrente.
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const monthKey =
+          `${year}-${String(month + 1).padStart(2, "0")}`;
+
+        loadedMonths[monthKey] = false;
+
+        window.loadCalendarMonth(
+          year,
+          month
+        );
 
         renderCalendar();
-
-        console.timeEnd("⏱️ RENDER CALENDARIO");
-
-      } else {
-
-        console.log(
-          "ℹ️ Nessuna modifica agli eventi"
+      },
+      (error) => {
+        console.error(
+          "❌ Errore sincronizzazione iniziale:",
+          error
         );
-
       }
+    );
 
-    },
+  } else {
 
-    (error) => {
+    // ======================
+    // ⚡ CACHE PRESENTE:
+    // CONTROLLA SOLO IL MESE CORRENTE
+    // ======================
+    const currentYear =
+      currentDate.getFullYear();
 
-      console.error(
-        "❌ Errore listener eventi:",
-        error
-      );
+    const currentMonth =
+      currentDate.getMonth();
 
-    }
+    window.loadCalendarMonth(
+      currentYear,
+      currentMonth
+    );
+  }
 
-  );
+  lastRenderMonth =
+    `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}`;
 
+  console.timeEnd("⏱️ LOAD EVENTS");
 }
 
 // ======================
@@ -1865,15 +1966,21 @@ window.nextMonth = function(){
     return;
   }
 
-  currentDate =
-  new Date(
+  currentDate = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() + 1,
     1
   );
 
-  renderCalendar();
+  // 🔥 CARICA IL NUOVO MESE SOLO SE SERVE
+  if (window.loadCalendarMonth) {
+    window.loadCalendarMonth(
+      currentDate.getFullYear(),
+      currentDate.getMonth()
+    );
+  }
 
+  renderCalendar();
 };
 
 window.prevMonth = function(){
@@ -1895,15 +2002,21 @@ window.prevMonth = function(){
     return;
   }
 
-  currentDate =
-  new Date(
+  currentDate = new Date(
     currentDate.getFullYear(),
     currentDate.getMonth() - 1,
     1
   );
 
-  renderCalendar();
+  // 🔥 CARICA IL NUOVO MESE SOLO SE SERVE
+  if (window.loadCalendarMonth) {
+    window.loadCalendarMonth(
+      currentDate.getFullYear(),
+      currentDate.getMonth()
+    );
+  }
 
+  renderCalendar();
 };
 
 /* ======================
@@ -7214,6 +7327,10 @@ window.closeAdminPage = function () {
   document.getElementById("adminPage").style.display = "none";
   document.getElementById("app").style.display = "block";
 
+  if (!archiveCalendarMode) {
+    renderCalendar();
+  }
+
 };
 
 // ======================
@@ -7625,7 +7742,25 @@ window.loadArchiveCalendar = async function (year) {
 window.closeArchiveCalendar = function () {
 
   archiveCalendarMode = false;
+
   archiveCalendarData = null;
+
+  // 📅 Ripristina il mese del calendario normale
+  if (normalCalendarDateBeforeArchive) {
+    currentDate = new Date(normalCalendarDateBeforeArchive);
+  } else {
+    const today = new Date();
+
+    currentDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+  }
+
+  normalCalendarDateBeforeArchive = null;
+
+  archiveCalendarYear = null;
 
   const backBtn =
     document.getElementById("archiveBackBtn");
@@ -7649,21 +7784,27 @@ window.closeArchiveCalendar = function () {
     logoutBtn.style.display = "";
   }
 
+  // Chiude il calendario archivio
   document.getElementById("app").style.display = "none";
 
+  // Torna alla pagina degli archivi
   document.getElementById("archiveYearPage").style.display =
     "block";
 
   console.log(
-    "📦 USCITA DAL CALENDARIO ARCHIVIO:",
-    archiveCalendarYear
+    "📦 USCITA DAL CALENDARIO ARCHIVIO → MESE CORRENTE:",
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1
   );
-
-  archiveCalendarYear = null;
-
 };
 
 window.openArchiveTurnazione = async function () {
+
+  // 📅 Salva il mese del calendario normale prima dell'archivio
+  if (!archiveCalendarMode) {
+    normalCalendarDateBeforeArchive = new Date(currentDate);
+  }
+
 
   const year = window.currentArchiveYear;
 
@@ -8434,7 +8575,7 @@ await firestore.setDoc(
 // 👤 CREA UTENTE LOGIN
 // ======================
 
-console.log("PRIMA USERS", uid, email, code);
+
      
 console.log("CREO USERS:", uid);
 
