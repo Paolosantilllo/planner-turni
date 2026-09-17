@@ -260,7 +260,7 @@ loadPersonalWorkTimes();
 
 let currentDate = new Date();
 window.savedEvents = [];
-const savedEvents = window.savedEvents;
+let savedEvents = window.savedEvents;
 window.personalWorkTimes = [];
 
 const personalWorkTimes = window.personalWorkTimes;
@@ -1912,8 +1912,16 @@ if (personalStraTotalElement) {
   } else {
     personalStraTotalElement.style.display = "block";
 
+    const straStart = performance.now();
+
     const totalStra =
       window.calculatePersonalStraUntilToday();
+
+    console.log(
+      "⏱️ CALCOLO TOTALE STRA:",
+      (performance.now() - straStart).toFixed(2),
+      "ms"
+    );
 
     if (totalStra === null) {
       personalStraTotalElement.textContent =
