@@ -394,31 +394,35 @@
 
     </div>
 
-    <label>Nuova password</label>
+    <form onsubmit="return false;">
 
-    <input
-      type="password"
-      id="newPassword"
-      placeholder="Inserisci la nuova password"
-      autocomplete="new-password"
-    >
+      <label>Nuova password</label>
 
-    <label>Conferma password</label>
+      <input
+        type="password"
+        id="newPassword"
+        placeholder="Inserisci la nuova password"
+        autocomplete="new-password"
+      >
 
-    <input
-      type="password"
-      id="confirmPassword"
-      placeholder="Ripeti la nuova password"
-      autocomplete="new-password"
-    >
+      <label>Conferma password</label>
 
-    <button class="save-btn" onclick="saveNewPassword()">
-      💾 Salva
-    </button>
+      <input
+        type="password"
+        id="confirmPassword"
+        placeholder="Ripeti la nuova password"
+        autocomplete="new-password"
+      >
 
-    <button class="save-btn" onclick="closeChangePassword()">
-      ✕ Chiudi
-    </button>
+      <button type="button" class="save-btn" onclick="saveNewPassword()">
+        💾 Salva
+      </button>
+
+      <button type="button" class="save-btn" onclick="closeChangePassword()">
+        ✕ Chiudi
+      </button>
+
+    </form>
 
   </div>
 
@@ -1026,6 +1030,8 @@
 
     </div>
 
+    <form onsubmit="return false;">
+
     <label>Codice</label>
     <input
       type="text"
@@ -1047,7 +1053,8 @@
     <input
       type="password"
       id="empPassword"
-      placeholder="Password iniziale">
+      placeholder="Password iniziale"
+      autocomplete="new-password">
 
     <label>Colore</label>
     <input type="color" id="empColor">
@@ -1058,9 +1065,11 @@
       <option value="ADMIN">ADMIN</option>
     </select>
 
-    <button class="save-btn" onclick="saveEmployee()">
+    <button type="button" class="save-btn" onclick="saveEmployee()">
       💾 Salva
     </button>
+
+    </form>
 
   </div>
 
