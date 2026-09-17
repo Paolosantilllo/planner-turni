@@ -2422,3 +2422,11 @@ button:disabled{
   font-size: 16px !important;
   font-weight: 600 !important;
 }
+
+
+/* Etichette dei selettori calendario personalizzati */
+.field-label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}

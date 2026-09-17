@@ -357,7 +357,7 @@
 
     </div>
 
-    <label>Nuova email</label>
+    <label for="newEmail">Nuova email</label>
 
     <input
       type="email"
@@ -404,7 +404,7 @@
         aria-hidden="true"
         style="display:none">
 
-      <label>Nuova password</label>
+      <label for="newPassword">Nuova password</label>
 
       <input
         type="password"
@@ -413,7 +413,7 @@
         autocomplete="new-password"
       >
 
-      <label>Conferma password</label>
+      <label for="confirmPassword">Conferma password</label>
 
       <input
         type="password"
@@ -449,7 +449,7 @@
       </button>
     </div>
 
-    <label>Dipendente</label>
+    <label for="employee">Dipendente</label>
 
 <select id="employee">
 </select>
@@ -484,13 +484,13 @@
 
 </div>
 
-    <label>Data Inizio</label>
+    <label for="startDate">Data Inizio</label>
     <input type="date" id="startDate">
 
-    <label>Data Fine</label>
+    <label for="endDate">Data Fine</label>
     <input type="date" id="endDate">
 
-    <label>Reperibilità</label>
+    <label for="shift">Reperibilità</label>
 
     <select id="shift">
       <option></option>
@@ -544,7 +544,7 @@
 
 
     <!-- CAMBIO CON -->
-    <label>Cambio con</label>
+    <label for="changeTo">Cambio con</label>
 
     <select
       id="changeTo"
@@ -554,7 +554,7 @@
 
 
     <!-- REPERIBILITÀ -->
-    <label>Reperibilità</label>
+    <label for="changeShift">Reperibilità</label>
 
     <select
       id="changeShift"
@@ -570,7 +570,7 @@
 
 
     <!-- GIORNO DA DARE -->
-    <label>Giorno da dare</label>
+    <div class="field-label">Giorno da dare</div>
 
 
     <div
@@ -616,7 +616,7 @@
 
 
     <!-- GIORNO DA RICEVERE -->
-    <label>Giorno da ricevere</label>
+    <div class="field-label">Giorno da ricevere</div>
 
 
     <div
@@ -783,7 +783,7 @@
     </div>
 
 
-    <label>Quanti mesi vuoi visualizzare?</label>
+    <label for="monthsRange">Quanti mesi vuoi visualizzare?</label>
 
 
     <select id="monthsRange">
@@ -1048,17 +1048,17 @@
       aria-hidden="true"
       style="display:none">
 
-    <label>Codice</label>
+    <label for="empCode">Codice</label>
     <input
       type="text"
       id="empCode"
       maxlength="3"
       style="text-transform:uppercase">
 
-    <label>Nome</label>
+    <label for="empName">Nome</label>
     <input type="text" id="empName">
 
-    <label>Email</label>
+    <label for="empEmail">Email</label>
     <input
       type="email"
       id="empEmail"
@@ -1066,17 +1066,17 @@
       autocomplete="username">
 
     <!-- 🔥 AGGIUNGI QUESTO -->
-    <label>Password</label>
+    <label for="empPassword">Password</label>
     <input
       type="password"
       id="empPassword"
       placeholder="Password iniziale"
       autocomplete="new-password">
 
-    <label>Colore</label>
+    <label for="empColor">Colore</label>
     <input type="color" id="empColor">
 
-    <label>Ruolo</label>
+    <label for="empRole">Ruolo</label>
     <select id="empRole">
       <option value="USER">USER</option>
       <option value="ADMIN">ADMIN</option>
@@ -1112,7 +1112,7 @@
 
   <div class="admin-menu">
 
-    <label>Data del Patrono</label>
+    <label for="patronoDate">Data del Patrono</label>
 
     <input
       type="text"
@@ -1120,7 +1120,7 @@
       placeholder="gg/mm"
       maxlength="5">
 
-    <label>Nome del Patrono (facoltativo)</label>
+    <label for="patronoName">Nome del Patrono (facoltativo)</label>
 
     <input
       type="text"
