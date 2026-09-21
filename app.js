@@ -8280,12 +8280,67 @@ const role = document.getElementById("empRole").value;
 
 
 
+  // ======================
+  // 📧 CAMBIO EMAIL FIREBASE
+  // ======================
+
+  const oldEmail = (oldEmployee.email || "").trim().toLowerCase();
+  const newEmail = email.trim().toLowerCase();
+
+  if (newEmail !== oldEmail) {
+
+    if (!oldEmployee.uid) {
+      alert(
+        "❌ Impossibile cambiare l'email: dipendente senza UID Firebase."
+      );
+      return;
+    }
+
+    const idToken = await currentUser.getIdToken();
+
+    const response = await fetch(
+      "/api/updateEmployeeEmail",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          employeeCode: editingEmployeeId,
+          newEmail
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      if (response.status === 409) {
+        alert(
+          "❌ Questa email è già associata a un altro account."
+        );
+      } else {
+        alert(
+          result.error ||
+          "❌ Errore durante il cambio dell'email."
+        );
+      }
+
+      return;
+    }
+  }
+
+  // ======================
+  // 💾 SALVA DATI DIPENDENTE
+  // ======================
+
   await firestore.updateDoc(
     firestore.doc(db, "employees", editingEmployeeId),
     {
       code,
       name,
-      email,
+      email: newEmail,
       color,
       role
     }
