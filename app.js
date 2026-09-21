@@ -6806,10 +6806,12 @@ window.saveNewEmail = async function() {
       newEmail
     );
 
-    alert(
-      "Abbiamo inviato una email di verifica al nuovo indirizzo. " +
-      "Controlla la posta e clicca sul link per completare il cambio."
-    );
+alert(
+  "Email di verifica inviata al nuovo indirizzo.\n\n" +
+  "Apri la nuova casella di posta e clicca sul link ricevuto " +
+  "per completare il cambio email.\n\n" +
+  "Fino a quel momento continuerai ad accedere con la vecchia email."
+);
 
     closeChangeEmail();
 
