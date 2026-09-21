@@ -1577,6 +1577,32 @@ if (date === todayString) {
 }
    
    // ======================
+// ======================
+// 🔴 ORARIO PERSONALE APERTO
+// ======================
+
+if (
+  !archiveCalendarMode &&
+  selectedEmployee !== "ALL" &&
+  selectedEmployee === window.CURRENT_EMPLOYEE &&
+  date < todayString
+) {
+
+  const openPersonalTime =
+    personalWorkTimes.find(item =>
+      item &&
+      item.employee === window.CURRENT_EMPLOYEE &&
+      item.date === date &&
+      item.type === "OPEN" &&
+      item.start &&
+      !item.end
+    );
+
+  if (openPersonalTime) {
+    box.style.border = "2px solid red";
+  }
+}
+
 // 🟣 CONTROLLO COPERTURA
 // ======================
 
@@ -8511,7 +8537,9 @@ window.openPersonalWorkTimeDetailsPopup = function(
   const typeLabel =
     personalTime.type === "STRA"
       ? "STRAORDINARIO"
-      : "PERMESSO";
+      : personalTime.type === "OPEN"
+        ? "STRA IN CORSO"
+        : "PERMESSO";
 
   const differenceMinutes =
     Math.abs(
@@ -9146,11 +9174,74 @@ return;
   }
 
   // ======================
-  // 🕐 GIORNATA NORMALE
+  // 🕐 ORARIO PERSONALE APERTO
   // ======================
 
   const endTime =
     endInput?.value || "";
+
+  // Se è presente solo l'ingresso,
+  // salviamo l'orario senza ancora calcolare
+  // STRA o rec. Il calcolo verrà fatto
+  // quando verrà inserita l'uscita.
+
+  if (
+    startTime &&
+    !endTime &&
+    shift !== "CFI" &&
+    shift !== "CFI/REP"
+  ) {
+
+    const employee =
+      window.CURRENT_EMPLOYEE;
+
+    if (!employee) {
+
+      alert(
+        "Dipendente non identificato."
+      );
+
+      return;
+    }
+
+    const personalWorkTimeId =
+      employee + "_" + date;
+
+    const personalWorkTimeRef =
+      firestore.doc(
+        db,
+        "personalWorkTimes",
+        personalWorkTimeId
+      );
+
+    await firestore.setDoc(
+      personalWorkTimeRef,
+      {
+        employee: employee,
+        date: date,
+        start: startTime,
+        end: "",
+        type: "OPEN",
+        updatedAt: new Date()
+      },
+      {
+        merge: true
+      }
+    );
+
+    alert(
+      "Ingresso salvato alle " +
+      startTime +
+      ".\n\n" +
+      "Inserisci l'orario di uscita quando termini."
+    );
+
+    return;
+  }
+
+  // ======================
+  // 🕐 GIORNATA NORMALE
+  // ======================
 
   if (
     !startTime ||
