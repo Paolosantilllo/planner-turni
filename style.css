@@ -2122,6 +2122,26 @@ button:disabled{
   box-sizing: border-box;
 }
 
+/* RIEPILOGO PERSONALE - ADATTO ALLO SCHERMO DESKTOP */
+@media (min-width: 601px) {
+
+  #personalSummaryPopup {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  #personalSummaryPopup .popup-content {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+}
+
 @media (max-width: 600px) {
 
   #personalSummaryPopup {
