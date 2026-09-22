@@ -2588,8 +2588,8 @@ if (
 
     currentRFIElement.textContent =
       currentRFI === null
-        ? "Disponibili: —"
-        : "Disponibili: " +
+        ? "—"
+        : "" +
           currentRFI +
           " " +
           (
@@ -5610,13 +5610,13 @@ window.calculatePersonalORD = function(year) {
     window.CURRENT_USER_PERSONAL_SUMMARY || {};
 
   // Se il valore iniziale non è stato inserito,
-  // non effettuiamo alcun conteggio.
+  // il valore disponibile parte da 0.
   if (
     summary.initialORD === null ||
     summary.initialORD === undefined ||
     !Number.isFinite(Number(summary.initialORD))
   ) {
-    return null;
+    return 0;
   }
 
   const initialORD =
@@ -5744,13 +5744,13 @@ window.calculatePersonalRFI = function(year) {
     window.CURRENT_USER_PERSONAL_SUMMARY || {};
 
   // Se il valore iniziale non è stato inserito,
-  // non effettuiamo alcun conteggio.
+  // il valore disponibile parte da 0.
   if (
     summary.initialRFI === null ||
     summary.initialRFI === undefined ||
     !Number.isFinite(Number(summary.initialRFI))
   ) {
-    return null;
+    return 0;
   }
 
   const initialRFI =
@@ -5855,7 +5855,7 @@ window.calculatePersonal937 = function(year) {
   const summary =
     window.CURRENT_USER_PERSONAL_SUMMARY || {};
 
-  let initial937 = 4;
+  let initial937 = 0;
 
   // ======================
   // ANNO DI ATTIVAZIONE
@@ -5975,7 +5975,67 @@ if (
 // 📊 RIEPILOGO PERSONALE
 // ======================
 
+window.togglePersonalInitialValues = function() {
+  const section =
+    document.getElementById("personalInitialValuesSection");
+
+  if (!section) return;
+
+  section.style.display =
+    section.style.display === "none"
+      ? "block"
+      : "none";
+};
+
+window.togglePersonalPaidHours = function() {
+  const section =
+    document.getElementById("personalPaidHoursSection");
+
+  if (!section) return;
+
+  section.style.display =
+    section.style.display === "none"
+      ? "block"
+      : "none";
+};
+
 window.openPersonalSummary = async function() {
+  const personalSummaryAvailableDate =
+    document.getElementById("personalSummaryAvailableDate");
+
+  if (personalSummaryAvailableDate) {
+    const today = new Date();
+
+    const day =
+      String(today.getDate()).padStart(2, "0");
+
+    const month =
+      String(today.getMonth() + 1).padStart(2, "0");
+
+    const year =
+      today.getFullYear();
+
+    personalSummaryAvailableDate.textContent =
+      "Disponibili al " +
+      day + "/" +
+      month + "/" +
+      year;
+  }
+
+  const personalInitialValuesSection =
+    document.getElementById("personalInitialValuesSection");
+
+  const personalPaidHoursSection =
+    document.getElementById("personalPaidHoursSection");
+
+  if (personalInitialValuesSection) {
+    personalInitialValuesSection.style.display = "none";
+  }
+
+  if (personalPaidHoursSection) {
+    personalPaidHoursSection.style.display = "none";
+  }
+
 
   const user = auth.currentUser;
 
@@ -6016,8 +6076,8 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
     current937Element.textContent =
       current937 === null
-        ? "Disponibili: —"
-        : "Disponibili: " +
+        ? "—"
+        : "" +
           current937 +
           " " +
           (
@@ -6043,8 +6103,8 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
     currentRFIElement.textContent =
       currentRFI === null
-        ? "Disponibili: —"
-        : "Disponibili: " +
+        ? "—"
+        : "" +
           currentRFI +
           " " +
           (
@@ -6070,8 +6130,8 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
     currentORDElement.textContent =
       currentORD === null
-        ? "Disponibili: —"
-        : "Disponibili: " +
+        ? "—"
+        : "" +
           currentORD +
           " " +
           (
@@ -6079,6 +6139,26 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
               ? "giorno"
               : "giorni"
           );
+  }
+
+  // ======================
+  // 🟠 AGGIORNA ORE DISPONIBILI
+  // ======================
+
+  const currentOREElement =
+    document.getElementById("currentORE");
+
+  if (currentOREElement) {
+    const currentORE =
+      calculatePersonalStraUntilToday();
+
+    currentOREElement.textContent =
+      formatPersonalHours(
+        Number.isFinite(Number(currentORE))
+          ? Number(currentORE)
+          : 0
+      ) +
+      " ore";
   }
 
   // ======================

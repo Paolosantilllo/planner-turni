@@ -2110,6 +2110,71 @@ button:disabled{
 }
 
 /* ======================
+   📊 RIEPILOGO PERSONALE - NUOVA STRUTTURA
+   ====================== */
+
+#personalSummaryPopup .personal-summary-available-date {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#personalSummaryPopup .personal-summary-current-section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+#personalSummaryPopup .personal-summary-current-item {
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #f8f8f8;
+  box-sizing: border-box;
+}
+
+#personalSummaryPopup .personal-summary-current-item strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+#personalSummaryPopup .personal-summary-current {
+  font-size: 15px;
+}
+
+#personalSummaryPopup .personal-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+#personalSummaryPopup .personal-summary-actions .save-btn {
+  flex: 1 1 220px;
+}
+
+#personalSummaryPopup #personalInitialValuesSection,
+#personalSummaryPopup #personalPaidHoursSection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #ddd;
+}
+
+#personalSummaryPopup .personal-summary-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+#personalSummaryPopup .personal-summary-section-actions .save-btn {
+  flex: 1 1 220px;
+}
+
+/* ======================
    📊 RIEPILOGO PERSONALE - DIMENSIONI RESPONSIVE
    ====================== */
 

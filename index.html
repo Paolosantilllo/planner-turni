@@ -184,163 +184,226 @@
   <div class="popup-content">
 
     <div class="popup-header">
-
       <h2>📊 Riepilogo personale</h2>
-
       <button class="close-btn" onclick="closePersonalSummary()">
         ✕
       </button>
-
     </div>
 
-<div id="personalSummaryContent">
+    <div id="personalSummaryContent">
 
-  <div class="personal-summary-columns">
-
-    <div class="personal-summary-initial">
-
-      <h3>⚙️ Valori iniziali</h3>
-
-      <div class="personal-summary-row">
-        <label for="initialORD">ORD</label>
-        <input type="number" id="initialORD" min="0" step="1" placeholder="—">
-
+      <div id="personalSummaryAvailableDate" class="personal-summary-available-date">
+        Disponibili al —
       </div>
 
-<div id="currentORD" class="personal-summary-current">
-  Disponibili: —
-</div>
+      <div class="personal-summary-current-section">
 
-<div class="personal-summary-row">
-  <label for="initial937">937/77</label>
-  <input type="number" id="initial937" min="0" step="1" placeholder="—">
-
-</div>
-<div id="current937" class="personal-summary-current">
-  Disponibili: —
-</div>
-      <div class="personal-summary-row">
-        <label for="initialRFI">RFI</label>
-        <input type="number" id="initialRFI" min="0" step="1" placeholder="—">
-
-      </div>
-
-          <div id="currentRFI" class="personal-summary-current">
-            Disponibili: —
+        <div class="personal-summary-current-item">
+          <strong>ORD</strong>
+          <div id="currentORD" class="personal-summary-current">
+            0 giorni
           </div>
+        </div>
 
-      <div class="personal-summary-row">
-        <label for="initialORE">ORE</label>
-        <input type="text" id="initialORE" inputmode="decimal" placeholder="—">
+        <div class="personal-summary-current-item">
+          <strong>937/77</strong>
+          <div id="current937" class="personal-summary-current">
+            0 giorni
+          </div>
+        </div>
+
+        <div class="personal-summary-current-item">
+          <strong>RFI</strong>
+          <div id="currentRFI" class="personal-summary-current">
+            0 giorni
+          </div>
+        </div>
+
+        <div class="personal-summary-current-item">
+          <strong>ORE</strong>
+          <div id="currentORE" class="personal-summary-current">
+            0,00 ore
+          </div>
+        </div>
+
+      </div>
+
+      <div id="personalMonteOre" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #ddd;">
+        <h3 style="margin: 0 0 12px 0; font-size: 17px;">⏱️ Monte ore</h3>
+        <div>
+          <span id="personalMonteOreUntilToday">Totale di STRA + REP: —</span>
+        </div>
+      </div>
+
+      <div class="personal-summary-actions">
+
+        <button
+          type="button"
+          class="save-btn"
+          onclick="togglePersonalInitialValues()"
+        >
+          ⚙️ Valori iniziali
+        </button>
+
+        <button
+          type="button"
+          class="save-btn"
+          onclick="togglePersonalPaidHours()"
+        >
+          💶 Ore pagate
+        </button>
+
+      </div>
+
+      <div id="personalInitialValuesSection" style="display: none;">
+
+        <h3>⚙️ Valori iniziali</h3>
+
+        <div class="personal-summary-row">
+          <label for="initialORD">ORD</label>
+          <input type="number" id="initialORD" min="0" step="1" placeholder="—">
+        </div>
+
+        <div class="personal-summary-row">
+          <label for="initial937">937/77</label>
+          <input type="number" id="initial937" min="0" step="1" placeholder="—">
+        </div>
+
+        <div class="personal-summary-row">
+          <label for="initialRFI">RFI</label>
+          <input type="number" id="initialRFI" min="0" step="1" placeholder="—">
+        </div>
+
+        <div class="personal-summary-row">
+          <label for="initialORE">ORE</label>
+          <input type="text" id="initialORE" inputmode="decimal" placeholder="—">
+        </div>
+
+        <div class="personal-summary-section-actions">
+
+          <button
+            type="button"
+            class="save-btn"
+            onclick="savePersonalSummary()"
+          >
+            💾 Salva valori iniziali
+          </button>
+
+          <button
+            type="button"
+            class="save-btn personal-summary-close-btn"
+            onclick="togglePersonalInitialValues()"
+          >
+            ❌ Chiudi
+          </button>
+
+        </div>
+
+      </div>
+
+      <div id="personalPaidHoursSection" style="display: none;">
+
+        <h3>💶 Ore pagate</h3>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidJanuary">Gennaio</label>
+          <input type="text" id="paidJanuary" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidFebruary">Febbraio</label>
+          <input type="text" id="paidFebruary" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidMarch">Marzo</label>
+          <input type="text" id="paidMarch" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidApril">Aprile</label>
+          <input type="text" id="paidApril" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidMay">Maggio</label>
+          <input type="text" id="paidMay" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidJune">Giugno</label>
+          <input type="text" id="paidJune" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidJuly">Luglio</label>
+          <input type="text" id="paidJuly" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidAugust">Agosto</label>
+          <input type="text" id="paidAugust" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidSeptember">Settembre</label>
+          <input type="text" id="paidSeptember" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidOctober">Ottobre</label>
+          <input type="text" id="paidOctober" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidNovember">Novembre</label>
+          <input type="text" id="paidNovember" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidDecember">Dicembre</label>
+          <input type="text" id="paidDecember" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-section-actions">
+
+          <button
+            type="button"
+            class="save-btn"
+            onclick="savePersonalSummary()"
+          >
+            💾 Salva ore pagate
+          </button>
+
+          <button
+            type="button"
+            class="save-btn personal-summary-close-btn"
+            onclick="togglePersonalPaidHours()"
+          >
+            ❌ Chiudi
+          </button>
+
+        </div>
 
       </div>
 
     </div>
 
-    <div class="personal-summary-paid">
-
-      <h3>💶 Ore pagate</h3>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidJanuary">Gennaio</label>
-        <input type="text" id="paidJanuary" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidFebruary">Febbraio</label>
-        <input type="text" id="paidFebruary" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidMarch">Marzo</label>
-        <input type="text" id="paidMarch" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidApril">Aprile</label>
-        <input type="text" id="paidApril" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidMay">Maggio</label>
-        <input type="text" id="paidMay" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidJune">Giugno</label>
-        <input type="text" id="paidJune" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidJuly">Luglio</label>
-        <input type="text" id="paidJuly" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidAugust">Agosto</label>
-        <input type="text" id="paidAugust" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidSeptember">Settembre</label>
-        <input type="text" id="paidSeptember" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidOctober">Ottobre</label>
-        <input type="text" id="paidOctober" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidNovember">Novembre</label>
-        <input type="text" id="paidNovember" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-      <div class="personal-summary-paid-row">
-        <label for="paidDecember">Dicembre</label>
-        <input type="text" id="paidDecember" inputmode="decimal" placeholder="0,00">
-        <span>ore</span>
-      </div>
-
-    </div>
-
   </div>
 
-<div id="personalMonteOre" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #ddd;">
-  <h3 style="margin: 0 0 12px 0; font-size: 17px;">⏱️ Monte ore</h3>
-
-  <div style="margin-bottom: 8px;">
-  </div>
-
-  <div>
-    <span id="personalMonteOreUntilToday">Totale di STRA + REP: —</span>
-  </div>
 </div>
-
-  <button class="save-btn" onclick="savePersonalSummary()">
-    💾 Salva valori iniziali
-  </button>
-
-</div>
-
-
-    </div>
-
-  </div>
-
-
-
 
 <!-- POPUP CAMBIA EMAIL -->
 <div class="popup" id="changeEmailPopup">
