@@ -1578,28 +1578,67 @@ if (date === todayString) {
    
    // ======================
 // ======================
-// 🔴 ORARIO PERSONALE APERTO
+// 🔴 ORARIO PERSONALE INCOMPLETO
 // ======================
 
 if (
   !archiveCalendarMode &&
   selectedEmployee !== "ALL" &&
-  selectedEmployee === window.CURRENT_EMPLOYEE &&
-  date < todayString
+  selectedEmployee === window.CURRENT_EMPLOYEE
 ) {
 
-  const openPersonalTime =
+  const personalTime =
     personalWorkTimes.find(item =>
       item &&
       item.employee === window.CURRENT_EMPLOYEE &&
-      item.date === date &&
-      item.type === "OPEN" &&
-      item.start &&
-      !item.end
+      item.date === date
     );
 
-  if (openPersonalTime) {
-    box.style.border = "2px solid red";
+  if (personalTime) {
+
+    let incomplete = false;
+
+    // Giornata normale:
+    // manca ingresso oppure manca uscita.
+    if (
+      personalTime.type !== "CFI" &&
+      personalTime.type !== "CFI/REP" &&
+      personalTime.type !== "NORMAL"
+    ) {
+
+      incomplete =
+        (
+          !personalTime.start &&
+          personalTime.end
+        ) ||
+        (
+          personalTime.start &&
+          !personalTime.end
+        );
+    }
+
+    // CFI / CFI-REP:
+    // se viene registrata un'uscita NFC reale
+    // prima dell'orario minimo, evidenziamo la giornata.
+    if (
+      (
+        personalTime.type === "CFI" ||
+        personalTime.type === "CFI/REP"
+      ) &&
+      personalTime.nfcExit === true &&
+      personalTime.cfiMinExit &&
+      personalTime.end &&
+      personalTime.end < personalTime.cfiMinExit
+    ) {
+
+      incomplete = true;
+    }
+
+    if (incomplete) {
+
+      box.style.border =
+        "2px solid red";
+    }
   }
 }
 
@@ -8742,7 +8781,9 @@ window.editPersonalWorkTimeDetails = function() {
     data.date,
     {
       start: data.start,
-      end: data.end
+      end: data.end,
+      nfcExit: data.nfcExit,
+      cfiMinExit: data.cfiMinExit
     }
   );
 };
@@ -8798,7 +8839,10 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
     }
 
     if (endRow) {
-      endRow.style.display = "none";
+      endRow.style.display =
+        editData?.nfcExit === true
+          ? ""
+          : "none";
     }
 
   } else {
@@ -8843,6 +8887,546 @@ window.closePersonalWorkTimePopup = function() {
   }
 
 };
+
+// ======================
+// 📡 NFC - REGISTRAZIONE ORARIO
+// ======================
+
+async function checkNfcEntry() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  if (
+    params.get("nfc") !==
+    "ingresso"
+  ) {
+    return;
+  }
+
+  let attempts = 0;
+
+  const waitForEmployee = setInterval(async () => {
+
+    attempts++;
+
+    const employee =
+      window.CURRENT_EMPLOYEE;
+
+    if (!employee) {
+
+      if (attempts >= 100) {
+
+        clearInterval(waitForEmployee);
+
+        alert(
+          "⚠️ Utente non ancora riconosciuto.\n\n" +
+          "Accedi a Planner REP e riprova."
+        );
+
+      }
+
+      return;
+    }
+
+    if (
+      typeof window.getPersonalDayShift !==
+      "function"
+    ) {
+
+      if (attempts >= 100) {
+
+        clearInterval(waitForEmployee);
+
+        alert(
+          "⚠️ Calendario non ancora pronto.\n\n" +
+          "Riprova tra qualche secondo."
+        );
+
+      }
+
+      return;
+    }
+
+    clearInterval(waitForEmployee);
+
+
+    const day =
+      String(now.getDate()).padStart(2, "0");
+    const month =
+      String(now.getMonth() + 1).padStart(2, "0");
+    const year =
+      now.getFullYear();
+    const date =
+      year +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      day;
+    const time =
+      String(now.getHours()).padStart(2, "0") +
+      ":" +
+      String(now.getMinutes()).padStart(2, "0");
+
+    // ======================
+    // 🕐 NFC PRIMA DELLE 12
+    // ========== INGRESSO ===
+    // ======================
+
+    const isEntry =
+      now.getHours() < 12;
+
+    const personalWorkTimeId =
+      employee + "_" + date;
+
+    const personalWorkTimeRef =
+      firestore.doc(
+        db,
+        "personalWorkTimes",
+        personalWorkTimeId
+      );
+
+    const existingDoc =
+      await firestore.getDoc(
+        personalWorkTimeRef
+      );
+
+    const existing =
+      existingDoc.exists
+        ? existingDoc.data()
+        : null;
+
+    const nfcMonthKey =
+      `${date.slice(0, 4)}-${date.slice(5, 7)}`;
+
+    if (!loadedMonths[nfcMonthKey]) {
+      await new Promise(resolve => {
+        const waitForMonth = setInterval(() => {
+          if (loadedMonths[nfcMonthKey]) {
+            clearInterval(waitForMonth);
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
+    const shift =
+      window.getPersonalDayShift(date);
+
+    // ======================
+    // 🚫 GIORNATE NON PRESENZA
+    // ======================
+
+    if (
+      shift === "LIC" ||
+      shift === "REC" ||
+      shift === "MAL"
+    ) {
+
+      alert(
+        "❌ Non puoi registrare un orario NFC.\n\n" +
+        "La giornata risulta " +
+        shift +
+        " e quindi non sei presente al lavoro."
+      );
+
+      return;
+    }
+
+    // ======================
+    // 🟢 CFI / CFI-REP
+    // ======================
+
+    if (
+      shift === "CFI" ||
+      shift === "CFI/REP"
+    ) {
+
+      // NFC prima delle 12 = INGRESSO
+      if (isEntry) {
+
+        if (
+          existing &&
+          existing.start
+        ) {
+
+          alert(
+            "ℹ️ Ingresso già registrato alle " +
+            existing.start +
+            "."
+          );
+
+          return;
+        }
+
+        const minExit =
+          calculateCFIMinExit(
+            time,
+            date
+          );
+
+        if (!minExit) {
+
+          alert(
+            "⚠️ Impossibile calcolare l'orario minimo di uscita."
+          );
+
+          return;
+        }
+
+        await firestore.setDoc(
+          personalWorkTimeRef,
+          {
+            employee: employee,
+            date: date,
+            start: time,
+            end: minExit,
+            type: shift,
+            cfiMinExit: minExit,
+            nfcEntry: true,
+            nfcExit: false,
+            updatedAt: new Date()
+          },
+          {
+            merge: true
+          }
+        );
+
+        // 🔔 PROMEMORIA CFI
+        try {
+
+          const reminderId =
+            employee + "_" + date;
+
+          const reminderRef =
+            firestore.doc(
+              db,
+              "cfiReminders",
+              reminderId
+            );
+
+          const reminderDateTime =
+            new Date(
+              date +
+              "T" +
+              minExit +
+              ":00"
+            );
+
+          await firestore.setDoc(
+            reminderRef,
+            {
+              employee: employee,
+              date: date,
+              startTime: time,
+              minExit: minExit,
+              reminderAt: reminderDateTime,
+              shift: shift,
+              sent: false,
+              updatedAt: new Date()
+            },
+            {
+              merge: true
+            }
+          );
+
+        } catch (error) {
+
+          console.error(
+            "❌ Errore salvataggio promemoria CFI:",
+            error
+          );
+
+        }
+
+        alert(
+          "🟢 Ingresso NFC registrato alle " +
+          time +
+          ".\n\n" +
+          "Per rendere valida la " +
+          shift +
+          " puoi uscire dalle " +
+          minExit +
+          " in poi."
+        );
+
+        return;
+      }
+
+      // NFC dalle 12 = USCITA
+      if (
+        existing &&
+        existing.start
+      ) {
+
+        const minExit =
+          existing.cfiMinExit ||
+          calculateCFIMinExit(
+            existing.start,
+            date
+          );
+
+        await firestore.setDoc(
+          personalWorkTimeRef,
+          {
+            employee: employee,
+            date: date,
+            start: existing.start,
+            end: time,
+            type: shift,
+            cfiMinExit: minExit || "",
+            nfcEntry: existing.nfcEntry || false,
+            nfcExit: true,
+            updatedAt: new Date()
+          },
+          {
+            merge: true
+          }
+        );
+
+        alert(
+          "🟢 Uscita NFC registrata alle " +
+          time +
+          ".\n\n" +
+          (
+            minExit &&
+            time < minExit
+              ? "⚠️ L'uscita è precedente all'orario minimo " +
+                minExit +
+                "."
+              : "Uscita registrata correttamente."
+          )
+        );
+
+        return;
+
+      }
+
+      // Nessun ingresso precedente:
+      // salviamo comunque l'uscita.
+      await firestore.setDoc(
+        personalWorkTimeRef,
+        {
+          employee: employee,
+          date: date,
+          start: "",
+          end: time,
+          type: shift,
+          nfcEntry: false,
+          nfcExit: true,
+          updatedAt: new Date()
+        },
+        {
+          merge: true
+        }
+      );
+
+      alert(
+        "🟠 Uscita NFC registrata alle " +
+        time +
+        ".\n\n" +
+        "⚠️ Ingresso non registrato.\n" +
+        "Puoi inserirlo manualmente dal calendario."
+      );
+
+      return;
+    }
+
+    // ======================
+    // 🕐 GIORNATA NORMALE
+    // ======================
+
+    // ======================
+    // 🟢 NFC = INGRESSO
+    // ======================
+
+    if (isEntry) {
+
+      if (
+        existing &&
+        existing.start
+      ) {
+
+        alert(
+          "ℹ️ Ingresso già registrato alle " +
+          existing.start +
+          "."
+        );
+
+        return;
+      }
+
+      await firestore.setDoc(
+        personalWorkTimeRef,
+        {
+          employee: employee,
+          date: date,
+          start: time,
+          end:
+            existing?.end || "",
+          type:
+            existing?.end
+              ? existing.type || "OPEN"
+              : "OPEN",
+          nfcEntry: true,
+          nfcExit:
+            existing?.nfcExit || false,
+          source: "NFC",
+          updatedAt: new Date()
+        },
+        {
+          merge: true
+        }
+      );
+
+      alert(
+        "🟢 Ingresso NFC registrato alle " +
+        time +
+        ".\n\n" +
+        (
+          existing?.end
+            ? "Ingresso e uscita presenti."
+            : "⚠️ Uscita non registrata.\n" +
+              "Potrai inserirla manualmente dal calendario."
+        )
+      );
+
+      return;
+    }
+
+    // ======================
+    // 🟠 NFC = USCITA
+    // ======================
+
+    if (
+      existing &&
+      existing.end
+    ) {
+
+      alert(
+        "ℹ️ Uscita già registrata alle " +
+        existing.end +
+        "."
+      );
+
+      return;
+    }
+
+    // Nessun ingresso:
+    // salviamo comunque l'uscita.
+    if (
+      !existing ||
+      !existing.start
+    ) {
+
+      await firestore.setDoc(
+        personalWorkTimeRef,
+        {
+          employee: employee,
+          date: date,
+          start:
+            existing?.start || "",
+          end: time,
+          type: "OPEN",
+          nfcEntry:
+            existing?.nfcEntry || false,
+          nfcExit: true,
+          source: "NFC",
+          updatedAt: new Date()
+        },
+        {
+          merge: true
+        }
+      );
+
+      alert(
+        "🟠 Uscita NFC registrata alle " +
+        time +
+        ".\n\n" +
+        "⚠️ Ingresso non registrato.\n" +
+        "Puoi inserirlo manualmente dal calendario."
+      );
+
+      return;
+    }
+
+    // ======================
+    // 🧮 INGRESSO + USCITA
+    // ======================
+
+    const startTime =
+      existing.start;
+
+    const result =
+      calculatePersonalWorkTime(
+        date,
+        startTime,
+        time
+      );
+
+    if (!result) {
+
+      alert(
+        "⚠️ Orari NFC non validi."
+      );
+
+      return;
+    }
+
+    await firestore.setDoc(
+      personalWorkTimeRef,
+      {
+        employee: employee,
+        date: date,
+        start: startTime,
+        end: time,
+        type:
+          result.type || "NORMAL",
+        workedMinutes:
+          result.workedMinutes,
+        normalMinutes:
+          result.normalMinutes,
+        differenceMinutes:
+          result.differenceMinutes,
+        nfcEntry:
+          existing.nfcEntry || false,
+        nfcExit: true,
+        source: "NFC",
+        updatedAt: new Date()
+      },
+      {
+        merge: true
+      }
+    );
+
+    alert(
+      "🟢 Orario NFC completato.\n\n" +
+      "Ingresso: " +
+      startTime +
+      "\n" +
+      "Uscita: " +
+      time +
+      "\n\n" +
+      (
+        result.type === "STRA"
+          ? "STRA: +" +
+            (result.differenceMinutes / 60).toFixed(2) +
+            " ore"
+          : result.type === "rec"
+            ? "rec: " +
+              (result.differenceMinutes / 60).toFixed(2) +
+              " ore"
+            : "Orario normale."
+      )
+    );
+
+  }, 100);
+
+}
+
+checkNfcEntry();
 
 // ======================
 // 🕐 IDENTIFICA SIGLA GIORNO PERSONALE
@@ -9228,6 +9812,13 @@ if (!employee) {
   return;
 }
 
+const existingPersonalTime =
+  personalWorkTimes.find(item =>
+    item &&
+    item.employee === employee &&
+    item.date === date
+  );
+
 // 💾 SALVA INGRESSO E USCITA CFI
 const personalWorkTimeId =
   employee + "_" + date;
@@ -9245,8 +9836,20 @@ await firestore.setDoc(
     employee: employee,
     date: date,
     start: startTime,
-    end: minExit,
+    end:
+      existingPersonalTime?.nfcExit === true && existingPersonalTime.end
+        ? existingPersonalTime.end
+        : minExit,
     type: shift,
+    nfcEntry:
+      existingPersonalTime?.nfcExit === true
+        ? true
+        : false,
+    nfcExit:
+      existingPersonalTime?.nfcExit === true
+        ? true
+        : false,
+    cfiMinExit: minExit,
     updatedAt: new Date()
   },
   {
@@ -9330,6 +9933,69 @@ return;
 
   const endTime =
     endInput?.value || "";
+
+  // Se è presente solo l'uscita
+  // (ad esempio registrata prima tramite NFC),
+  // consentiamo di completare manualmente
+  // l'ingresso dal calendario.
+
+  if (
+    !startTime &&
+    endTime &&
+    shift !== "CFI" &&
+    shift !== "CFI/REP"
+  ) {
+
+    const employee =
+      window.CURRENT_EMPLOYEE;
+
+    if (!employee) {
+
+      alert(
+        "Dipendente non identificato."
+      );
+
+      return;
+    }
+
+    const personalWorkTimeId =
+      employee + "_" + date;
+
+    const personalWorkTimeRef =
+      firestore.doc(
+        db,
+        "personalWorkTimes",
+        personalWorkTimeId
+      );
+
+
+    await firestore.setDoc(
+      personalWorkTimeRef,
+      {
+        employee: employee,
+        date: date,
+        start: "",
+        end: endTime,
+        type: "OPEN",
+        nfcEntry: false,
+        nfcExit: true,
+        source: "NFC",
+        updatedAt: new Date()
+      },
+      {
+        merge: true
+      }
+    );
+
+    alert(
+      "Uscita salvata alle " +
+      endTime +
+      ".\n\n" +
+      "Inserisci anche l'orario di ingresso per completare la giornata."
+    );
+
+    return;
+  }
 
   // Se è presente solo l'ingresso,
   // salviamo l'orario senza ancora calcolare
