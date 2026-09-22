@@ -5979,7 +5979,14 @@ window.togglePersonalInitialValues = function() {
   const section =
     document.getElementById("personalInitialValuesSection");
 
+  const paidSection =
+    document.getElementById("personalPaidHoursSection");
+
   if (!section) return;
+
+  if (paidSection) {
+    paidSection.style.display = "none";
+  }
 
   section.style.display =
     section.style.display === "none"
@@ -5991,7 +5998,14 @@ window.togglePersonalPaidHours = function() {
   const section =
     document.getElementById("personalPaidHoursSection");
 
+  const initialSection =
+    document.getElementById("personalInitialValuesSection");
+
   if (!section) return;
+
+  if (initialSection) {
+    initialSection.style.display = "none";
+  }
 
   section.style.display =
     section.style.display === "none"

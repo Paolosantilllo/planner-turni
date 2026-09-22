@@ -2550,3 +2550,53 @@ button:disabled{
 #patronoPage label[for="patronoName"] {
   margin-top: 10px;
 }
+
+/* ==============================
+   📊 RIEPILOGO PERSONALE
+   PANNELLI VALORI INIZIALI / ORE PAGATE
+   ============================== */
+
+#personalSummaryPopup #personalInitialValuesSection,
+#personalSummaryPopup #personalPaidHoursSection {
+  position: fixed;
+  z-index: 100002;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 520px);
+  max-height: 82dvh;
+  margin: 0;
+  padding: 20px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#personalSummaryPopup #personalInitialValuesSection h3,
+#personalSummaryPopup #personalPaidHoursSection h3 {
+  margin-top: 0;
+}
+
+#personalSummaryPopup .personal-summary-section-actions {
+  position: sticky;
+  bottom: 0;
+  padding-top: 12px;
+  background: #fff;
+}
+
+@media (max-width: 600px) {
+
+  #personalSummaryPopup #personalInitialValuesSection,
+  #personalSummaryPopup #personalPaidHoursSection {
+    width: calc(100vw - 24px);
+    max-width: none;
+    max-height: calc(100dvh - 24px);
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+}
