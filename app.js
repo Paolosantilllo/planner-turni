@@ -1990,7 +1990,7 @@ if (personalStraTotalElement) {
 
     if (totalStra === null) {
       personalStraTotalElement.textContent =
-        "Totale STRA fino ad oggi: —";
+        "Totale ORE fino ad oggi: —";
     } else {
       const totalStraMinutes =
         Math.round(Number(totalStra));
@@ -2008,7 +2008,7 @@ if (personalStraTotalElement) {
         absoluteMinutes % 60;
 
       personalStraTotalElement.textContent =
-        "Totale STRA fino ad oggi: " +
+        "Totale ORE fino ad oggi: " +
         sign +
         String(hours) +
         "," +
@@ -6477,11 +6477,11 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       });
 
       untilTodayElement.textContent =
-        "Totale di STRA + REP fino ad oggi: " +
+        "Totale ORE + REP fino ad oggi: " +
         formatMonteOre(totalUntilToday);
     } else {
       untilTodayElement.textContent =
-        "Totale di STRA + REP fino ad oggi: —";
+        "Totale ORE + REP fino ad oggi: —";
     }
   }
 
@@ -8762,6 +8762,72 @@ window.openPersonalWorkTimeDetailsPopup = function(
 
   if (popup) {
     popup.style.display = "flex";
+  }
+};
+
+
+window.deletePersonalWorkTimeDetails = async function() {
+
+  const data =
+    personalWorkTimeDetailsData;
+
+  if (
+    !data ||
+    !data.date ||
+    (data.type !== "STRA" && data.type !== "rec")
+  ) {
+    return;
+  }
+
+  const employee =
+    window.CURRENT_EMPLOYEE;
+
+  if (!employee) {
+    alert("Dipendente non identificato.");
+    return;
+  }
+
+  const confirmed =
+    confirm(
+      "Vuoi eliminare lo STRA/rec del " +
+      data.date +
+      "?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+
+    const personalWorkTimeId =
+      employee + "_" + data.date;
+
+    const personalWorkTimeRef =
+      firestore.doc(
+        db,
+        "personalWorkTimes",
+        personalWorkTimeId
+      );
+
+    await firestore.deleteDoc(
+      personalWorkTimeRef
+    );
+
+    closePersonalWorkTimeDetailsPopup();
+
+    await renderCalendar();
+
+  } catch (err) {
+
+    console.error(
+      "❌ Errore eliminazione orario personale:",
+      err
+    );
+
+    alert(
+      "Errore durante l'eliminazione dell'orario."
+    );
   }
 };
 
