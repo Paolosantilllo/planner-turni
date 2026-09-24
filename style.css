@@ -2387,6 +2387,27 @@ button:disabled{
    🕐 ORARIO PERSONALE - RESPONSIVE
    ================================ */
 
+#personalWorkTimePopup .personal-work-time-row label {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+#personalWorkTimePopup .personal-work-time-row label > div {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  width: 100%;
+  text-align: left !important;
+}
+
+#personalWorkTimePopup .personal-work-time-row input[type="checkbox"] {
+  width: auto !important;
+  margin: 0 8px 0 0 !important;
+  flex: 0 0 auto !important;
+  align-self: center;
+}
+
 #personalWorkTimePopup {
   box-sizing: border-box;
   overflow-y: auto;

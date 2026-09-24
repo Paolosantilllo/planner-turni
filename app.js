@@ -8849,7 +8849,9 @@ window.editPersonalWorkTimeDetails = function() {
       start: data.start,
       end: data.end,
       nfcExit: data.nfcExit,
-      cfiMinExit: data.cfiMinExit
+      cfiMinExit: data.cfiMinExit,
+      calculateEarlyEntry: data.calculateEarlyEntry === true,
+      calculateLateExit: data.calculateLateExit === true
     }
   );
 };
@@ -8927,6 +8929,22 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
   if (startInput) {
     startInput.value =
       editData?.start || "";
+  }
+
+  const earlyEntryCheckbox =
+    document.getElementById("personalEarlyEntry");
+
+  const lateExitCheckbox =
+    document.getElementById("personalLateExit");
+
+  if (earlyEntryCheckbox) {
+    earlyEntryCheckbox.checked =
+      editData?.calculateEarlyEntry === true;
+  }
+
+  if (lateExitCheckbox) {
+    lateExitCheckbox.checked =
+      editData?.calculateLateExit === true;
   }
 
   const endInput =
@@ -9796,6 +9814,151 @@ window.calculatePersonalWorkTime = function(date, startTime, endTime) {
 
 
 // ======================
+// ⭐ CALCOLO STRA CON AUTORIZZAZIONI
+// ======================
+
+window.calculatePersonalStra = function(
+  date,
+  startTime,
+  endTime,
+  calculateEarlyEntry = false,
+  calculateLateExit = false
+) {
+  if (!date || !startTime || !endTime) return null;
+
+  const startParts = startTime.split(":");
+  const endParts = endTime.split(":");
+
+  if (startParts.length !== 2 || endParts.length !== 2) {
+    return null;
+  }
+
+  const startMinutes =
+    Number(startParts[0]) * 60 +
+    Number(startParts[1]);
+
+  const endMinutes =
+    Number(endParts[0]) * 60 +
+    Number(endParts[1]);
+
+  if (
+    !Number.isFinite(startMinutes) ||
+    !Number.isFinite(endMinutes) ||
+    endMinutes <= startMinutes
+  ) {
+    return null;
+  }
+
+  const dateObj =
+    new Date(date + "T00:00:00");
+
+  const dayOfWeek =
+    dateObj.getDay();
+
+  // ======================
+  // 🟠 SABATO / DOMENICA
+  // ======================
+
+  if (
+    dayOfWeek === 0 ||
+    dayOfWeek === 6
+  ) {
+    const effectiveStart =
+      startMinutes;
+
+    const effectiveEnd =
+      calculateLateExit
+        ? endMinutes
+        : Math.min(endMinutes, 20 * 60);
+
+    if (effectiveEnd <= effectiveStart) {
+      return null;
+    }
+
+    return {
+      start: startTime,
+      end: endTime,
+      workedMinutes:
+        effectiveEnd - effectiveStart,
+      normalMinutes: 0,
+      differenceMinutes:
+        effectiveEnd - effectiveStart,
+      type:
+        effectiveEnd > effectiveStart
+          ? "STRA"
+          : null
+    };
+  }
+
+  // ======================
+  // ⏰ LIMITI DI CALCOLO
+  // ======================
+
+  const normalStart = 8 * 60;
+  const straCutoff = 20 * 60;
+
+  const effectiveStart =
+    calculateEarlyEntry
+      ? startMinutes
+      : Math.max(
+          startMinutes,
+          normalStart
+        );
+
+  const effectiveEnd =
+    calculateLateExit
+      ? endMinutes
+      : Math.min(
+          endMinutes,
+          straCutoff
+        );
+
+  if (effectiveEnd <= effectiveStart) {
+    return null;
+  }
+
+  const effectiveStartTime =
+    String(
+      Math.floor(effectiveStart / 60)
+    ).padStart(2, "0") +
+    ":" +
+    String(
+      effectiveStart % 60
+    ).padStart(2, "0");
+
+  const effectiveEndTime =
+    String(
+      Math.floor(effectiveEnd / 60)
+    ).padStart(2, "0") +
+    ":" +
+    String(
+      effectiveEnd % 60
+    ).padStart(2, "0");
+
+  const result =
+    calculatePersonalWorkTime(
+      date,
+      effectiveStartTime,
+      effectiveEndTime
+    );
+
+  if (!result) return null;
+
+  return {
+    start: startTime,
+    end: endTime,
+    workedMinutes:
+      result.workedMinutes,
+    normalMinutes:
+      result.normalMinutes,
+    differenceMinutes:
+      result.differenceMinutes,
+    type:
+      result.type
+  };
+};
+
+// ======================
 // 💾 SALVATAGGIO ORARIO PERSONALE
 // ======================
 
@@ -10138,11 +10301,25 @@ return;
     return;
   }
 
+  const earlyEntryCheckbox =
+    document.getElementById("personalEarlyEntry");
+
+  const lateExitCheckbox =
+    document.getElementById("personalLateExit");
+
+  const calculateEarlyEntry =
+    earlyEntryCheckbox?.checked === true;
+
+  const calculateLateExit =
+    lateExitCheckbox?.checked === true;
+
   const result =
-    calculatePersonalWorkTime(
+    calculatePersonalStra(
       date,
       startTime,
-      endTime
+      endTime,
+      calculateEarlyEntry,
+      calculateLateExit
     );
 
   if (!result) {
@@ -10185,11 +10362,25 @@ return;
   // ======================
 
   if (result.type === null) {
-
     try {
-
-      await firestore.deleteDoc(
-        personalWorkTimeRef
+      await firestore.setDoc(
+        personalWorkTimeRef,
+        {
+          employee: employee,
+          date: date,
+          start: startTime,
+          end: endTime,
+          type: null,
+          workedMinutes: result.workedMinutes,
+          normalMinutes: result.normalMinutes,
+          differenceMinutes: 0,
+          calculateEarlyEntry: calculateEarlyEntry,
+          calculateLateExit: calculateLateExit,
+          updatedAt: new Date()
+        },
+        {
+          merge: true
+        }
       );
 
       alert(
@@ -10200,7 +10391,7 @@ return;
     } catch (err) {
 
       console.error(
-        "❌ Errore eliminazione orario personale:",
+        "❌ Errore salvataggio orario personale:",
         err
       );
 
@@ -10229,6 +10420,8 @@ return;
         workedMinutes: result.workedMinutes,
         normalMinutes: result.normalMinutes,
         differenceMinutes: result.differenceMinutes,
+        calculateEarlyEntry: calculateEarlyEntry,
+        calculateLateExit: calculateLateExit,
         updatedAt: new Date()
       },
       {

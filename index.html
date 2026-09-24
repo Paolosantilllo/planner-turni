@@ -1242,33 +1242,53 @@
 
     <div class="personal-work-time-row">
 
-      <label for="personalStartTime">
-        Orario di ingresso
-      </label>
+      <label style="display:block; width:100%;">
 
-      <input
-        type="time"
-        id="personalStartTime"
-        min="00:00"
-        max="23:59"
-        step="60"
-      >
+        <div style="display:flex; align-items:center; justify-content:flex-start; width:100%; text-align:left;">
+          <input
+            type="checkbox"
+            id="personalEarlyEntry"
+            style="margin:0 8px 0 0; flex:0 0 auto;"
+          >
+          <span>Orario ingresso</span>
+        </div>
+
+        <input
+          type="time"
+          id="personalStartTime"
+          min="00:00"
+          max="23:59"
+          step="60"
+          style="margin-top:6px;"
+        >
+
+      </label>
 
     </div>
 
     <div class="personal-work-time-row">
 
-      <label for="personalEndTime">
-        Orario di uscita
-      </label>
+      <label style="display:block; width:100%;">
 
-      <input
-        type="time"
-        id="personalEndTime"
-        min="00:00"
-        max="23:59"
-        step="60"
-      >
+        <div style="display:flex; align-items:center; justify-content:flex-start; width:100%; text-align:left;">
+          <input
+            type="checkbox"
+            id="personalLateExit"
+            style="margin:0 8px 0 0; flex:0 0 auto;"
+          >
+          <span>Orario uscita</span>
+        </div>
+
+        <input
+          type="time"
+          id="personalEndTime"
+          min="00:00"
+          max="23:59"
+          step="60"
+          style="margin-top:6px;"
+        >
+
+      </label>
 
     </div>
 
