@@ -5729,6 +5729,19 @@ window.calculatePersonalORD = function(year) {
       createdDate =
         new Date(ev.createdAt);
     }
+    else if (
+      ev.createdAt &&
+      typeof ev.createdAt.seconds ===
+        "number"
+    ) {
+      createdDate =
+        new Date(
+          ev.createdAt.seconds * 1000 +
+          Math.floor(
+            (ev.createdAt.nanoseconds || 0) / 1000000
+          )
+        );
+    }
 
     if (
       !createdDate ||
@@ -5737,7 +5750,9 @@ window.calculatePersonalORD = function(year) {
       return;
     }
 
-    if (createdDate < activationDate) {
+    const activationCalendarDate =
+      activationDate.toISOString().slice(0, 10);
+    if (ev.date < activationCalendarDate) {
       return;
     }
 
@@ -5863,6 +5878,19 @@ window.calculatePersonalRFI = function(year) {
       createdDate =
         new Date(ev.createdAt);
     }
+    else if (
+      ev.createdAt &&
+      typeof ev.createdAt.seconds ===
+        "number"
+    ) {
+      createdDate =
+        new Date(
+          ev.createdAt.seconds * 1000 +
+          Math.floor(
+            (ev.createdAt.nanoseconds || 0) / 1000000
+          )
+        );
+    }
 
     if (
       !createdDate ||
@@ -5871,7 +5899,9 @@ window.calculatePersonalRFI = function(year) {
       return;
     }
 
-    if (createdDate < activationDate) {
+    const activationCalendarDate =
+      activationDate.toISOString().slice(0, 10);
+    if (ev.date < activationCalendarDate) {
       return;
     }
 
