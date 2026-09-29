@@ -2621,3 +2621,7 @@ button:disabled{
   }
 
 }
+
+#personalSummaryPopup .personal-summary-current-item:nth-child(-n+3) {
+  column-gap: 24px;
+}

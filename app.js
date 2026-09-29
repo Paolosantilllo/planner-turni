@@ -5701,6 +5701,17 @@ window.calculatePersonalORD = function(year) {
       return;
     }
 
+    const today = new Date();
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    if (eventDate > todayStart) {
+      return;
+    }
+
     // Contiamo solo LIC creati dopo
     // il salvataggio dei valori iniziali.
     if (!ev.createdAt) {
@@ -5850,6 +5861,17 @@ window.calculatePersonalRFI = function(year) {
       return;
     }
 
+    const today = new Date();
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    if (eventDate > todayStart) {
+      return;
+    }
+
     // Contiamo solo RFI creati dopo
     // l'ultimo salvataggio della tabella.
     if (!ev.createdAt) {
@@ -5981,6 +6003,17 @@ if (activationAt) {
     if (
       eventDate.getFullYear() !== year
     ) {
+      return;
+    }
+
+    const today = new Date();
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    if (eventDate > todayStart) {
       return;
     }
 
@@ -6148,7 +6181,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
   // ======================
 
   const current937Element =
-    document.getElementById("current937");
+    document.getElementById("current937Value");
 
   if (current937Element) {
 
@@ -6160,14 +6193,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     current937Element.textContent =
       current937 === null
         ? "—"
-        : "" +
-          current937 +
-          " " +
-          (
-            current937 === 1
-              ? "giorno"
-              : "giorni"
-          );
+        : String(current937);
   }
 
   // ======================
@@ -6175,7 +6201,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
   // ======================
 
   const currentRFIElement =
-    document.getElementById("currentRFI");
+    document.getElementById("currentRFIValue");
 
   if (currentRFIElement) {
 
@@ -6187,14 +6213,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     currentRFIElement.textContent =
       currentRFI === null
         ? "—"
-        : "" +
-          currentRFI +
-          " " +
-          (
-            currentRFI === 1
-              ? "giorno"
-              : "giorni"
-          );
+        : String(currentRFI);
   }
 
   // ======================
@@ -6202,7 +6221,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
   // ======================
 
   const currentORDElement =
-    document.getElementById("currentORD");
+    document.getElementById("currentORDValue");
 
   if (currentORDElement) {
 
@@ -6214,14 +6233,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     currentORDElement.textContent =
       currentORD === null
         ? "—"
-        : "" +
-          currentORD +
-          " " +
-          (
-            currentORD === 1
-              ? "giorno"
-              : "giorni"
-          );
+        : String(currentORD);
   }
 
   // ======================
