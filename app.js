@@ -9078,6 +9078,8 @@ async function checkNfcEntry() {
 
     clearInterval(waitForEmployee);
 
+    const now = new Date();
+
 
     const day =
       String(now.getDate()).padStart(2, "0");
