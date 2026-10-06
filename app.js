@@ -2008,7 +2008,7 @@ if (personalStraTotalElement) {
         absoluteMinutes % 60;
 
       personalStraTotalElement.textContent =
-        "Totale ORE fino ad oggi: " +
+        "Totale STRA fino ad oggi: " +
         sign +
         String(hours) +
         "," +
@@ -2020,6 +2020,74 @@ if (personalStraTotalElement) {
   // ======================
  // NAVIGAZIONE MESI
  // ======================
+// ======================
+// 🔄 AGGIORNA TOTALE STRA
+// ======================
+
+window.updatePersonalStraTotalDisplay = function() {
+
+  const personalStraTotalElement =
+    document.getElementById("personalStraTotal");
+
+  if (!personalStraTotalElement) {
+    return;
+  }
+
+  const employeeFilter =
+    document.getElementById("employeeFilter");
+
+  if (!employeeFilter) {
+    return;
+  }
+
+  const selectedEmployee =
+    employeeFilter.value;
+
+  const isOwnEmployeeCalendar =
+    selectedEmployee !== "ALL" &&
+    selectedEmployee === window.CURRENT_EMPLOYEE;
+
+  if (!isOwnEmployeeCalendar) {
+    personalStraTotalElement.style.display = "none";
+    return;
+  }
+
+  personalStraTotalElement.style.display = "block";
+
+  const totalStra =
+    window.calculatePersonalStraUntilToday();
+
+  if (totalStra === null) {
+
+    personalStraTotalElement.textContent =
+      "Totale ORE fino ad oggi: —";
+
+    return;
+  }
+
+  const totalStraMinutes =
+    Math.round(Number(totalStra));
+
+  const sign =
+    totalStraMinutes < 0 ? "-" : "";
+
+  const absoluteMinutes =
+    Math.abs(totalStraMinutes);
+
+  const hours =
+    Math.floor(absoluteMinutes / 60);
+
+  const minutes =
+    absoluteMinutes % 60;
+
+  personalStraTotalElement.textContent =
+    "Totale STRA fino ad oggi: " +
+    sign +
+    String(hours) +
+    "," +
+    String(minutes).padStart(2, "0");
+};
+
 window.nextMonth = function(){
 
   // 📦 CALENDARIO ARCHIVIO: resta nell'anno archiviato
@@ -5183,23 +5251,27 @@ window.calculatePersonalStraUntilToday = function() {
   const summary =
     window.CURRENT_USER_PERSONAL_SUMMARY || {};
 
-  const initialOREByMonth =
-    summary.initialOREByMonth || {};
+  // Il mese corrente parte sempre dal saldo finale
+  // ORE + REP del mese precedente.
+  const previousMonthDate =
+    new Date(summaryYear, summaryMonth - 1, 1);
 
-  const monthKey =
-    summaryYear +
-    "-" +
-    String(summaryMonth + 1).padStart(2, "0");
+  const previousMonthYear =
+    previousMonthDate.getFullYear();
+
+  const previousMonth =
+    previousMonthDate.getMonth();
+
+  const previousMonthTotal =
+    calculatePersonalMonteOre(
+      previousMonthYear,
+      previousMonth
+    );
 
   let totalMinutes =
-    Number(initialOREByMonth[monthKey]);
-
-  // Se il valore mensile non è disponibile,
-  // usa il valore ORE iniziale salvato.
-  if (!Number.isFinite(totalMinutes)) {
-    totalMinutes =
-      Number(summary.initialORE);
-  }
+    Number.isFinite(Number(previousMonthTotal))
+      ? Number(previousMonthTotal)
+      : Number(summary.initialORE);
 
   if (!Number.isFinite(totalMinutes)) {
     totalMinutes = 0;
@@ -5306,6 +5378,344 @@ window.calculatePersonalMonteOre = function(year, month) {
   const summary =
     window.CURRENT_USER_PERSONAL_SUMMARY || {};
 
+  // ============================================================
+  // NUOVO SISTEMA:
+  // il saldo salvato diventa il nuovo punto di partenza
+  // esattamente nel momento in cui viene premuto "Salva".
+  // ============================================================
+
+  const activationAtRaw =
+    summary.personalSummaryActivationAt;
+
+  const initialOREValue =
+    summary.initialORE;
+
+  let activationAt = null;
+
+  if (activationAtRaw) {
+    if (
+      activationAtRaw.toDate &&
+      typeof activationAtRaw.toDate === "function"
+    ) {
+      activationAt =
+        activationAtRaw.toDate();
+    } else {
+      const parsed =
+        new Date(activationAtRaw);
+
+      if (!Number.isNaN(parsed.getTime())) {
+        activationAt = parsed;
+      }
+    }
+  }
+
+  const hasSnapshot =
+    activationAt &&
+    Number.isFinite(Number(initialOREValue));
+
+  const targetDate =
+    new Date(year, month, 1);
+
+  // ============================================================
+  // FUNZIONE PER LE DATE createdAt DI FIRESTORE
+  // ============================================================
+
+  const getCreatedAtDate = value => {
+
+    if (!value) {
+      return null;
+    }
+
+    if (
+      value.toDate &&
+      typeof value.toDate === "function"
+    ) {
+      const date =
+        value.toDate();
+
+      return Number.isNaN(date.getTime())
+        ? null
+        : date;
+    }
+
+    const date =
+      new Date(value);
+
+    return Number.isNaN(date.getTime())
+      ? null
+      : date;
+  };
+
+  // ============================================================
+  // NUOVO SNAPSHOT
+  // ============================================================
+
+  if (
+    hasSnapshot &&
+    targetDate >=
+      new Date(
+        activationAt.getFullYear(),
+        activationAt.getMonth(),
+        1
+      )
+  ) {
+
+    let totalMinutes =
+      Number(initialOREValue);
+
+    // ----------------------------------------------------------
+    // EVENTI
+    // ----------------------------------------------------------
+
+    window.savedEvents.forEach(ev => {
+
+      if (
+        !ev ||
+        ev.employee !== employee ||
+        !ev.date
+      ) {
+        return;
+      }
+
+      const eventDate =
+        new Date(ev.date);
+
+      if (
+        Number.isNaN(eventDate.getTime())
+      ) {
+        return;
+      }
+
+      if (
+        eventDate.getFullYear() > year ||
+        (
+          eventDate.getFullYear() === year &&
+          eventDate.getMonth() > month
+        )
+      ) {
+        return;
+      }
+
+      const createdAt =
+        getCreatedAtDate(ev.createdAt);
+
+      // Gli eventi precedenti al nuovo Salva
+      // appartengono al vecchio periodo.
+      if (
+        !createdAt ||
+        createdAt <= activationAt
+      ) {
+        return;
+      }
+
+      const shift =
+        ev.shift;
+
+      // --------------------------------------------------------
+      // REP / FREP
+      // --------------------------------------------------------
+
+      if (
+        shift === "REP" ||
+        shift === "FREP"
+      ) {
+
+        const day =
+          eventDate.getDay();
+
+        if (day >= 1 && day <= 4) {
+          totalMinutes += 37;
+        }
+        else if (day === 5) {
+          totalMinutes += 60;
+        }
+        else if (day === 6) {
+          totalMinutes += 80;
+        }
+
+        return;
+      }
+
+      // --------------------------------------------------------
+      // REC
+      // --------------------------------------------------------
+
+      if (shift === "REC") {
+
+        const day =
+          eventDate.getDay();
+
+        if (day >= 1 && day <= 4) {
+          totalMinutes -= 8 * 60;
+        }
+        else if (day === 5) {
+          totalMinutes -= 4 * 60;
+        }
+      }
+    });
+
+    // ----------------------------------------------------------
+    // ORARI PERSONALI
+    // ----------------------------------------------------------
+
+    personalWorkTimes.forEach(item => {
+
+      if (
+        !item ||
+        item.employee !== employee ||
+        !item.date
+      ) {
+        return;
+      }
+
+      const itemDate =
+        new Date(item.date);
+
+      if (
+        Number.isNaN(itemDate.getTime())
+      ) {
+        return;
+      }
+
+      if (
+        itemDate.getFullYear() > year ||
+        (
+          itemDate.getFullYear() === year &&
+          itemDate.getMonth() > month
+        )
+      ) {
+        return;
+      }
+
+      const createdAt =
+        getCreatedAtDate(item.createdAt);
+
+      // I vecchi orari personali non vengono
+      // riportati nel nuovo periodo.
+      if (
+        !createdAt ||
+        createdAt <= activationAt
+      ) {
+        return;
+      }
+
+      const difference =
+        Number(item.differenceMinutes);
+
+      if (!Number.isFinite(difference)) {
+        return;
+      }
+
+      totalMinutes +=
+        difference;
+    });
+
+    // ----------------------------------------------------------
+    // ORE PAGATE
+    // ----------------------------------------------------------
+    //
+    // Il valore initialORE salvato contiene già tutto ciò
+    // che era stato considerato fino al momento del Salva.
+    //
+    // Per questo:
+    // - mesi precedenti al Salva = nessuna sottrazione;
+    // - mese del Salva = sottraiamo solo l'aumento successivo;
+    // - mesi successivi = sottraiamo il valore corrente.
+    //
+
+    const paidHours =
+      summary.paidHours || {};
+
+    const paidHoursAtSnapshot =
+      summary.paidHoursAtSnapshot || {};
+
+    const paidMonths = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ];
+
+    const activationYear =
+      activationAt.getFullYear();
+
+    const activationMonth =
+      activationAt.getMonth();
+
+    for (
+      let currentYear = activationYear;
+      currentYear <= year;
+      currentYear++
+    ) {
+
+      const firstMonth =
+        currentYear === activationYear
+          ? activationMonth
+          : 0;
+
+      const lastMonth =
+        currentYear === year
+          ? month
+          : 11;
+
+      for (
+        let currentMonth = firstMonth;
+        currentMonth <= lastMonth;
+        currentMonth++
+      ) {
+
+        const monthName =
+          paidMonths[currentMonth];
+
+        const currentPaid =
+          Number(paidHours[monthName]);
+
+        if (
+          !Number.isFinite(currentPaid)
+        ) {
+          continue;
+        }
+
+        const snapshotPaid =
+          Number(
+            paidHoursAtSnapshot[monthName]
+          );
+
+        if (
+          Number.isFinite(snapshotPaid)
+        ) {
+          const difference =
+            currentPaid - snapshotPaid;
+
+          if (difference > 0) {
+            totalMinutes -= difference;
+          }
+        } else {
+          // Se non esiste un valore precedente,
+          // consideriamo tutto il valore attuale.
+          totalMinutes -= currentPaid;
+        }
+      }
+    }
+
+    return totalMinutes;
+  }
+
+  // ============================================================
+  // SISTEMA STORICO PRECEDENTE
+  // ============================================================
+  // Serve per mantenere intatti i mesi antecedenti al nuovo
+  // punto di partenza.
+  // ============================================================
+
   const initialOREByMonth =
     summary.initialOREByMonth || {};
 
@@ -5313,23 +5723,10 @@ window.calculatePersonalMonteOre = function(year, month) {
     year + "-" +
     String(month + 1).padStart(2, "0");
 
-  // ======================
-  // TROVA IL PUNTO DI PARTENZA
-  // ======================
-  //
-  // Un nuovo punto di partenza esiste
-  // SOLO quando il valore iniziale cambia
-  // rispetto all'ultimo valore salvato.
-  //
-  // Esempio:
-  // Settembre = 5  -> partenza
-  // Ottobre   = 5  -> continua
-  // Novembre  = 20 -> NUOVA partenza
-  //
-
   const monthlyEntries =
     Object.keys(initialOREByMonth)
       .filter(key => {
+
         const value =
           initialOREByMonth[key];
 
@@ -5355,7 +5752,11 @@ window.calculatePersonalMonteOre = function(year, month) {
   let previousValue =
     Number(initialOREByMonth[resetMonthKey]);
 
-  for (let i = 1; i < monthlyEntries.length; i++) {
+  for (
+    let i = 1;
+    i < monthlyEntries.length;
+    i++
+  ) {
 
     const key =
       monthlyEntries[i];
@@ -5363,10 +5764,6 @@ window.calculatePersonalMonteOre = function(year, month) {
     const value =
       Number(initialOREByMonth[key]);
 
-    // Se il valore è realmente cambiato,
-    // questo mese diventa il nuovo punto
-    // di partenza e tutto ciò che viene
-    // prima viene ignorato.
     if (value !== previousValue) {
 
       resetMonthKey =
@@ -5380,27 +5777,19 @@ window.calculatePersonalMonteOre = function(year, month) {
     }
   }
 
-  // ======================
-  // MESE DI PARTENZA
-  // ======================
-
-  const [resetYear, resetMonthNumber] =
-    resetMonthKey.split("-").map(Number);
+  const [
+    resetYear,
+    resetMonthNumber
+  ] =
+    resetMonthKey
+      .split("-")
+      .map(Number);
 
   const resetMonth =
     resetMonthNumber - 1;
 
   let totalMinutes =
     resetInitialMinutes;
-
-  // ======================
-  // EVENTI
-  // ======================
-  //
-  // Consideriamo solamente gli eventi
-  // dal mese di partenza fino al mese
-  // richiesto.
-  //
 
   window.savedEvents.forEach(ev => {
 
@@ -5427,8 +5816,6 @@ window.calculatePersonalMonteOre = function(year, month) {
     const eventMonth =
       dateObj.getMonth();
 
-    // Prima del nuovo punto di partenza:
-    // IGNORA.
     if (
       eventYear < resetYear ||
       (
@@ -5439,8 +5826,6 @@ window.calculatePersonalMonteOre = function(year, month) {
       return;
     }
 
-    // Dopo il mese richiesto:
-    // IGNORA.
     if (
       eventYear > year ||
       (
@@ -5453,10 +5838,6 @@ window.calculatePersonalMonteOre = function(year, month) {
 
     const shift =
       ev.shift;
-
-    // ======================
-    // REP / FREP
-    // ======================
 
     if (
       shift === "REP" ||
@@ -5479,10 +5860,6 @@ window.calculatePersonalMonteOre = function(year, month) {
       return;
     }
 
-    // ======================
-    // REC
-    // ======================
-
     if (shift === "REC") {
 
       const day =
@@ -5495,12 +5872,7 @@ window.calculatePersonalMonteOre = function(year, month) {
         totalMinutes -= 4 * 60;
       }
     }
-
   });
-
-  // ======================
-  // ORARI PERSONALI
-  // ======================
 
   personalWorkTimes.forEach(item => {
 
@@ -5527,8 +5899,6 @@ window.calculatePersonalMonteOre = function(year, month) {
     const itemMonth =
       dateObj.getMonth();
 
-    // Prima del punto di partenza:
-    // IGNORA.
     if (
       itemYear < resetYear ||
       (
@@ -5539,8 +5909,6 @@ window.calculatePersonalMonteOre = function(year, month) {
       return;
     }
 
-    // Dopo il mese richiesto:
-    // IGNORA.
     if (
       itemYear > year ||
       (
@@ -5560,12 +5928,7 @@ window.calculatePersonalMonteOre = function(year, month) {
 
     totalMinutes +=
       difference;
-
   });
-
-  // ======================
-  // ORE PAGATE
-  // ======================
 
   const paidHours =
     summary.paidHours || {};
@@ -5585,9 +5948,6 @@ window.calculatePersonalMonteOre = function(year, month) {
     "December"
   ];
 
-  // Le ore pagate vengono sottratte
-  // dal mese di partenza fino al mese
-  // richiesto.
   for (
     let currentYear = resetYear;
     currentYear <= year;
@@ -5620,12 +5980,9 @@ window.calculatePersonalMonteOre = function(year, month) {
         paidValue !== undefined &&
         Number.isFinite(Number(paidValue))
       ) {
-
         totalMinutes -=
           Number(paidValue);
-
       }
-
     }
   }
 
@@ -6244,16 +6601,20 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     document.getElementById("currentORE");
 
   if (currentOREElement) {
+    const currentDateForORE = new Date();
+
     const currentORE =
-      calculatePersonalStraUntilToday();
+      calculatePersonalMonteOre(
+        currentDateForORE.getFullYear(),
+        currentDateForORE.getMonth()
+      );
 
     currentOREElement.textContent =
       formatPersonalHours(
         Number.isFinite(Number(currentORE))
           ? Number(currentORE)
           : 0
-      ) +
-      " ore";
+      );
   }
 
   // ======================
@@ -6392,6 +6753,8 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     );
   };
 
+  let currentOREPlusREP = null;
+
   if (untilTodayElement) {
     const today = new Date();
 
@@ -6408,119 +6771,28 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
       summaryYear === todayYear &&
       summaryMonth === todayMonth
     ) {
-      const initialOREByMonthForUntilToday =
-        window.CURRENT_USER_PERSONAL_SUMMARY?.initialOREByMonth || {};
+      // Il Totale ORE + REP fino ad oggi usa
+      // lo stesso calcolo ufficiale del monte ore personale.
+      // In questo modo il nuovo snapshot salvato diventa
+      // realmente il punto di partenza del conteggio.
+      const totalUntilToday = calculatePersonalMonteOre(
+        summaryYear,
+        summaryMonth
+      );
 
-      const currentOREMonthKey =
-        summaryYear + "-" +
-        String(summaryMonth + 1).padStart(2, "0");
+      const totalOREPlusREP =
+        Number.isFinite(Number(totalUntilToday))
+          ? Number(totalUntilToday)
+          : 0;
 
-      let totalUntilToday =
-        Number(initialOREByMonthForUntilToday[currentOREMonthKey]);
-
-      if (!Number.isFinite(totalUntilToday)) {
-        totalUntilToday = 0;
-      }
-
-      window.savedEvents.forEach(ev => {
-
-        if (
-          !ev ||
-          ev.employee !== window.CURRENT_EMPLOYEE ||
-          !ev.date
-        ) {
-          return;
-        }
-
-        const dateObj =
-          new Date(ev.date);
-
-        if (
-          Number.isNaN(dateObj.getTime()) ||
-          dateObj.getFullYear() !== summaryYear ||
-          dateObj.getMonth() !== summaryMonth ||
-          dateObj.getDate() > todayDay
-        ) {
-          return;
-        }
-
-        // ======================
-        // REP
-        // ======================
-
-        if (ev.shift === "REP") {
-
-          const day =
-            dateObj.getDay();
-
-          if (day >= 1 && day <= 4) {
-            totalUntilToday += 37;
-          } else if (day === 5) {
-            totalUntilToday += 60;
-          } else if (day === 6) {
-            totalUntilToday += 80;
-          }
-        }
-
-        // ======================
-        // REC INSERITO DALL'ADMIN
-        // ======================
-
-        if (ev.shift === "REC") {
-
-          const day =
-            dateObj.getDay();
-
-          if (day >= 1 && day <= 4) {
-            totalUntilToday -= 8 * 60;
-          } else if (day === 5) {
-            totalUntilToday -= 4 * 60;
-          }
-        }
-      });
-
-      personalWorkTimes.forEach(item => {
-
-        if (
-          !item ||
-          item.employee !== window.CURRENT_EMPLOYEE ||
-          !item.date
-        ) {
-          return;
-        }
-
-        const dateObj =
-          new Date(item.date);
-
-        if (
-          Number.isNaN(dateObj.getTime()) ||
-          dateObj.getFullYear() !== summaryYear ||
-          dateObj.getMonth() !== summaryMonth ||
-          dateObj.getDate() > todayDay
-        ) {
-          return;
-        }
-
-        // ======================
-        // STRA e rec inseriti dal dipendente
-        // ======================
-
-        if (
-          item.type === "STRA" ||
-          item.type === "rec"
-        ) {
-          const difference =
-            Number(item.differenceMinutes);
-
-          if (Number.isFinite(difference)) {
-            totalUntilToday += difference;
-          }
-        }
-      });
+      currentOREPlusREP =
+        Number.isFinite(Number(totalOREPlusREP))
+          ? Number(totalOREPlusREP)
+          : 0;
 
       untilTodayElement.textContent =
         "Totale ORE + REP fino ad oggi: " +
-        formatMonteOre(totalUntilToday);
+        formatMonteOre(totalOREPlusREP);
     } else {
       untilTodayElement.textContent =
         "Totale ORE + REP fino ad oggi: —";
@@ -6541,47 +6813,63 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
     if (initialORD) {
 
+      const currentORD =
+        calculatePersonalORD(
+          currentDate.getFullYear()
+        );
+
       initialORD.value =
-        summary?.initialORD ?? "";
+        currentORD === null ||
+        currentORD === undefined
+          ? ""
+          : String(currentORD);
 
     }
 
     if (initial937) {
 
+      const current937 =
+        calculatePersonal937(
+          currentDate.getFullYear()
+        );
+
       initial937.value =
-        summary?.initial937 ?? "";
+        current937 === null ||
+        current937 === undefined
+          ? ""
+          : String(current937);
 
     }
 
     if (initialRFI) {
 
+      const currentRFI =
+        calculatePersonalRFI(
+          currentDate.getFullYear()
+        );
+
       initialRFI.value =
-        summary?.initialRFI ?? "";
+        currentRFI === null ||
+        currentRFI === undefined
+          ? ""
+          : String(currentRFI);
 
     }
 
     if (initialORE) {
 
-      const currentOREMonthKey =
-        summaryYear + "-" +
-        String(summaryMonth + 1).padStart(2, "0");
-
-      const initialOREByMonth =
-        summary?.initialOREByMonth || {};
-
-      const initialOREMinutes =
-        initialOREByMonth[currentOREMonthKey] ??
-        summary?.initialORE ??
-        "";
+      const currentOREForInput =
+        calculatePersonalMonteOre(
+          currentDate.getFullYear(),
+          currentDate.getMonth()
+        );
 
       initialORE.value =
-        initialOREMinutes === "" ||
-        initialOREMinutes === null ||
-        initialOREMinutes === undefined
-          ? ""
-          : formatPersonalHours(initialOREMinutes);
-
+        Number.isFinite(Number(currentOREForInput))
+          ? formatPersonalHours(Number(currentOREForInput))
+          : "";
     }
+
 
     const paidMonths = [
       "January",
@@ -6649,12 +6937,47 @@ window.savePersonalSummary = async function() {
   const user = auth.currentUser;
 
   if (!user) {
-
     alert("Utente non autenticato");
-
     return;
+  }
+
+  const summary =
+    window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  // ============================================================
+  // SALDO ORE ATTUALE
+  // ============================================================
+
+  const now = new Date();
+
+  const currentYear =
+    now.getFullYear();
+
+  const currentMonth =
+    now.getMonth();
+
+  const currentORE =
+    calculatePersonalMonteOre(
+      currentYear,
+      currentMonth
+    );
+
+  let currentOREMinutes =
+    Number(currentORE);
+
+  if (!Number.isFinite(currentOREMinutes)) {
+    currentOREMinutes =
+      Number(summary.initialORE);
 
   }
+
+  if (!Number.isFinite(currentOREMinutes)) {
+    currentOREMinutes = 0;
+  }
+
+  // ============================================================
+  // VALORI INSERITI
+  // ============================================================
 
   const ordValue =
     document.getElementById("initialORD")?.value ?? "";
@@ -6668,14 +6991,9 @@ window.savePersonalSummary = async function() {
   const oreValue =
     document.getElementById("initialORE")?.value ?? "";
 
-  const currentOREMonthKey =
-    new Date().getFullYear() + "-" +
-    String(new Date().getMonth() + 1).padStart(2, "0");
-
-  // Momento comune di attivazione per RFI, 937/77 e ORD.
-  // Viene aggiornato ogni volta che il dipendente salva la tabella.
-  const personalSummaryActivationAt =
-    new Date().toISOString();
+  // ============================================================
+  // ORE PAGATE
+  // ============================================================
 
   const paidMonths = [
     "January",
@@ -6703,44 +7021,116 @@ window.savePersonalSummary = async function() {
       input?.value ?? "";
 
     if (value.trim() === "") {
-
       paidHours[month] = null;
-
       continue;
-
     }
 
     const minutes =
       parsePersonalHours(value);
 
     if (minutes === null) {
-
       alert(
         "Controlla le ore pagate inserite per " +
         month + ".\n\n" +
         "Usa il formato H,MM. Esempio: 1,30"
       );
-
       return;
-
     }
 
     paidHours[month] = minutes;
-
   }
+
+  // ============================================================
+  // CALCOLO DEL NUOVO SALDO
+  //
+  // Le ore pagate già comprese nel vecchio snapshot
+  // non vengono sottratte nuovamente.
+  // Le nuove ore pagate invece vengono sottratte.
+  // ============================================================
+
+  const oldPaidHours =
+    summary.paidHours || {};
+
+  const oldPaidHoursAtSnapshot =
+    summary.paidHoursAtSnapshot || {};
+
+  let newOREMinutes =
+    currentOREMinutes;
+
+  for (const month of paidMonths) {
+
+    const newPaid =
+      Number(paidHours[month]);
+
+    if (!Number.isFinite(newPaid)) {
+      continue;
+    }
+
+    const oldPaid =
+      Number(oldPaidHoursAtSnapshot[month]);
+
+    if (Number.isFinite(oldPaid)) {
+
+      const difference =
+        newPaid - oldPaid;
+
+      newOREMinutes -= difference;
+
+    } else {
+
+      newOREMinutes -= newPaid;
+
+    }
+  }
+
+  // ============================================================
+  // ORE MANUALE
+  //
+  // Se l'utente modifica volutamente il valore ORE,
+  // quel valore diventa il nuovo punto di partenza.
+  //
+  // Se il valore è uguale al saldo corrente calcolato,
+  // manteniamo invece il calcolo automatico.
+  // ============================================================
+
+  const manualORE =
+    oreValue.trim() === ""
+      ? null
+      : parsePersonalHours(oreValue);
+
+  if (
+    manualORE !== null &&
+    Number.isFinite(Number(manualORE)) &&
+    Number(manualORE) !== Number(currentOREMinutes)
+  ) {
+    newOREMinutes =
+      Number(manualORE);
+  }
+
+  if (!Number.isFinite(newOREMinutes)) {
+    newOREMinutes = 0;
+  }
+
+  // ============================================================
+  // NUOVO MOMENTO DI ATTIVAZIONE
+  // ============================================================
+
+  const personalSummaryActivationAt =
+    new Date().toISOString();
+
+  // ============================================================
+  // SALVATAGGIO
+  // ============================================================
 
   try {
 
     await firestore.setDoc(
-
       firestore.doc(
         db,
         "users",
         user.uid
       ),
-
       {
-
         personalSummary: {
 
           personalSummaryActivationAt:
@@ -6751,10 +7141,10 @@ window.savePersonalSummary = async function() {
               ? null
               : Number(ordValue),
 
-initial937:
-  value937 === ""
-    ? null
-    : Number(value937),
+          initial937:
+            value937 === ""
+              ? null
+              : Number(value937),
 
           initialRFI:
             rfiValue === ""
@@ -6762,40 +7152,29 @@ initial937:
               : Number(rfiValue),
 
           initialORE:
-            oreValue.trim() === ""
-              ? null
-              : parsePersonalHours(oreValue),
-
-          initialOREByMonth: {
-
-            ...(window.CURRENT_USER_PERSONAL_SUMMARY?.initialOREByMonth || {}),
-
-            [currentOREMonthKey]:
-
-              oreValue.trim() === ""
-
-                ? null
-
-                : parsePersonalHours(oreValue)
-
-          },
+            newOREMinutes,
 
           paidHours:
+            paidHours,
+
+          paidHoursAtSnapshot:
             paidHours
-
         }
-
       },
-
       {
         merge: true
       }
-
     );
 
-    // Aggiorna immediatamente il riepilogo
-    // senza chiudere il popup.
+    // Aggiorna immediatamente i dati caricati
+    // in memoria con il nuovo snapshot.
+    await loadPersonalSummary();
+
     await window.openPersonalSummary();
+
+    // Aggiorna immediatamente anche il totale STRA
+    // senza dover ridisegnare il calendario.
+    window.updatePersonalStraTotalDisplay();
 
     alert(
       "Riepilogo personale salvato"
@@ -6811,9 +7190,7 @@ initial937:
     alert(
       "Errore durante il salvataggio"
     );
-
   }
-
 }
 
 // ======================
@@ -8892,6 +9269,8 @@ window.editPersonalWorkTimeDetails = function() {
       end: data.end,
       nfcExit: data.nfcExit,
       cfiMinExit: data.cfiMinExit,
+      nfcActualStart: data.nfcActualStart,
+      nfcActualEnd: data.nfcActualEnd,
       calculateEarlyEntry: data.calculateEarlyEntry === true,
       calculateLateExit: data.calculateLateExit === true
     }
@@ -8909,6 +9288,56 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
   const cfiMessage =
     document.getElementById("personalCFIMessage");
+
+  // ======================
+  // 📡 ORARIO EFFETTIVO NFC
+  // ======================
+
+  const nfcActualTime =
+    document.getElementById("personalNfcActualTime");
+
+  const nfcActualStart =
+    document.getElementById("personalNfcActualStart");
+
+  const nfcActualEnd =
+    document.getElementById("personalNfcActualEnd");
+
+  const actualStart =
+    editData?.nfcActualStart || "";
+
+  const actualEnd =
+    editData?.nfcActualEnd || "";
+
+  if (nfcActualTime) {
+
+    if (actualStart || actualEnd) {
+
+      nfcActualTime.style.display = "block";
+
+      if (nfcActualStart) {
+        nfcActualStart.textContent =
+          actualStart || "--:--";
+      }
+
+      if (nfcActualEnd) {
+        nfcActualEnd.textContent =
+          actualEnd || "--:--";
+      }
+
+    } else {
+
+      nfcActualTime.style.display = "none";
+
+      if (nfcActualStart) {
+        nfcActualStart.textContent = "--:--";
+      }
+
+      if (nfcActualEnd) {
+        nfcActualEnd.textContent = "--:--";
+      }
+
+    }
+  }
 
   const startInput =
     document.getElementById("personalStartTime");
@@ -9210,64 +9639,21 @@ async function checkNfcEntry() {
             employee: employee,
             date: date,
             start: time,
-            end: minExit,
+            end: "",
             type: shift,
             cfiMinExit: minExit,
+        createdAt:
+          existingPersonalTime?.createdAt || new Date(),
             nfcEntry: true,
             nfcExit: false,
+            nfcActualStart: time,
+            nfcActualEnd: existing?.nfcActualEnd || "",
             updatedAt: new Date()
           },
           {
             merge: true
           }
         );
-
-        // 🔔 PROMEMORIA CFI
-        try {
-
-          const reminderId =
-            employee + "_" + date;
-
-          const reminderRef =
-            firestore.doc(
-              db,
-              "cfiReminders",
-              reminderId
-            );
-
-          const reminderDateTime =
-            new Date(
-              date +
-              "T" +
-              minExit +
-              ":00"
-            );
-
-          await firestore.setDoc(
-            reminderRef,
-            {
-              employee: employee,
-              date: date,
-              startTime: time,
-              minExit: minExit,
-              reminderAt: reminderDateTime,
-              shift: shift,
-              sent: false,
-              updatedAt: new Date()
-            },
-            {
-              merge: true
-            }
-          );
-
-        } catch (error) {
-
-          console.error(
-            "❌ Errore salvataggio promemoria CFI:",
-            error
-          );
-
-        }
 
         alert(
           "🟢 Ingresso NFC registrato alle " +
@@ -9307,6 +9693,8 @@ async function checkNfcEntry() {
             cfiMinExit: minExit || "",
             nfcEntry: existing.nfcEntry || false,
             nfcExit: true,
+            nfcActualStart: existing.nfcActualStart || existing.start || "",
+            nfcActualEnd: time,
             updatedAt: new Date()
           },
           {
@@ -9344,6 +9732,8 @@ async function checkNfcEntry() {
           type: shift,
           nfcEntry: false,
           nfcExit: true,
+          nfcActualStart: "",
+          nfcActualEnd: time,
           updatedAt: new Date()
         },
         {
@@ -10051,7 +10441,7 @@ window.savePersonalWorkTime = async function() {
   }
 
   // ======================
-  // 🟢 CFI / CFI/REP
+  // 🟢 CFI / CFI-REP
   // ======================
 
   if (
@@ -10060,144 +10450,133 @@ window.savePersonalWorkTime = async function() {
   ) {
 
     if (!startTime) {
-
       alert(
         "Inserisci l'orario di ingresso."
       );
-
       return;
     }
 
     const minExit =
-calculateCFIMinExit(startTime, date);
-    if (!minExit) {
+      calculateCFIMinExit(startTime, date);
 
+    if (!minExit) {
       alert(
         "Orario di ingresso non valido."
       );
-
       return;
     }
-const employee = window.CURRENT_EMPLOYEE;
 
-if (!employee) {
-  alert("Dipendente non identificato.");
-  return;
-}
+    const employee =
+      window.CURRENT_EMPLOYEE;
 
-const existingPersonalTime =
-  personalWorkTimes.find(item =>
-    item &&
-    item.employee === employee &&
-    item.date === date
-  );
-
-// 💾 SALVA INGRESSO E USCITA CFI
-const personalWorkTimeId =
-  employee + "_" + date;
-
-const personalWorkTimeRef =
-  firestore.doc(
-    db,
-    "personalWorkTimes",
-    personalWorkTimeId
-  );
-
-await firestore.setDoc(
-  personalWorkTimeRef,
-  {
-    employee: employee,
-    date: date,
-    start: startTime,
-    end:
-      existingPersonalTime?.nfcExit === true && existingPersonalTime.end
-        ? existingPersonalTime.end
-        : minExit,
-    type: shift,
-    nfcEntry:
-      existingPersonalTime?.nfcExit === true
-        ? true
-        : false,
-    nfcExit:
-      existingPersonalTime?.nfcExit === true
-        ? true
-        : false,
-    cfiMinExit: minExit,
-    updatedAt: new Date()
-  },
-  {
-    merge: true
-  }
-);
-
-// ======================
-// 🔔 SALVA PROMEMORIA CFI
-// ======================
-
-try {
-
-  const reminderId =
-    employee + "_" + date;
-
-  const reminderRef =
-    firestore.doc(
-      db,
-      "cfiReminders",
-      reminderId
-    );
-
-  // L'orario viene interpretato nell'ora locale
-  // del dispositivo, quindi in Italia Europe/Rome.
-  const reminderDateTime =
-    new Date(
-      date + "T" + minExit + ":00"
-    );
-
-  await firestore.setDoc(
-    reminderRef,
-    {
-      employee: employee,
-      date: date,
-      startTime: startTime,
-      minExit: minExit,
-      reminderAt: reminderDateTime,
-      shift: shift,
-      sent: false,
-      updatedAt: new Date()
-    },
-    {
-      merge: true
+    if (!employee) {
+      alert(
+        "Dipendente non identificato."
+      );
+      return;
     }
-  );
 
-  alert(
-    "🟢 Sei entrato alle " +
-    startTime +
-    ".\n\n" +
-    "Per rendere valida la " +
-    shift +
-    " puoi uscire dalle " +
-    minExit +
-    " in poi.\n\n" +
-    "🔔 Ti arriverà una notifica alle " +
-    minExit +
-    "."
-  );
+    const existingPersonalTime =
+      personalWorkTimes.find(item =>
+        item &&
+        item.employee === employee &&
+        item.date === date
+      );
 
-} catch (error) {
+    const endTime =
+      endInput?.value ||
+      existingPersonalTime?.end ||
+      "";
 
-  console.error(
-    "❌ Errore salvataggio promemoria CFI:",
-    error
-  );
+    const personalWorkTimeId =
+      employee + "_" + date;
 
-  alert(
-    "Errore durante la programmazione del promemoria CFI."
-  );
-}
+    const personalWorkTimeRef =
+      firestore.doc(
+        db,
+        "personalWorkTimes",
+        personalWorkTimeId
+      );
 
-return;
+    await firestore.setDoc(
+      personalWorkTimeRef,
+      {
+        employee: employee,
+        date: date,
+        start: startTime,
+        end: endTime,
+        type: shift,
 
+        nfcEntry:
+          existingPersonalTime?.nfcEntry || false,
+
+        nfcExit:
+          existingPersonalTime?.nfcExit || false,
+
+        cfiMinExit: minExit,
+
+        // 📡 Gli orari effettivi NFC restano invariati
+        // quando l'orario viene modificato manualmente.
+        nfcActualStart:
+          existingPersonalTime?.nfcActualStart || "",
+
+        nfcActualEnd:
+          existingPersonalTime?.nfcActualEnd || "",
+
+        updatedAt: new Date()
+      },
+      {
+        merge: true
+      }
+    );
+
+    if (endTime) {
+
+      if (endTime < minExit) {
+
+        alert(
+          "🔴 " +
+          shift +
+          " non valida per uscita anticipata.\n\n" +
+          "Uscita registrata alle " +
+          endTime +
+          ".\n" +
+          "Per rendere valida la " +
+          shift +
+          " devi uscire dalle " +
+          minExit +
+          " in poi."
+        );
+
+      } else {
+
+        alert(
+          "🟢 " +
+          shift +
+          " valida.\n\n" +
+          "Uscita registrata alle " +
+          endTime +
+          "."
+        );
+
+      }
+
+    } else {
+
+      alert(
+        "🟢 Sei entrato alle " +
+        startTime +
+        ".\n\n" +
+        "Per rendere valida la " +
+        shift +
+        " puoi uscire dalle " +
+        minExit +
+        " in poi."
+      );
+
+    }
+
+    return;
   }
 
   // ======================
