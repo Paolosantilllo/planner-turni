@@ -9643,7 +9643,7 @@ async function checkNfcEntry() {
             type: shift,
             cfiMinExit: minExit,
         createdAt:
-          existingPersonalTime?.createdAt || new Date(),
+          existing?.createdAt || new Date(),
             nfcEntry: true,
             nfcExit: false,
             nfcActualStart: time,
