@@ -22,6 +22,6 @@
     "firebase-admin": "^13.10.0"
   },
   "devDependencies": {
-    "vercel": "^59.9.1"
+    "vercel": "^62.4.0"
   }
 }
