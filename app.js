@@ -1578,20 +1578,32 @@ if (date === todayString) {
    
    // ======================
 // ======================
+// ======================
+
 // 🔴 ORARIO PERSONALE INCOMPLETO
+
 // ======================
 
 if (
+
   !archiveCalendarMode &&
+
   selectedEmployee !== "ALL" &&
+
   selectedEmployee === window.CURRENT_EMPLOYEE
+
 ) {
 
   const personalTime =
+
     personalWorkTimes.find(item =>
+
       item &&
+
       item.employee === window.CURRENT_EMPLOYEE &&
+
       item.date === date
+
     );
 
   if (personalTime) {
@@ -1600,46 +1612,107 @@ if (
 
     // Giornata normale:
     // manca ingresso oppure manca uscita.
+
     if (
+
       personalTime.type !== "CFI" &&
+
       personalTime.type !== "CFI/REP" &&
+
       personalTime.type !== "NORMAL"
+
     ) {
 
       incomplete =
+
         (
+
           !personalTime.start &&
+
           personalTime.end
+
         ) ||
+
         (
+
           personalTime.start &&
+
           !personalTime.end
+
         );
+
     }
 
-    // CFI / CFI-REP:
-    // se viene registrata un'uscita NFC reale
-    // prima dell'orario minimo, evidenziamo la giornata.
+    // 🔴 CFI / CFI-REP:
+    // l'anomalia vale sia per uscita NFC
+    // sia per uscita inserita manualmente.
+
     if (
+
       (
+
         personalTime.type === "CFI" ||
+
         personalTime.type === "CFI/REP"
+
       ) &&
-      personalTime.nfcExit === true &&
-      personalTime.cfiMinExit &&
-      personalTime.end &&
-      personalTime.end < personalTime.cfiMinExit
+
+      personalTime.start &&
+
+      personalTime.end
+
     ) {
 
-      incomplete = true;
+      const minExit =
+
+        personalTime.cfiMinExit ||
+
+        calculateCFIMinExit(
+
+          personalTime.start,
+
+          date
+
+        );
+
+      if (
+
+        minExit &&
+
+        personalTime.end < minExit
+
+      ) {
+
+        incomplete = true;
+
+      }
+
     }
 
-    if (incomplete) {
+    // 🔵 Oggi normale = blu.
+    // 🔴 Oggi anomalo = rosso.
+    // 🔴 I giorni passati anomali restano rossi.
 
-      box.style.border =
-        "2px solid red";
+    if (date === todayString) {
+
+      box.style.outline =
+
+        incomplete
+
+          ? "3px solid red"
+
+          : "3px solid #007aff";
+
+    } else if (incomplete) {
+
+      box.style.outline =
+
+        "3px solid red";
+
     }
+
   }
+
 }
 
 // 🟣 CONTROLLO COPERTURA
@@ -9267,6 +9340,7 @@ window.editPersonalWorkTimeDetails = function() {
     {
       start: data.start,
       end: data.end,
+      nfcEntry: data.nfcEntry,
       nfcExit: data.nfcExit,
       cfiMinExit: data.cfiMinExit,
       nfcActualStart: data.nfcActualStart,
@@ -9308,20 +9382,30 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
   const actualEnd =
     editData?.nfcActualEnd || "";
 
+  const nfcEntry =
+    editData?.nfcEntry === true;
+
+  const nfcExit =
+    editData?.nfcExit === true;
+
   if (nfcActualTime) {
 
-    if (actualStart || actualEnd) {
+    if (nfcEntry || nfcExit) {
 
       nfcActualTime.style.display = "block";
 
       if (nfcActualStart) {
         nfcActualStart.textContent =
-          actualStart || "--:--";
+          nfcEntry
+            ? "Ingresso NFC: " + (actualStart || "--:--")
+            : "Ingresso: " + (editData?.start || "--:--");
       }
 
       if (nfcActualEnd) {
         nfcActualEnd.textContent =
-          actualEnd || "--:--";
+          nfcExit
+            ? "Uscita NFC: " + (actualEnd || "--:--")
+            : "Uscita: " + (editData?.end || "--:--");
       }
 
     } else {
@@ -9355,44 +9439,161 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
   }
 
   // ======================
+
   // 🟢 CFI / CFI/REP
+
   // ======================
 
   if (
+
     shift === "CFI" ||
+
     shift === "CFI/REP"
+
   ) {
 
     if (cfiMessage) {
+
       cfiMessage.style.display = "block";
 
-      if (editData?.start && editData?.end) {
+      const today = new Date();
+
+      const todayString =
+
+        today.getFullYear() + "-" +
+
+        String(today.getMonth() + 1).padStart(2, "0") + "-" +
+
+        String(today.getDate()).padStart(2, "0");
+
+      const isToday =
+
+        date === todayString;
+
+      const minExit =
+
+        editData?.start
+
+          ? (
+
+              editData?.cfiMinExit ||
+
+              calculateCFIMinExit(
+
+                editData.start,
+
+                date
+
+              )
+
+            )
+
+          : "";
+
+      // 🟢 OGGI
+
+      if (isToday && editData?.start && minExit) {
+
+        if (editData?.end) {
+
+          if (editData.end < minExit) {
+
+            cfiMessage.textContent =
+
+              "🔴 Ingresso: " + editData.start +
+
+              " | Uscita: " + editData.end +
+
+              " | Minimo: " + minExit +
+
+              " — uscita anticipata.";
+
+          } else {
+
+            cfiMessage.textContent =
+
+              "🟢 Ingresso: " + editData.start +
+
+              " | Uscita: " + editData.end +
+
+              " | Minimo: " + minExit;
+
+          }
+
+        } else {
+
+          cfiMessage.textContent =
+
+            "🟢 Sei entrato alle " +
+
+            editData.start +
+
+            ". Per rendere valida la " +
+
+            shift +
+
+            " puoi uscire dalle " +
+
+            minExit +
+
+            " in poi.";
+
+        }
+
+      // 📅 GIORNO PASSATO
+
+      } else if (editData?.start && editData?.end) {
+
         cfiMessage.textContent =
-          "🟢 Ingresso: " + editData.start +
+
+          "Ingresso: " + editData.start +
+
           " | Uscita: " + editData.end;
-      } else {
+
+      } else if (editData?.start) {
+
         cfiMessage.textContent =
+
+          "Ingresso: " + editData.start +
+
+          " | Uscita non registrata.";
+
+      } else {
+
+        cfiMessage.textContent =
+
           "Inserisci l'orario di ingresso per sapere da che ora puoi uscire per rendere valida la " +
+
           shift + ".";
+
       }
+
     }
 
+    // L'uscita deve essere disponibile anche
+
+    // quando viene inserita manualmente.
+
     if (endRow) {
-      endRow.style.display =
-        editData?.nfcExit === true
-          ? ""
-          : "none";
+
+      endRow.style.display = "";
+
     }
 
   } else {
 
     if (cfiMessage) {
+
       cfiMessage.style.display = "none";
+
       cfiMessage.textContent = "";
+
     }
 
     if (endRow) {
+
       endRow.style.display = "";
+
     }
 
   }
