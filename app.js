@@ -160,36 +160,6 @@ initAuth(async (user) => {
 
   await loadPatronoSettings();
 
-  // 👁️ CARICA VISIBILITÀ PERSONALE SUPER ADMIN
-  hiddenEmployeesByAdmin = [];
-
-  if (user.uid === SUPER_ADMIN_UID) {
-    try {
-      const adminSnap = await getDoc(
-        doc(db, "users", user.uid)
-      );
-
-      if (adminSnap.exists()) {
-        const adminData = adminSnap.data();
-
-        if (Array.isArray(adminData.hiddenEmployees)) {
-          hiddenEmployeesByAdmin = adminData.hiddenEmployees;
-        }
-      }
-
-      console.log(
-        "👁️ Dipendenti nascosti dal Super Admin:",
-        hiddenEmployeesByAdmin
-      );
-
-    } catch (err) {
-      console.error(
-        "❌ Errore caricamento visibilità Super Admin:",
-        err
-      );
-    }
-  }
-
   // 🔥 prendo dipendente da UID Firebase
  const q = query(
   collection(db, "employees"),
@@ -299,8 +269,6 @@ customShiftTypes.push({
 }
 
 
-// 👁️ Dipendenti nascosti privatamente dal Super Admin
-let hiddenEmployeesByAdmin = [];
 let unsubscribeEvents = null;
 let unsubscribePersonalWorkTimes = null;
 let eventsByDate = {};
@@ -634,12 +602,24 @@ async function populateEmployeeSelects() {
   const employee =
     document.getElementById("employee");
 
+  // 👁️ Gli amministratori possono vedere tutti i nominativi,
+  // compresi quelli nascosti dal calendario.
+  const isAdmin =
+    window.IS_ADMIN === true;
+
+  const visibleEmployees =
+    Object.entries(employeesData).filter(
+      ([id, emp]) =>
+        isAdmin ||
+        emp.hideFromCalendar !== true
+    );
+
   if (filter) {
 
     filter.innerHTML =
       '<option value="ALL">Tutti</option>';
 
-    Object.entries(employeesData).forEach(([id, emp]) => {
+    visibleEmployees.forEach(([id, emp]) => {
 
       filter.innerHTML += `
         <option value="${id}">
@@ -655,7 +635,7 @@ async function populateEmployeeSelects() {
 
     employee.innerHTML = "";
 
-    Object.entries(employeesData).forEach(([id, emp]) => {
+    visibleEmployees.forEach(([id, emp]) => {
 
       employee.innerHTML += `
         <option value="${id}">
@@ -1526,20 +1506,24 @@ let events = sourceEvents.filter(e => {
   // marcati come "Nascondi dal calendario"
 
 if (selectedEmployee === "ALL") {
-  // 👁️ Il nascondimento personale vale solo per il Super Admin
+
+  // 👁️ Nascondimento globale:
+  // il dipendente nascosto non viene mostrato
+  // nel calendario per nessun utente.
+
   if (
-    window.CURRENT_USER?.uid === SUPER_ADMIN_UID &&
-    hiddenEmployeesByAdmin.includes(e.employee)
+    employeesData[e.employee]?.hideFromCalendar === true
   ) {
     return false;
   }
 
   return true;
+
 }
 
   // 👤 DIPENDENTE SPECIFICO
-  // Se selezionato direttamente, viene sempre mostrato,
-  // anche se è marcato come nascosto.
+  // Se selezionato direttamente, viene mostrato.
+
   return e.employee === selectedEmployee;
 
 });
@@ -8504,8 +8488,7 @@ window.loadEmployeesList = function () {
             <input
               type="checkbox"
 ${(
-  auth.currentUser?.uid === SUPER_ADMIN_UID &&
-  hiddenEmployeesByAdmin.includes(id)
+  emp.hideFromCalendar === true
 ) ? "checked" : ""}
               onchange="toggleHideFromCalendar('${id}', this.checked)"
             >
@@ -8542,58 +8525,6 @@ window.toggleHideFromCalendar = async function (id, checked) {
     return;
   }
 
-  // 👁️ La visibilità è personale solo per il Super Admin
-  if (auth.currentUser?.uid === SUPER_ADMIN_UID) {
-
-    try {
-
-      if (checked) {
-
-        if (!hiddenEmployeesByAdmin.includes(id)) {
-          hiddenEmployeesByAdmin.push(id);
-        }
-
-      } else {
-
-        hiddenEmployeesByAdmin =
-          hiddenEmployeesByAdmin.filter(
-            employeeId => employeeId !== id
-          );
-
-      }
-
-      await firestore.setDoc(
-        firestore.doc(db, "users", auth.currentUser.uid),
-        {
-          hiddenEmployees: hiddenEmployeesByAdmin
-        },
-        { merge: true }
-      );
-
-      console.log(
-        "👁️ Visibilità personale aggiornata:",
-        hiddenEmployeesByAdmin
-      );
-
-      await renderCalendar();
-
-      return;
-
-    } catch (err) {
-
-      console.error(
-        "❌ Errore salvataggio visibilità personale:",
-        err
-      );
-
-      alert(
-        "Errore durante il salvataggio della visibilità."
-      );
-
-      return;
-    }
-  }
-
   try {
 
     await firestore.updateDoc(
@@ -8603,16 +8534,20 @@ window.toggleHideFromCalendar = async function (id, checked) {
       }
     );
 
-    // Aggiorna anche i dati locali
+    // 👁️ Aggiorna anche i dati locali
     if (employeesData[id]) {
       employeesData[id].hideFromCalendar = checked;
     }
 
     console.log(
-      "👁️ Visibilità calendario aggiornata:",
+      "👁️ Visibilità globale aggiornata:",
       employeesData[id]?.name || id,
-      checked ? "NASCOSTO" : "VISIBILE"
+      checked
+        ? "NASCOSTO PER TUTTI"
+        : "VISIBILE PER TUTTI"
     );
+
+    await renderCalendar();
 
   } catch (err) {
 
@@ -8625,10 +8560,8 @@ window.toggleHideFromCalendar = async function (id, checked) {
       "Errore durante il salvataggio della modifica."
     );
 
-    // Se il salvataggio fallisce, ricarica la lista
     loadEmployeesList();
   }
-
 };
 
 // ======================
