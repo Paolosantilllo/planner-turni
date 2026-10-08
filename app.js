@@ -1610,83 +1610,32 @@ if (
 
     let incomplete = false;
 
-    // Giornata normale:
-    // manca ingresso oppure manca uscita.
-
-    if (
-
-      personalTime.type !== "CFI" &&
-
-      personalTime.type !== "CFI/REP" &&
-
-      personalTime.type !== "NORMAL"
-
-    ) {
-
-      incomplete =
-
-        (
-
-          !personalTime.start &&
-
-          personalTime.end
-
-        ) ||
-
-        (
-
-          personalTime.start &&
-
-          !personalTime.end
-
-        );
-
-    }
-
     // 🔴 CFI / CFI-REP:
-    // l'anomalia vale sia per uscita NFC
-    // sia per uscita inserita manualmente.
+    // la giornata diventa anomala SOLO se
+    // sono presenti ingresso e uscita
+    // e l'uscita è precedente al minimo previsto.
 
     if (
-
       (
-
         personalTime.type === "CFI" ||
-
         personalTime.type === "CFI/REP"
-
       ) &&
-
       personalTime.start &&
-
       personalTime.end
-
     ) {
-
       const minExit =
-
         personalTime.cfiMinExit ||
-
         calculateCFIMinExit(
-
           personalTime.start,
-
           date
-
         );
 
       if (
-
         minExit &&
-
         personalTime.end < minExit
-
       ) {
-
         incomplete = true;
-
       }
-
     }
 
     // 🔵 Oggi normale = blu.
@@ -9396,16 +9345,16 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
       if (nfcActualStart) {
         nfcActualStart.textContent =
-          nfcEntry
+          nfcEntry && !nfcExit
             ? "Ingresso NFC: " + (actualStart || "--:--")
-            : "Ingresso: " + (editData?.start || "--:--");
+            : "Ingresso: " + (editData?.start || actualStart || "--:--");
       }
 
       if (nfcActualEnd) {
         nfcActualEnd.textContent =
-          nfcExit
+          nfcExit && !nfcEntry
             ? "Uscita NFC: " + (actualEnd || "--:--")
-            : "Uscita: " + (editData?.end || "--:--");
+            : "Uscita: " + (editData?.end || actualEnd || "--:--");
       }
 
     } else {
@@ -9490,35 +9439,33 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
           : "";
 
+      // 🔴 ANOMALIA: resta visibile finché l'uscita non viene corretta
+
+      if (editData?.start && editData?.end && minExit && editData.end < minExit) {
+
+        cfiMessage.textContent =
+
+          "🔴 Ingresso: " + editData.start +
+
+          " | Uscita: " + editData.end +
+
+          " | Minimo: " + minExit +
+
+          " — uscita anticipata.";
+
       // 🟢 OGGI
 
-      if (isToday && editData?.start && minExit) {
+      } else if (isToday && editData?.start && minExit) {
 
         if (editData?.end) {
 
-          if (editData.end < minExit) {
+          cfiMessage.textContent =
 
-            cfiMessage.textContent =
+            "🟢 Ingresso: " + editData.start +
 
-              "🔴 Ingresso: " + editData.start +
+            " | Uscita: " + editData.end +
 
-              " | Uscita: " + editData.end +
-
-              " | Minimo: " + minExit +
-
-              " — uscita anticipata.";
-
-          } else {
-
-            cfiMessage.textContent =
-
-              "🟢 Ingresso: " + editData.start +
-
-              " | Uscita: " + editData.end +
-
-              " | Minimo: " + minExit;
-
-          }
+            " | Minimo: " + minExit;
 
         } else {
 
@@ -9540,31 +9487,12 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
         }
 
-      // 📅 GIORNO PASSATO
-
-      } else if (editData?.start && editData?.end) {
-
-        cfiMessage.textContent =
-
-          "Ingresso: " + editData.start +
-
-          " | Uscita: " + editData.end;
-
-      } else if (editData?.start) {
-
-        cfiMessage.textContent =
-
-          "Ingresso: " + editData.start +
-
-          " | Uscita non registrata.";
+      // 📅 GIORNO PASSATO SENZA ANOMALIE
 
       } else {
 
-        cfiMessage.textContent =
-
-          "Inserisci l'orario di ingresso per sapere da che ora puoi uscire per rendere valida la " +
-
-          shift + ".";
+        cfiMessage.style.display = "none";
+        cfiMessage.textContent = "";
 
       }
 
@@ -10003,13 +9931,7 @@ async function checkNfcEntry() {
       alert(
         "🟢 Ingresso NFC registrato alle " +
         time +
-        ".\n\n" +
-        (
-          existing?.end
-            ? "Ingresso e uscita presenti."
-            : "⚠️ Uscita non registrata.\n" +
-              "Potrai inserirla manualmente dal calendario."
-        )
+        "."
       );
 
       return;
