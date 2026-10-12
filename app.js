@@ -9717,6 +9717,40 @@ async function checkNfcEntry() {
           }
         );
 
+        // 🔔 PROMEMORIA CFI: programma l'avviso all'orario minimo di uscita
+        try {
+          const reminderId = employee + "_" + date;
+          const reminderRef = firestore.doc(
+            db,
+            "cfiReminders",
+            reminderId
+          );
+
+          const reminderDateTime = new Date(
+            date + "T" + minExit + ":00"
+          );
+
+          await firestore.setDoc(
+            reminderRef,
+            {
+              employee: employee,
+              date: date,
+              startTime: time,
+              minExit: minExit,
+              reminderAt: reminderDateTime,
+              shift: shift,
+              sent: false,
+              updatedAt: new Date()
+            },
+            { merge: true }
+          );
+        } catch (error) {
+          console.error(
+            "❌ Errore salvataggio promemoria CFI:",
+            error
+          );
+        }
+
         alert(
           "🟢 Ingresso NFC registrato alle " +
           time +
