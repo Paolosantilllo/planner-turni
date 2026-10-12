@@ -1,0 +1,1378 @@
+
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Planner REP</title>
+
+<link rel="icon" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+
+<link rel="manifest" href="manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Planner REP">
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app" id="app" style="display:none;">
+
+  <div class="app-logo">
+  </div>
+
+
+  <!-- HEADER -->
+  <header class="topbar">
+
+    <button class="month-btn" onclick="prevMonth()">◀</button>
+
+    <h1 id="monthTitle"></h1>
+
+
+
+    <button class="month-btn" onclick="nextMonth()">▶</button>
+
+    <button id="logoutBtn" class="logout-btn" data-normal-logout="true" onclick="confirmLogout()">
+  Logout
+</button>
+  </header>
+
+
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+
+
+    <select id="employeeFilter" onchange="renderCalendar()">
+    </select>
+
+
+    <div class="toolbar-actions">
+
+
+      <button class="change-btn" onclick="openChangePopup()">
+        🔁
+      </button>
+
+
+      <button class="notify-btn" onclick="openRequestsPopup()">
+        📋 <span id="requestBadge"></span>
+      </button>
+
+
+      <button class="notify-btn" onclick="openNotificationsPopup()">
+        🔔 <span id="notifBadge"></span>
+      </button>
+
+
+
+      <button
+        id="addBtn"
+        class="add-btn"
+        onclick="openPopup()">
+        +
+      </button>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- GIORNI SETTIMANA -->
+  <div class="weekdays">
+
+    <div>L</div>
+    <div>Ma</div>
+    <div>Me</div>
+    <div>G</div>
+    <div>V</div>
+    <div class="saturday">S</div>
+    <div class="sunday">D</div>
+
+  </div>
+
+
+
+ <!-- CALENDARIO -->
+<div class="calendar" id="calendar"></div>
+
+<div id="personalStraTotal"
+     style="margin: 12px 0 16px 0; text-align: center; font-weight: 600;">
+  Totale ORE fino ad oggi: —
+</div>
+
+
+<!-- NOTIFICHE -->
+<button
+  id="enablePushBtn"
+  class="save-btn notification-home-btn"
+  style="display:none">
+  🔔 Attiva notifiche
+</button>
+
+
+<!-- ROTELLINA SOLO ADMIN -->
+<button
+  id="archiveBackBtn"
+  class="admin-floating-btn archive-back-btn"
+  style="display:none"
+  onclick="closeArchiveCalendar()">
+  ‹ Archivio
+</button>
+
+<button
+  id="adminBtn"
+  class="admin-floating-btn"
+  style="display:none"
+  onclick="openAdminPage()">
+  ⚙️
+</button>
+
+<!-- PULSANTE ACCOUNT SOLO DIPENDENTI -->
+<button
+  id="accountBtn"
+  class="admin-floating-btn"
+  style="display:none"
+  onclick="openAccountPage()">
+  👤
+</button>
+
+</div>
+<!-- POPUP IL MIO ACCOUNT -->
+<div class="popup" id="accountPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>👤 Il mio account</h2>
+
+      <button class="close-btn" onclick="closeAccountPage()">
+        ✕
+      </button>
+
+    </div>
+
+<button class="save-btn" onclick="openPersonalSummary()">
+  📊 Riepilogo personale
+</button>
+
+    <button class="save-btn" onclick="openChangeEmail()">
+      📧 Cambia email
+    </button>
+
+    <button class="save-btn" onclick="openChangePassword()">
+      🔑 Cambia password
+    </button>
+
+   </div>
+</div>
+
+<!-- POPUP RIEPILOGO PERSONALE -->
+
+<div class="popup" id="personalSummaryPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+      <h2>📊 Riepilogo personale</h2>
+      <button class="close-btn" onclick="closePersonalSummary()">
+        ✕
+      </button>
+    </div>
+
+    <div id="personalSummaryContent">
+
+      <div id="personalSummaryAvailableDate" class="personal-summary-available-date">
+        Disponibili al —
+      </div>
+
+      <div class="personal-summary-current-section">
+
+        <div class="personal-summary-current-item" style="display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: start;">
+          <strong style="margin-bottom: 0;">ORD</strong>
+          <div id="currentORD" class="personal-summary-current" style="font-weight: bold; display: contents;">
+            <span id="currentORDValue">48</span>
+            <div id="currentORDTotal" style="grid-column: 1 / -1; color: red; font-size: 0.78em; font-weight: normal; margin-top: 2px; text-align: left;">
+              Totale giorni 45
+            </div>
+          </div>
+        </div>
+
+        <div class="personal-summary-current-item" style="display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: start;">
+          <strong style="margin-bottom: 0;">937/77</strong>
+          <div id="current937" class="personal-summary-current" style="font-weight: bold; display: contents;">
+            <span id="current937Value">0</span>
+            <div id="current937Total" style="grid-column: 1 / -1; color: red; font-size: 0.78em; font-weight: normal; margin-top: 2px; text-align: left;">
+              Totale giorni 0
+            </div>
+          </div>
+        </div>
+
+        <div class="personal-summary-current-item" style="display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: start;">
+          <strong style="margin-bottom: 0;">RFI</strong>
+          <div id="currentRFI" class="personal-summary-current" style="font-weight: bold; display: contents;">
+            <span id="currentRFIValue">0</span>
+            <div id="currentRFITotal" style="grid-column: 1 / -1; color: red; font-size: 0.78em; font-weight: normal; margin-top: 2px; text-align: left;">
+              Totale giorni 0
+            </div>
+          </div>
+        </div>
+
+        <div class="personal-summary-current-item">
+          <strong>ORE</strong>
+          <div id="currentORE" class="personal-summary-current">
+            0,00
+          </div>
+        </div>
+
+      </div>
+
+      <div id="personalMonteOre" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #ddd;">
+        <h3 style="margin: 0 0 12px 0; font-size: 17px;">⏱️ Monte ore</h3>
+        <div>
+          <span id="personalMonteOreUntilToday">Totale ORE + REP fino ad oggi: —</span>
+        </div>
+      </div>
+
+      <div class="personal-summary-actions">
+
+        <button
+          type="button"
+          class="save-btn"
+          onclick="togglePersonalInitialValues()"
+        >
+          ⚙️ Valori iniziali
+        </button>
+
+        <button
+          type="button"
+          class="save-btn"
+          onclick="togglePersonalPaidHours()"
+        >
+          💶 Ore pagate
+        </button>
+
+      </div>
+
+      <div id="personalInitialValuesSection" style="display: none;">
+
+        <h3>⚙️ Valori iniziali</h3>
+
+        <div class="personal-summary-row">
+          <label for="initialORD">ORD</label>
+          <input type="number" id="initialORD" min="0" step="1" placeholder="—">
+        </div>
+
+        <div class="personal-summary-row">
+          <label for="initial937">937/77</label>
+          <input type="number" id="initial937" min="0" step="1" placeholder="—">
+        </div>
+
+        <div class="personal-summary-row">
+          <label for="initialRFI">RFI</label>
+          <input type="number" id="initialRFI" min="0" step="1" placeholder="—">
+        </div>
+
+        <div class="personal-summary-row">
+          <label for="initialORE">ORE</label>
+          <input type="text" id="initialORE" inputmode="decimal" placeholder="—">
+        </div>
+
+        <div class="personal-summary-section-actions">
+
+          <button
+            type="button"
+            class="save-btn"
+            onclick="savePersonalSummary()"
+          >
+            💾 Salva valori iniziali
+          </button>
+
+          <button
+            type="button"
+            class="save-btn personal-summary-close-btn"
+            onclick="togglePersonalInitialValues()"
+          >
+            ❌ Chiudi
+          </button>
+
+        </div>
+
+      </div>
+
+      <div id="personalPaidHoursSection" style="display: none;">
+
+        <h3>💶 Ore pagate</h3>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidJanuary">Gennaio</label>
+          <input type="text" id="paidJanuary" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidFebruary">Febbraio</label>
+          <input type="text" id="paidFebruary" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidMarch">Marzo</label>
+          <input type="text" id="paidMarch" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidApril">Aprile</label>
+          <input type="text" id="paidApril" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidMay">Maggio</label>
+          <input type="text" id="paidMay" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidJune">Giugno</label>
+          <input type="text" id="paidJune" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidJuly">Luglio</label>
+          <input type="text" id="paidJuly" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidAugust">Agosto</label>
+          <input type="text" id="paidAugust" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidSeptember">Settembre</label>
+          <input type="text" id="paidSeptember" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidOctober">Ottobre</label>
+          <input type="text" id="paidOctober" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidNovember">Novembre</label>
+          <input type="text" id="paidNovember" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-paid-row">
+          <label for="paidDecember">Dicembre</label>
+          <input type="text" id="paidDecember" inputmode="decimal" placeholder="0,00">
+          <span>ore</span>
+        </div>
+
+        <div class="personal-summary-section-actions">
+
+          <button
+            type="button"
+            class="save-btn"
+            onclick="savePersonalSummary()"
+          >
+            💾 Salva ore pagate
+          </button>
+
+          <button
+            type="button"
+            class="save-btn personal-summary-close-btn"
+            onclick="togglePersonalPaidHours()"
+          >
+            ❌ Chiudi
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- POPUP CAMBIA EMAIL -->
+<div class="popup" id="changeEmailPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>📧 Cambia email</h2>
+
+      <button class="close-btn" onclick="closeChangeEmail()">
+        ✕
+      </button>
+
+    </div>
+
+    <label for="newEmail">Nuova email</label>
+
+    <input
+      type="email"
+      id="newEmail"
+      placeholder="Inserisci la nuova email"
+      autocomplete="email"
+    >
+
+    <button class="save-btn" onclick="saveNewEmail()">
+      💾 Salva
+    </button>
+
+    <button class="save-btn" onclick="closeChangeEmail()">
+      ✕ Chiudi
+    </button>
+
+  </div>
+
+</div>
+
+<!-- POPUP CAMBIA PASSWORD -->
+
+<div class="popup" id="changePasswordPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>🔑 Cambia password</h2>
+
+      <button class="close-btn" onclick="closeChangePassword()">
+        ✕
+      </button>
+
+    </div>
+
+    <form onsubmit="return false;">
+
+      <input
+        type="text"
+        name="username"
+        autocomplete="username"
+        tabindex="-1"
+        aria-hidden="true"
+        style="display:none">
+
+      <label for="newPassword">Nuova password</label>
+
+      <input
+        type="password"
+        id="newPassword"
+        placeholder="Inserisci la nuova password"
+        autocomplete="new-password"
+      >
+
+      <label for="confirmPassword">Conferma password</label>
+
+      <input
+        type="password"
+        id="confirmPassword"
+        placeholder="Ripeti la nuova password"
+        autocomplete="new-password"
+      >
+
+      <button type="button" class="save-btn" onclick="saveNewPassword()">
+        💾 Salva
+      </button>
+
+      <button type="button" class="save-btn" onclick="closeChangePassword()">
+        ✕ Chiudi
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<!-- POPUP REPERIBILITÀ -->
+<div class="popup" id="popup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+      <h2>Nuovo Inserimento</h2>
+
+      <button class="close-btn" onclick="closePopup()">
+        ✕
+      </button>
+    </div>
+
+    <label for="employee">Dipendente</label>
+
+<select id="employee">
+</select>
+
+<div id="employeeMonthStats" class="employee-month-stats">
+
+    <strong>📊 Mese</strong>
+
+    <div class="stats-grid">
+
+        <div>
+            REP:
+            <span id="statRep">0 / 6</span>
+        </div>
+
+        <div>
+            CFI:
+            <span id="statCfi">0</span>
+        </div>
+
+        <div>
+            FREP:
+            <span id="statFrep">0 / 2</span>
+        </div>
+
+        <div>
+            CFI/REP:
+            <span id="statCfiRep">0</span>
+        </div>
+
+    </div>
+
+</div>
+
+    <label for="startDate">Data Inizio</label>
+    <input type="date" id="startDate">
+
+    <label for="endDate">Data Fine</label>
+    <input type="date" id="endDate">
+
+    <label for="shift">Reperibilità</label>
+
+    <select id="shift">
+      <option></option>
+      <option>REP</option>
+      <option>FREP</option>
+      <option>CFI</option>
+      <option>CFI/REP</option>
+      <option>LIC</option>
+      <option>REC</option>
+      <option value="MAL">MAL</option>
+      <option value="__NUOVA_DICITURA__">＋ NUOVA DICITURA</option>
+</select>
+
+<div id="newShiftTypeBox" style="display:none;">
+  <input type="text" id="newShiftTypeInput" placeholder="Nuova dicitura">
+  <div>
+    <button type="button" id="saveNewShiftTypeBtn">Salva</button>
+    <button type="button" id="cancelNewShiftTypeBtn">Elimina</button>
+  </div>
+</div>
+
+    <button class="save-btn" onclick="saveShift()">
+      Salva
+    </button>
+
+    <button class="delete-btn" onclick="deleteShift()">
+      Elimina
+    </button>
+
+  </div>
+
+</div>
+
+<!-- POPUP CAMBIO REPERIBILITÀ -->
+<div class="popup" id="changePopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>Richiesta cambio reperibilità</h2>
+
+      <button class="close-btn" onclick="closeChangePopup()">
+        ✕
+      </button>
+
+    </div>
+
+
+    <input type="hidden" id="changeFrom">
+
+
+    <!-- CAMBIO CON -->
+    <label for="changeTo">Cambio con</label>
+
+    <select
+      id="changeTo"
+      onchange="loadChangeDays()">
+    </select>
+
+
+
+    <!-- REPERIBILITÀ -->
+    <label for="changeShift">Reperibilità</label>
+
+    <select
+      id="changeShift"
+      onchange="loadChangeDays()">
+
+      <option>REP</option>
+      <option>FREP</option>
+      <option>CFI/REP</option>
+
+    </select>
+
+
+
+
+    <!-- GIORNO DA DARE -->
+    <div class="field-label">Giorno da dare</div>
+
+
+    <div
+      class="calendar-selector"
+      onclick="toggleMiniCalendar('from')">
+
+      <span id="selectedFromText">
+        Seleziona giorno
+      </span>
+
+    </div>
+
+
+
+    <div
+      id="changeCalendarFrom"
+      class="mini-calendar hidden-calendar">
+
+
+      <div class="mini-weekdays">
+
+        <div>L</div>
+        <div>Ma</div>
+        <div>Me</div>
+        <div>G</div>
+        <div>V</div>
+        <div>S</div>
+        <div>D</div>
+
+      </div>
+
+
+      <div
+        class="mini-calendar-grid"
+        id="miniGridFrom">
+      </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- GIORNO DA RICEVERE -->
+    <div class="field-label">Giorno da ricevere</div>
+
+
+    <div
+      class="calendar-selector"
+      onclick="toggleMiniCalendar('to')">
+
+
+      <span id="selectedToText">
+        Seleziona giorno
+      </span>
+
+
+    </div>
+
+
+
+
+    <div
+      id="changeCalendarTo"
+      class="mini-calendar hidden-calendar">
+
+
+      <div class="mini-weekdays">
+
+        <div>L</div>
+        <div>Ma</div>
+        <div>Me</div>
+        <div>G</div>
+        <div>V</div>
+        <div>S</div>
+        <div>D</div>
+
+      </div>
+
+
+
+      <div
+        class="mini-calendar-grid"
+        id="miniGridTo">
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+    <!-- INVIA -->
+
+    <button
+      class="save-btn"
+      onclick="sendChangeRequest()">
+
+      Invia Richiesta
+
+    </button>
+
+
+
+  </div>
+
+</div>
+<!-- POPUP RICHIESTE CAMBIO -->
+<div class="popup" id="changeRequestsPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>🔄 Richieste cambio</h2>
+
+      <button class="close-btn" onclick="closeRequestsPopup()">
+        ✕
+      </button>
+
+    </div>
+
+
+    <div id="requestsList"></div>
+
+
+  </div>
+
+</div>
+
+<!-- POPUP SOLO NOTIFICHE -->
+<div class="popup" id="notificationsPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>🔔 Notifiche</h2>
+
+      <button class="close-btn" onclick="closeNotificationsPopup()">
+        ✕
+      </button>
+
+    </div>
+
+    <div id="notificationsOnlyList"></div>
+
+  </div>
+
+</div>
+
+  <!-- POPUP AZIONE RICHIESTA -->
+<div class="popup" id="requestActionPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>Azione richiesta</h2>
+
+      <button class="close-btn" onclick="closeRequestActionPopup()">
+        ✕
+      </button>
+
+    </div>
+
+
+    <div id="requestActionContent"></div>
+
+
+    <div class="popup-actions">
+
+      <button
+        class="btn-accept"
+        id="actionAcceptBtn">
+        ✅ Accetta
+      </button>
+
+
+      <button
+        class="btn-reject"
+        id="actionRejectBtn">
+        ❌ Rifiuta
+      </button>
+
+    </div>
+
+
+  </div>
+
+</div>
+
+  <!-- POPUP SCELTA MESI PDF -->
+
+<div class="popup" id="monthsPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>Invia PDF</h2>
+
+      <button class="close-btn" onclick="closeMonthsPopup()">
+        ✕
+      </button>
+
+    </div>
+
+
+    <label for="monthsRange">Quanti mesi vuoi visualizzare?</label>
+
+
+    <select id="monthsRange">
+
+      <option value="1">1 mese</option>
+      <option value="2">2 mesi</option>
+      <option value="3">3 mesi</option>
+      <option value="4">4 mesi</option>
+
+    </select>
+
+
+    <button
+      class="save-btn"
+      onclick="confirmPdfExport()">
+
+      📄 Visualizza PDF
+
+    </button>
+
+
+  </div>
+
+</div>
+
+  <!-- POPUP PDF PREVIEW -->
+<div class="popup" id="pdfPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>Anteprima PDF</h2>
+
+      <button class="close-btn" onclick="closePdfPopup()">
+        ✕
+      </button>
+
+    </div>
+
+    <!-- PDF PREVIEW -->
+<div class="pdf-container">
+
+  <canvas id="pdfCanvas"></canvas>
+
+</div>
+    <div class="popup-actions">
+
+      <button class="delete-btn" onclick="closePdfPopup()">
+        Chiudi
+      </button>
+
+      <button class="save-btn" onclick="sharePdf()">
+        📤 Condividi
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+    <!-- PAGINA AMMINISTRAZIONE -->
+<div id="adminPage" class="admin-page" style="display:none;">
+
+  <div class="admin-header">
+
+    <button class="month-btn" onclick="closeAdminPage()">
+      ◀
+    </button>
+
+    <h2>⚙️ Amministrazione</h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <!-- 👤 IL MIO ACCOUNT -->
+    <button
+      class="save-btn"
+      onclick="openAccountPage(); closeAdminPage();">
+      👤 Il mio account
+    </button>
+
+   <!-- 👥 GESTIONE NOMINATIVI -->
+<button
+  class="save-btn"
+  onclick="openEmployeesPage()">
+  👥 Gestione Nominativi
+</button>
+
+    <!-- 📊 TOTALE CFI / CFI-REP -->
+<button
+  class="save-btn"
+  onclick="exportCfiPdf(); closeAdminPage();">
+  📊 Totale CFI / CFI-REP
+</button>
+
+    <!-- 📊 Turnazione Festivi -->
+<button
+  class="save-btn"
+  onclick="exportFestiviPdf(); closeAdminPage();">
+  🎉 Turnazione Festivi
+</button>
+
+<!-- 🏛️ GIORNO DEL PATRONO -->
+<button
+  class="save-btn"
+  onclick="openPatronoPage();">
+
+  🏛️ Giorno del Patrono
+
+</button>
+
+<!-- 📦 ARCHIVIO STORICO -->
+
+<button
+  class="save-btn"
+  onclick="openArchivePage();">
+  📦 Archivio
+</button>
+
+    <!-- 📄 PDF EXPORT -->
+  <button
+  class="save-btn"
+  onclick="
+    closeAdminPage();
+    document.getElementById('monthsPopup').style.display='flex';
+  ">
+  📄 Esporta PDF
+</button>
+
+  </div>
+
+</div>
+
+<!-- 📦 PAGINA ARCHIVIO -->
+
+<div id="archivePage"
+     class="admin-page"
+     style="display:none;">
+
+  <div class="admin-header">
+
+    <button
+      class="month-btn"
+      onclick="closeArchivePage()">
+      ◀
+    </button>
+
+    <h2>📦 Archivio</h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <div id="archiveYearsList">
+      <p>Caricamento...</p>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 📁 PAGINA ARCHIVIO ANNUALE -->
+
+<div id="archiveYearPage"
+     class="admin-page"
+     style="display:none;">
+
+  <div class="admin-header">
+
+    <button
+      class="month-btn"
+      onclick="closeArchiveYearPage()">
+      ◀
+    </button>
+
+    <h2 id="archiveYearTitle">
+      📁 Archivio
+    </h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <button
+      class="save-btn"
+      onclick="openArchiveCfi();">
+      📊 Totale CFI / CFI-REP
+    </button>
+
+    <button
+      class="save-btn"
+      onclick="openArchiveFestivi();">
+      🎉 Turnazione Festivi
+    </button>
+
+    <button
+      class="save-btn"
+      onclick="openArchiveTurnazione();">
+      📅 Turnazione Completa
+    </button>
+
+  </div>
+
+</div>
+
+ <!-- PAGINA GESTIONE NOMINATIVI -->
+<div id="employeesPage" class="admin-page" style="display:none;">
+
+  <div class="admin-header">
+
+    <button class="month-btn" onclick="closeEmployeesPage()">
+      ◀
+    </button>
+
+    <h2>👥 Gestione Nominativi</h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <button
+      class="save-btn"
+      onclick="openEmployeeEditor()">
+      ➕ Nuovo nominativo
+    </button>
+
+    <div id="employeesList"></div>
+
+     <!-- POPUP EDIT NOMINATIVO -->
+<div id="employeePopup" class="popup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>👤 Nuovo Nominativo</h2>
+
+      <button class="close-btn" onclick="closeEmployeeEditor()">
+        ✕
+      </button>
+
+    </div>
+
+    <form onsubmit="return false;">
+
+    <input
+      type="text"
+      name="username"
+      autocomplete="username"
+      tabindex="-1"
+      aria-hidden="true"
+      style="display:none">
+
+    <label for="empCode">Codice</label>
+    <input
+      type="text"
+      id="empCode"
+      maxlength="3"
+      style="text-transform:uppercase">
+
+    <label for="empName">Nome</label>
+    <input type="text" id="empName">
+
+    <label for="empEmail">Email</label>
+    <input
+      type="email"
+      id="empEmail"
+      placeholder="nome@email.it"
+      autocomplete="username">
+
+    <!-- 🔥 AGGIUNGI QUESTO -->
+    <label for="empPassword">Password</label>
+    <input
+      type="password"
+      id="empPassword"
+      placeholder="Password iniziale"
+      autocomplete="new-password">
+
+    <label for="empColor">Colore</label>
+    <input type="color" id="empColor">
+
+    <label for="empRole">Ruolo</label>
+    <select id="empRole">
+      <option value="USER">USER</option>
+      <option value="ADMIN">ADMIN</option>
+    </select>
+
+    <button type="button" class="save-btn" onclick="saveEmployee()">
+      💾 Salva
+    </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+   </div>
+
+</div>
+
+<!-- 🏛️ PAGINA GIORNO DEL PATRONO -->
+
+<div id="patronoPage" class="admin-page" style="display:none;">
+
+  <div class="admin-header">
+
+    <button class="month-btn" onclick="closePatronoPage()">
+      ◀
+    </button>
+
+    <h2>🏛️ Giorno del Patrono</h2>
+
+  </div>
+
+  <div class="admin-menu">
+
+    <label for="patronoDate">Data del Patrono</label>
+
+    <input
+      type="text"
+      id="patronoDate"
+      placeholder="gg/mm"
+      maxlength="5">
+
+    <label for="patronoName">Nome del Patrono (facoltativo)</label>
+
+    <input
+      type="text"
+      id="patronoName"
+      placeholder="Nome del Patrono">
+
+    <button
+      class="save-btn"
+      onclick="savePatrono()">
+
+      💾 Salva
+
+    </button>
+
+  </div>
+
+</div>
+
+  <!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+
+
+<script>
+
+</script>
+
+
+<!-- APP -->
+<script type="module" src="app.js"></script>
+
+
+</body>
+</html>
+
+
+<!-- POPUP ORARI PERSONALI -->
+
+<div class="popup" id="personalWorkTimePopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2>🕐 Orario personale</h2>
+
+      <button class="close-btn" onclick="closePersonalWorkTimePopup()">
+        ✕
+      </button>
+
+    </div>
+
+    <div id="personalWorkTimeDate"
+         style="margin-bottom: 16px; font-weight: 500;">
+    </div>
+
+<div
+  id="personalNfcActualTime"
+  style="
+    display:none;
+    margin-bottom:16px;
+    padding:10px 12px;
+    border-radius:8px;
+    background:#f2f2f7;
+    font-size:14px;
+  "
+>
+  <div style="font-weight:600; margin-bottom:6px;">
+    📡 Orario effettivo NFC
+  </div>
+  <div style="display:flex; gap:32px; flex-wrap:wrap;">
+    <span id="personalNfcActualStart">--:--</span>
+    <span id="personalNfcActualEnd">--:--</span>
+  </div>
+</div>
+
+
+
+<div
+  id="personalCFIMessage"
+  style="display:none; margin-bottom:16px; padding:10px; border-radius:6px; background:#f2f2f7;">
+</div>
+
+    <div class="personal-work-time-row">
+
+      <label style="display:block; width:100%;">
+
+        <div style="display:flex; align-items:center; justify-content:flex-start; width:100%; text-align:left;">
+          <input
+            type="checkbox"
+            id="personalEarlyEntry"
+            style="margin:0 8px 0 0; flex:0 0 auto;"
+          >
+          <span>Orario ingresso</span>
+        </div>
+
+        <input
+          type="time"
+          id="personalStartTime"
+          min="00:00"
+          max="23:59"
+          step="60"
+          style="margin-top:6px;"
+        >
+
+      </label>
+
+    </div>
+
+    <div class="personal-work-time-row">
+
+      <label style="display:block; width:100%;">
+
+        <div style="display:flex; align-items:center; justify-content:flex-start; width:100%; text-align:left;">
+          <input
+            type="checkbox"
+            id="personalLateExit"
+            style="margin:0 8px 0 0; flex:0 0 auto;"
+          >
+          <span>Orario uscita</span>
+        </div>
+
+        <input
+          type="time"
+          id="personalEndTime"
+          min="00:00"
+          max="23:59"
+          step="60"
+          style="margin-top:6px;"
+        >
+
+      </label>
+
+    </div>
+
+    <button
+      class="save-btn"
+      onclick="savePersonalWorkTime()">
+      💾 Salva
+    </button>
+
+  </div>
+
+</div>
+
+<!-- ==============================
+     DETTAGLI ORARIO PERSONALE
+     ============================== -->
+<div class="popup" id="personalWorkTimeDetailsPopup">
+
+  <div class="popup-content">
+
+    <div class="popup-header">
+
+      <h2 id="personalWorkTimeDetailsTitle">
+        Dettaglio
+      </h2>
+
+      <button
+        class="close-btn"
+        onclick="closePersonalWorkTimeDetailsPopup()">
+        ✕
+      </button>
+
+    </div>
+
+    <div id="personalWorkTimeDetailsContent">
+    </div>
+
+    <div class="popup-actions">
+
+      <button
+        class="save-btn"
+        onclick="editPersonalWorkTimeDetails()">
+        ✏️ Modifica
+      </button>
+
+      <button
+        class="details-close-btn"
+        onclick="deletePersonalWorkTimeDetails()">
+        🗑️ Elimina
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
