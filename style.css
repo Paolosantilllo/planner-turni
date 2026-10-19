@@ -2625,3 +2625,92 @@ button:disabled{
 #personalSummaryPopup .personal-summary-current-item:nth-child(-n+3) {
   column-gap: 24px;
 }
+
+/* RIEPILOGO PERSONALE: campi leggibili anche in modalità scura */
+#personalSummaryPopup input {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  color-scheme: light;
+}
+
+#personalSummaryPopup input::placeholder {
+  color: #666666 !important;
+  -webkit-text-fill-color: #666666 !important;
+  opacity: 1;
+}
+
+/* RIEPILOGO PERSONALE: contrasto dei valori anche in modalità scura */
+#personalSummaryPopup .personal-summary-current-item {
+  background-color: #f8f8f8 !important;
+  color: #111111 !important;
+}
+
+#personalSummaryPopup .personal-summary-current-item strong,
+#personalSummaryPopup .personal-summary-current,
+#personalSummaryPopup .personal-summary-available-date,
+#personalSummaryPopup #personalMonteOre,
+#personalSummaryPopup #personalMonteOre span {
+  color: #111111 !important;
+}
+
+/* VALORI INIZIALI E ORE PAGATE: testo leggibile in modalità scura */
+#personalSummaryPopup #personalInitialValuesSection,
+#personalSummaryPopup #personalPaidHoursSection {
+  color: #111111 !important;
+  color-scheme: light;
+}
+
+#personalSummaryPopup #personalInitialValuesSection h3,
+#personalSummaryPopup #personalInitialValuesSection label,
+#personalSummaryPopup #personalPaidHoursSection h3,
+#personalSummaryPopup #personalPaidHoursSection label,
+#personalSummaryPopup #personalPaidHoursSection span {
+  color: #111111 !important;
+}
+
+/* RIEPILOGO PERSONALE: testo bianco solo in modalità scura */
+@media (prefers-color-scheme: dark) {
+  #personalSummaryPopup .personal-summary-available-date,
+  #personalSummaryPopup #personalMonteOre,
+  #personalSummaryPopup #personalMonteOre span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+}
+
+/* ORARIO PERSONALE: contrasto leggibile in modalità scura */
+@media (prefers-color-scheme: dark) {
+  #personalWorkTimePopup .popup-content {
+    color: #111111 !important;
+  }
+
+  #personalWorkTimePopup input[type="time"] {
+    background: #ffffff !important;
+    color: #111111 !important;
+    color-scheme: light;
+    border-color: #cccccc !important;
+  }
+
+  #personalWorkTimePopup label,
+  #personalWorkTimePopup label span,
+  #personalWorkTimePopup #personalWorkTimeDate {
+    color: #111111 !important;
+  }
+
+  #personalWorkTimePopup #personalNfcActualTime,
+  #personalWorkTimePopup #personalCFIMessage {
+    color: #111111 !important;
+  }
+}
+
+/* ORARIO PERSONALE: titolo, data ed etichette bianchi di notte */
+@media (prefers-color-scheme: dark) {
+  #personalWorkTimePopup .popup-header h2,
+  #personalWorkTimePopup #personalWorkTimeDate,
+  #personalWorkTimePopup .personal-work-time-row label,
+  #personalWorkTimePopup .personal-work-time-row label span {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+}

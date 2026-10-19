@@ -187,11 +187,11 @@ window.IS_ADMIN = employee.role === "ADMIN";
 console.timeEnd("⏱️ FINO A SHOW APP");
  document.getElementById("app").classList.add("show");
 
-  setDefaultFilter();
   await loadPersonalSummary();
+  await populateEmployeeSelects();
+  setDefaultFilter();
   renderCalendar();
 
-  await populateEmployeeSelects();
   await loadCustomShiftTypes();
 
 const startupShiftSelect = document.getElementById("shift");
@@ -9105,10 +9105,11 @@ window.openPersonalWorkTimeDetailsPopup = function(
         ? "STRA IN CORSO"
         : "PERMESSO";
 
+  const rawDifferenceMinutes =
+    Number(personalTime.differenceMinutes) || 0;
+
   const differenceMinutes =
-    Math.abs(
-      personalTime.differenceMinutes || 0
-    );
+    Math.abs(rawDifferenceMinutes);
 
   const hours =
     Math.floor(differenceMinutes / 60);
@@ -9116,8 +9117,14 @@ window.openPersonalWorkTimeDetailsPopup = function(
   const minutes =
     differenceMinutes % 60;
 
+  const differenceSign =
+    rawDifferenceMinutes < 0 ? "−" : "";
+
   const differenceText =
-    `${hours}h ${String(minutes).padStart(2, "0")}min`;
+    `${differenceSign}${hours}h ${String(minutes).padStart(2, "0")}min`;
+
+  const differenceColor =
+    rawDifferenceMinutes < 0 ? "red" : "inherit";
 
   if (title) {
     title.textContent = typeLabel;
@@ -9129,7 +9136,7 @@ window.openPersonalWorkTimeDetailsPopup = function(
       `<div><strong>Entrata:</strong> ${personalTime.start}</div>` +
       `<div><strong>Uscita:</strong> ${personalTime.end}</div>` +
       `<div style="margin-top:8px;">` +
-      `<strong>Differenza:</strong> ${differenceText}` +
+      `<strong>Differenza:</strong> <span style="color:${differenceColor};">${differenceText}</span>` +
       `</div>` +
       `</div>`;
   }
@@ -9227,8 +9234,12 @@ window.editPersonalWorkTimeDetails = function() {
       cfiMinExit: data.cfiMinExit,
       nfcActualStart: data.nfcActualStart,
       nfcActualEnd: data.nfcActualEnd,
+      actualStart: data.actualStart,
+      actualEnd: data.actualEnd,
       calculateEarlyEntry: data.calculateEarlyEntry === true,
-      calculateLateExit: data.calculateLateExit === true
+      calculateLateExit: data.calculateLateExit === true,
+      manualCalculationStart: data.manualCalculationStart === true,
+      manualCalculationEnd: data.manualCalculationEnd === true
     }
   );
 };
@@ -9259,10 +9270,13 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
     document.getElementById("personalNfcActualEnd");
 
   const actualStart =
-    editData?.nfcActualStart || "";
+    editData?.nfcActualStart ||
+    editData?.actualStart ||
+    (editData?.type === "OPEN" ? editData?.start : "") ||
+    "";
 
   const actualEnd =
-    editData?.nfcActualEnd || "";
+    editData?.nfcActualEnd || editData?.actualEnd || "";
 
   const nfcEntry =
     editData?.nfcEntry === true;
@@ -9271,27 +9285,19 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
     editData?.nfcExit === true;
 
   if (nfcActualTime) {
-
-    if (nfcEntry || nfcExit) {
-
+    if (nfcEntry || nfcExit || actualStart || actualEnd) {
       nfcActualTime.style.display = "block";
 
       if (nfcActualStart) {
         nfcActualStart.textContent =
-          nfcEntry && !nfcExit
-            ? "Ingresso NFC: " + (actualStart || "--:--")
-            : "Ingresso: " + (editData?.start || actualStart || "--:--");
+          (nfcEntry ? "Ingresso NFC: " : "Ingresso: ") + (actualStart || "--:--");
       }
 
       if (nfcActualEnd) {
         nfcActualEnd.textContent =
-          nfcExit && !nfcEntry
-            ? "Uscita NFC: " + (actualEnd || "--:--")
-            : "Uscita: " + (editData?.end || actualEnd || "--:--");
+          (nfcExit ? "Uscita NFC: " : "Uscita: ") + (actualEnd || "--:--");
       }
-
     } else {
-
       nfcActualTime.style.display = "none";
 
       if (nfcActualStart) {
@@ -9301,7 +9307,6 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
       if (nfcActualEnd) {
         nfcActualEnd.textContent = "--:--";
       }
-
     }
   }
 
@@ -9459,16 +9464,14 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
   }
 
-  if (startInput) {
-    startInput.value =
-      editData?.start || "";
-  }
-
   const earlyEntryCheckbox =
     document.getElementById("personalEarlyEntry");
 
   const lateExitCheckbox =
     document.getElementById("personalLateExit");
+
+  const endInput =
+    document.getElementById("personalEndTime");
 
   if (earlyEntryCheckbox) {
     earlyEntryCheckbox.checked =
@@ -9480,12 +9483,181 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
       editData?.calculateLateExit === true;
   }
 
-  const endInput =
-    document.getElementById("personalEndTime");
+  const popupDay =
+    new Date(date + "T00:00:00").getDay();
+  const exitCutoff = popupDay === 5 ? "12:00" : "16:30";
+
+  let defaultEnd = "";
+  if (popupDay >= 1 && popupDay <= 4) {
+    defaultEnd = "16:30";
+  } else if (popupDay === 5) {
+    defaultEnd = "12:00";
+  }
+
+  const isCFIDay =
+    shift === "CFI" || shift === "CFI/REP";
+
+  const refreshActualTimeDisplay = function() {
+    const shownStart = startInput?.dataset.actualTime || "";
+    const shownEnd = endInput?.dataset.actualTime || "";
+
+    if (!nfcActualTime) return;
+
+    if (nfcEntry || nfcExit || shownStart || shownEnd) {
+      nfcActualTime.style.display = "block";
+
+      if (nfcActualStart) {
+        nfcActualStart.textContent =
+          (nfcEntry ? "Ingresso NFC: " : "Ingresso: ") +
+          (shownStart || "--:--");
+      }
+
+      if (nfcActualEnd) {
+        nfcActualEnd.textContent =
+          (nfcExit ? "Uscita NFC: " : "Uscita: ") +
+          (shownEnd || "--:--");
+      }
+    } else {
+      nfcActualTime.style.display = "none";
+      if (nfcActualStart) nfcActualStart.textContent = "--:--";
+      if (nfcActualEnd) nfcActualEnd.textContent = "--:--";
+    }
+  };
+
+  if (startInput) {
+    startInput.dataset.actualTime = actualStart || "";
+    startInput.dataset.manualActualLocked = actualStart ? "true" : "false";
+  startInput.dataset.manualCalculationEdited =
+      editData?.manualCalculationStart === true ? "true" : "false";
+
+    const hasSavedManualCalculationStart =
+      editData?.manualCalculationStart === true && !!editData?.start;
+    const hasSavedStartWithoutActual =
+      !actualStart && !!editData?.start;
+
+    if (isCFIDay) {
+      startInput.value = actualStart || "";
+    } else if (hasSavedManualCalculationStart || hasSavedStartWithoutActual) {
+      startInput.value = editData.start;
+    } else if (editData?.calculateEarlyEntry === true) {
+      startInput.value =
+        actualStart && actualStart >= "07:30" ? actualStart : "07:30";
+    } else if (editData) {
+      startInput.value =
+        actualStart && actualStart >= "08:00" ? actualStart : "08:00";
+    } else {
+      startInput.value = "";
+    }
+
+    startInput.oninput = function() {
+      // L'orario digitato modifica solo il calcolo.
+      // L'orario effettivo NFC resta invariato.
+      startInput.dataset.manualCalculationEdited = "true";
+      refreshActualTimeDisplay();
+    };
+  }
 
   if (endInput) {
-    endInput.value =
-      editData?.end || "";
+    endInput.dataset.actualTime = actualEnd || "";
+    endInput.dataset.manualActualLocked = actualEnd ? "true" : "false";
+    endInput.dataset.manualCalculationEdited =
+      editData?.manualCalculationEnd === true ? "true" : "false";
+
+    const hasSavedManualCalculationEnd =
+      editData?.manualCalculationEnd === true && !!editData?.end;
+    const hasSavedEndWithoutActual =
+      !actualEnd && !!editData?.end;
+
+    if (isCFIDay) {
+      endInput.value = actualEnd || "";
+    } else if (hasSavedManualCalculationEnd || hasSavedEndWithoutActual) {
+      endInput.value = editData.end;
+    } else if (!editData) {
+      endInput.value = "";
+    } else if (lateExitCheckbox?.checked) {
+      endInput.value =
+        actualEnd && actualEnd <= "20:00" ? actualEnd : "20:00";
+    } else {
+      endInput.value =
+        actualEnd && actualEnd < exitCutoff
+          ? actualEnd
+          : (defaultEnd || exitCutoff);
+    }
+
+    endInput.oninput = function() {
+      // La modifica manuale vale per il calcolo.
+      // L'orario effettivo registrato resta invariato.
+      endInput.dataset.manualCalculationEdited = "true";
+      refreshActualTimeDisplay();
+    };
+  }
+
+  refreshActualTimeDisplay();
+
+  if (earlyEntryCheckbox && startInput) {
+    earlyEntryCheckbox.onchange = function() {
+      const registeredStart = startInput.dataset.actualTime || "";
+
+      if (registeredStart) {
+        startInput.dataset.manualActualLocked = "true";
+      }
+
+      if (isCFIDay) {
+        startInput.value = registeredStart;
+        return;
+      }
+
+      // Non sovrascrivere un orario di calcolo modificato manualmente.
+      if (startInput.dataset.manualCalculationEdited === "true") {
+        refreshActualTimeDisplay();
+        return;
+      }
+
+      if (this.checked) {
+        startInput.value =
+          registeredStart && registeredStart >= "07:30"
+            ? registeredStart
+            : "07:30";
+      } else {
+        startInput.value =
+          registeredStart && registeredStart >= "08:00"
+            ? registeredStart
+            : "08:00";
+      }
+    };
+  }
+
+  if (lateExitCheckbox && endInput) {
+    lateExitCheckbox.onchange = function() {
+      const registeredEnd = endInput.dataset.actualTime || "";
+
+      if (registeredEnd) {
+        endInput.dataset.manualActualLocked = "true";
+      }
+
+      // Non sovrascrivere un orario modificato manualmente.
+      if (endInput.dataset.manualCalculationEdited === "true") {
+        refreshActualTimeDisplay();
+        return;
+      }
+
+      if (isCFIDay) {
+        endInput.value = registeredEnd;
+        return;
+      }
+
+      if (this.checked) {
+        endInput.value =
+          registeredEnd && registeredEnd <= "20:00"
+            ? registeredEnd
+            : "20:00";
+      } else {
+        endInput.value =
+          registeredEnd && registeredEnd < exitCutoff
+            ? registeredEnd
+            : (defaultEnd || exitCutoff);
+      }
+    };
   }
 
   if (popup) {
@@ -9885,8 +10057,9 @@ async function checkNfcEntry() {
               ? existing.type || "OPEN"
               : "OPEN",
           nfcEntry: true,
-          nfcExit:
-            existing?.nfcExit || false,
+          nfcActualStart: time,
+          nfcActualEnd: existing?.nfcActualEnd || "",
+          nfcExit: existing?.nfcExit || false,
           source: "NFC",
           updatedAt: new Date()
         },
@@ -10419,7 +10592,7 @@ window.calculatePersonalStra = function(
   // ======================
 
   const normalStart = 8 * 60;
-  const straCutoff = 20 * 60;
+  const straCutoff = dayOfWeek === 5 ? 12 * 60 : 16 * 60 + 30;
 
   const effectiveStart =
     calculateEarlyEntry
@@ -10773,14 +10946,30 @@ window.savePersonalWorkTime = async function() {
         personalWorkTimeId
       );
 
+    const existingPersonalTime =
+      personalWorkTimes.find(item =>
+        item &&
+        item.employee === employee &&
+        item.date === date
+      );
+
     await firestore.setDoc(
       personalWorkTimeRef,
       {
         employee: employee,
         date: date,
         start: startTime,
-        end: "",
-        type: "OPEN",
+        end: existingPersonalTime?.end || "",
+        type: existingPersonalTime?.type || "OPEN",
+        nfcEntry: existingPersonalTime?.nfcEntry || false,
+        nfcExit: existingPersonalTime?.nfcExit || false,
+        nfcActualStart: existingPersonalTime?.nfcActualStart || "",
+        nfcActualEnd: existingPersonalTime?.nfcActualEnd || "",
+        actualStart: existingPersonalTime?.actualStart ||
+          startInput?.dataset.actualTime || startTime,
+        actualEnd: existingPersonalTime?.actualEnd || "",
+        manualCalculationStart: startInput?.dataset.manualCalculationEdited === "true",
+        manualCalculationEnd: endInput?.dataset.manualCalculationEdited === "true",
         updatedAt: new Date()
       },
       {
@@ -10883,12 +11072,16 @@ window.savePersonalWorkTime = async function() {
           date: date,
           start: startTime,
           end: endTime,
+          actualStart: startInput?.dataset.actualTime || startTime,
+          actualEnd: endInput?.dataset.actualTime || endTime,
           type: null,
           workedMinutes: result.workedMinutes,
           normalMinutes: result.normalMinutes,
           differenceMinutes: 0,
           calculateEarlyEntry: calculateEarlyEntry,
           calculateLateExit: calculateLateExit,
+          manualCalculationStart: startInput?.dataset.manualCalculationEdited === "true",
+          manualCalculationEnd: endInput?.dataset.manualCalculationEdited === "true",
           updatedAt: new Date()
         },
         {
@@ -10929,12 +11122,16 @@ window.savePersonalWorkTime = async function() {
         date: date,
         start: startTime,
         end: endTime,
+        actualStart: startInput?.dataset.actualTime || startTime,
+        actualEnd: endInput?.dataset.actualTime || endTime,
         type: result.type,
         workedMinutes: result.workedMinutes,
         normalMinutes: result.normalMinutes,
         differenceMinutes: result.differenceMinutes,
         calculateEarlyEntry: calculateEarlyEntry,
         calculateLateExit: calculateLateExit,
+          manualCalculationStart: startInput?.dataset.manualCalculationEdited === "true",
+          manualCalculationEnd: endInput?.dataset.manualCalculationEdited === "true",
         updatedAt: new Date()
       },
       {
