@@ -2714,3 +2714,15 @@ button:disabled{
     -webkit-text-fill-color: #ffffff !important;
   }
 }
+
+/* FIX ORARI PERSONALI: testo visibile nelle caselle in modalità scura */
+@media (prefers-color-scheme: dark) {
+  #personalWorkTimePopup #personalStartTime,
+  #personalWorkTimePopup #personalEndTime {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+    color-scheme: light !important;
+    opacity: 1 !important;
+  }
+}

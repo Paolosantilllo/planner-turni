@@ -9570,7 +9570,11 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
     if (isCFIDay) {
       endInput.value = actualEnd || "";
-    } else if (hasSavedManualCalculationEnd || hasSavedEndWithoutActual) {
+    } else if (hasSavedManualCalculationEnd) {
+      endInput.value = editData.end;
+    } else if (actualStart && !actualEnd) {
+      endInput.value = "";
+    } else if (hasSavedEndWithoutActual) {
       endInput.value = editData.end;
     } else if (!editData) {
       endInput.value = "";
