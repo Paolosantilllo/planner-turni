@@ -21,7 +21,27 @@ const db = getFirestore();
 const messaging = getMessaging();
 
 module.exports = async function handler(req, res) {
+  const allowedHosts = new Set([
+    "planner-turni-seven.vercel.app",
+    "planner-turni-iujpc34m1-santillo-paolo-7503s-projects.vercel.app"
+  ]);
+  const origin = req.headers.origin;
+  let originHost = "";
 
+  try {
+    if (origin) originHost = new URL(origin).hostname;
+  } catch (_) {}
+
+  if (origin && origin.startsWith("https://") && allowedHosts.has(originHost)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
 
   if (req.method !== "POST") {
 

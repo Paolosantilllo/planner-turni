@@ -2014,7 +2014,7 @@ if (personalStraTotalElement) {
         absoluteMinutes % 60;
 
       personalStraTotalElement.textContent =
-        "Totale STRA fino ad oggi: " +
+        "Totale ORE fino ad oggi: " +
         sign +
         String(hours) +
         "," +
@@ -2087,7 +2087,7 @@ window.updatePersonalStraTotalDisplay = function() {
     absoluteMinutes % 60;
 
   personalStraTotalElement.textContent =
-    "Totale STRA fino ad oggi: " +
+    "Totale ORE fino ad oggi: " +
     sign +
     String(hours) +
     "," +
@@ -6126,7 +6126,13 @@ window.calculatePersonalORD = function(year) {
 
     const activationCalendarDate =
       activationDate.toISOString().slice(0, 10);
-    if (ev.date < activationCalendarDate) {
+    if (
+      ev.date < activationCalendarDate ||
+      (
+        ev.date === activationCalendarDate &&
+        createdDate <= activationDate
+      )
+    ) {
       return;
     }
 
@@ -6151,6 +6157,165 @@ window.calculatePersonalORD = function(year) {
 };
 
 // ======================
+
+// ======================
+// TOTALE ORD ANNUALE, COMPRESE LE LIC FUTURE
+// Funzione separata: non modifica il saldo ORD attuale.
+// ======================
+
+window.calculatePersonalORDTotal = async function(year) {
+  const employee = window.CURRENT_EMPLOYEE;
+  const summary = window.CURRENT_USER_PERSONAL_SUMMARY || {};
+
+  if (!employee) return null;
+
+  if (
+    summary.initialORD === null ||
+    summary.initialORD === undefined ||
+    String(summary.initialORD).trim() === "" ||
+    !Number.isFinite(Number(summary.initialORD))
+  ) {
+    return null;
+  }
+
+  const initialORD = Number(summary.initialORD);
+  const activationAt = summary.personalSummaryActivationAt || null;
+
+  if (!activationAt) return initialORD;
+
+  const activationDate = new Date(activationAt);
+  if (Number.isNaN(activationDate.getTime())) return initialORD;
+
+  const activationCalendarDate =
+    activationDate.toISOString().slice(0, 10);
+
+  const snapshot = await firestore.getDocs(
+    firestore.collection(db, "events")
+  );
+
+  let usedORD = 0;
+
+  snapshot.forEach(doc => {
+    const ev = doc.data();
+
+    if (
+      !ev ||
+      ev.employee !== employee ||
+      ev.shift !== "LIC" ||
+      !ev.date
+    ) {
+      return;
+    }
+
+    const eventDate = new Date(ev.date + "T00:00:00");
+
+    if (
+      Number.isNaN(eventDate.getTime()) ||
+      eventDate.getFullYear() !== year ||
+      ev.date <= activationCalendarDate
+    ) {
+      return;
+    }
+
+    // Mantiene il controllo sulla presenza e validità di createdAt.
+    if (!ev.createdAt) return;
+
+    let createdDate = null;
+
+    if (typeof ev.createdAt.toDate === "function") {
+      createdDate = ev.createdAt.toDate();
+    } else if (ev.createdAt instanceof Date) {
+      createdDate = ev.createdAt;
+    } else if (typeof ev.createdAt === "string") {
+      createdDate = new Date(ev.createdAt);
+    } else if (
+      typeof ev.createdAt.seconds === "number"
+    ) {
+      createdDate = new Date(
+        ev.createdAt.seconds * 1000 +
+        Math.floor((ev.createdAt.nanoseconds || 0) / 1000000)
+      );
+    }
+
+    if (!createdDate || Number.isNaN(createdDate.getTime())) {
+      return;
+    }
+
+    const info = getDayInfo(ev.date);
+
+    if (
+      info.isHoliday ||
+      info.isSunday ||
+      info.isWeekday !== true ||
+      eventDate.getDay() === 6
+    ) {
+      return;
+    }
+
+    // Qui NON si escludono le LIC future.
+    usedORD++;
+  });
+
+  return initialORD - usedORD;
+};
+
+// ======================
+// 🔴 AGGIORNAMENTO AUTOMATICO TOTALE ORD
+// ======================
+
+window.updatePersonalORDTotalDisplay = async function() {
+  const popup = document.getElementById("personalSummaryPopup");
+  const element = document.getElementById("currentORDTotal");
+
+  if (!popup || popup.style.display === "none" || !element) return;
+
+  element.textContent = "Totale giorni —";
+
+  try {
+    const total = await window.calculatePersonalORDTotal(
+      new Date().getFullYear()
+    );
+
+    element.textContent =
+      total === null
+        ? "Totale giorni —"
+        : "Totale giorni " + total;
+  } catch (err) {
+    console.error("Errore aggiornamento totale ORD:", err);
+  }
+};
+
+window.setupPersonalORDListener = function() {
+  const employee = window.CURRENT_EMPLOYEE;
+  if (!employee) return;
+
+  if (
+    window._personalORDListenerEmployee === employee &&
+    typeof window._personalORDUnsubscribe === "function"
+  ) {
+    return;
+  }
+
+  if (typeof window._personalORDUnsubscribe === "function") {
+    window._personalORDUnsubscribe();
+  }
+
+  const employeeEventsQuery = query(
+    collection(db, "events"),
+    where("employee", "==", employee)
+  );
+
+  window._personalORDListenerEmployee = employee;
+
+  window._personalORDUnsubscribe = onSnapshot(
+    employeeEventsQuery,
+    () => {
+      window.updatePersonalORDTotalDisplay();
+    },
+    err => console.error("Errore ascolto LIC per Totale ORD:", err)
+  );
+};
+
 // 🟣 CALCOLO 937 / 77
 // ======================
 
@@ -6590,13 +6755,34 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
     const currentORD =
       calculatePersonalORD(
-        currentDate.getFullYear()
+        new Date().getFullYear()
       );
 
     currentORDElement.textContent =
       currentORD === null
         ? "—"
         : String(currentORD);
+  }
+
+  // 🔴 AGGIORNA TOTALE ORD, COMPRESE LE LIC FUTURE
+  const currentORDTotalElement =
+    document.getElementById("currentORDTotal");
+
+  if (currentORDTotalElement) {
+    currentORDTotalElement.textContent = "Totale giorni —";
+
+    try {
+      const totalORD = await window.calculatePersonalORDTotal(
+        new Date().getFullYear()
+      );
+
+      currentORDTotalElement.textContent =
+        totalORD === null
+          ? "Totale giorni —"
+          : "Totale giorni " + totalORD;
+    } catch (err) {
+      console.error("Errore aggiornamento totale ORD:", err);
+    }
   }
 
   // ======================
@@ -6821,7 +7007,7 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
 
       const currentORD =
         calculatePersonalORD(
-          currentDate.getFullYear()
+          new Date().getFullYear()
         );
 
       initialORD.value =
@@ -6916,6 +7102,10 @@ window.CURRENT_USER_PERSONAL_SUMMARY = summary || {};
     if (popup) {
 
       popup.style.display = "flex";
+
+      if (typeof window.setupPersonalORDListener === "function") {
+        window.setupPersonalORDListener();
+      }
 
     }
 
@@ -9497,6 +9687,13 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
   const isCFIDay =
     shift === "CFI" || shift === "CFI/REP";
 
+  const today = new Date();
+  const todayString =
+    today.getFullYear() + "-" +
+    String(today.getMonth() + 1).padStart(2, "0") + "-" +
+    String(today.getDate()).padStart(2, "0");
+  const isFutureDay = date > todayString;
+
   const refreshActualTimeDisplay = function() {
     const shownStart = startInput?.dataset.actualTime || "";
     const shownEnd = endInput?.dataset.actualTime || "";
@@ -9535,7 +9732,9 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
     const hasSavedStartWithoutActual =
       !actualStart && !!editData?.start;
 
-    if (isCFIDay) {
+    if (isFutureDay && !editData) {
+      startInput.value = "";
+    } else if (isCFIDay) {
       startInput.value = actualStart || "";
     } else if (hasSavedManualCalculationStart || hasSavedStartWithoutActual) {
       startInput.value = editData.start;
@@ -9549,10 +9748,20 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
       startInput.value = "";
     }
 
+    startInput.onfocus = function() {
+      // Il primo inserimento manuale diventa l'orario effettivo.
+      startInput.dataset.manualEntryMode =
+        startInput.dataset.actualTime ? "false" : "true";
+    };
+
     startInput.oninput = function() {
-      // L'orario digitato modifica solo il calcolo.
-      // L'orario effettivo NFC resta invariato.
-      startInput.dataset.manualCalculationEdited = "true";
+      if (startInput.dataset.manualEntryMode === "true") {
+        startInput.dataset.actualTime = startInput.value || "";
+        startInput.dataset.manualCalculationEdited = "false";
+      } else {
+        // Le modifiche successive riguardano solo il calcolo.
+        startInput.dataset.manualCalculationEdited = "true";
+      }
       refreshActualTimeDisplay();
     };
   }
@@ -9568,7 +9777,9 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
     const hasSavedEndWithoutActual =
       !actualEnd && !!editData?.end;
 
-    if (isCFIDay) {
+    if (isFutureDay && !editData) {
+      endInput.value = "";
+    } else if (isCFIDay) {
       endInput.value = actualEnd || "";
     } else if (hasSavedManualCalculationEnd) {
       endInput.value = editData.end;
@@ -9588,10 +9799,20 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
           : (defaultEnd || exitCutoff);
     }
 
+    endInput.onfocus = function() {
+      // Il primo inserimento manuale diventa l'orario effettivo.
+      endInput.dataset.manualEntryMode =
+        endInput.dataset.actualTime ? "false" : "true";
+    };
+
     endInput.oninput = function() {
-      // La modifica manuale vale per il calcolo.
-      // L'orario effettivo registrato resta invariato.
-      endInput.dataset.manualCalculationEdited = "true";
+      if (endInput.dataset.manualEntryMode === "true") {
+        endInput.dataset.actualTime = endInput.value || "";
+        endInput.dataset.manualCalculationEdited = "false";
+      } else {
+        // Le modifiche successive riguardano solo il calcolo.
+        endInput.dataset.manualCalculationEdited = "true";
+      }
       refreshActualTimeDisplay();
     };
   }
@@ -9600,6 +9821,12 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
   if (earlyEntryCheckbox && startInput) {
     earlyEntryCheckbox.onchange = function() {
+      if (isFutureDay && !editData) {
+        startInput.value = "";
+        return;
+      }
+
+      startInput.dataset.manualEntryMode = "false";
       const registeredStart = startInput.dataset.actualTime || "";
 
       if (registeredStart) {
@@ -9633,11 +9860,22 @@ window.openPersonalWorkTimePopup = function(date, editData = null) {
 
   if (lateExitCheckbox && endInput) {
     lateExitCheckbox.onchange = function() {
+      if (isFutureDay && !editData) {
+        endInput.value = "";
+        return;
+      }
+
+      endInput.dataset.manualEntryMode = "false";
       const registeredEnd = endInput.dataset.actualTime || "";
 
-      if (registeredEnd) {
-        endInput.dataset.manualActualLocked = "true";
+      // Senza uscita effettiva, la casella resta vuota anche con la spunta.
+      if (!registeredEnd) {
+        endInput.value = "";
+        refreshActualTimeDisplay();
+        return;
       }
+
+      endInput.dataset.manualActualLocked = "true";
 
       // Non sovrascrivere un orario modificato manualmente.
       if (endInput.dataset.manualCalculationEdited === "true") {
@@ -10056,10 +10294,10 @@ async function checkNfcEntry() {
           start: time,
           end:
             existing?.end || "",
-          type:
-            existing?.end
-              ? existing.type || "OPEN"
-              : "OPEN",
+          type: "NORMAL",
+          workedMinutes: 480,
+          normalMinutes: 480,
+          differenceMinutes: 0,
           nfcEntry: true,
           nfcActualStart: time,
           nfcActualEnd: existing?.nfcActualEnd || "",
@@ -10087,37 +10325,53 @@ async function checkNfcEntry() {
 
     if (
       existing &&
-      existing.end
+      (
+        existing.end ||
+        existing.nfcActualEnd ||
+        existing.actualEnd
+      )
     ) {
+
+      const registeredExit =
+        existing.nfcActualEnd || existing.actualEnd || existing.end;
 
       alert(
         "ℹ️ Uscita già registrata alle " +
-        existing.end +
+        registeredExit +
         "."
       );
 
       return;
     }
 
-    // Nessun ingresso:
-    // salviamo comunque l'uscita.
+    // Nessun ingresso: registriamo l'uscita NFC
+    // conservando gli eventuali dati effettivi già presenti.
     if (
       !existing ||
       !existing.start
     ) {
+      const actualStart =
+        existing?.nfcActualStart || existing?.actualStart || "";
+      const actualEnd =
+        existing?.nfcActualEnd || existing?.actualEnd || time;
 
       await firestore.setDoc(
         personalWorkTimeRef,
         {
           employee: employee,
           date: date,
-          start:
-            existing?.start || "",
+          start: existing?.start || "",
           end: time,
-          type: "OPEN",
-          nfcEntry:
-            existing?.nfcEntry || false,
+          type: "NORMAL",
+          workedMinutes: 480,
+          normalMinutes: 480,
+          differenceMinutes: 0,
+          nfcEntry: existing?.nfcEntry || false,
           nfcExit: true,
+          nfcActualStart: actualStart,
+          nfcActualEnd: actualEnd,
+          actualStart: actualStart,
+          actualEnd: actualEnd,
           source: "NFC",
           updatedAt: new Date()
         },
@@ -10128,7 +10382,7 @@ async function checkNfcEntry() {
 
       alert(
         "🟠 Uscita NFC registrata alle " +
-        time +
+        actualEnd +
         ".\n\n" +
         "⚠️ Ingresso non registrato.\n" +
         "Puoi inserirlo manualmente dal calendario."
@@ -10137,7 +10391,6 @@ async function checkNfcEntry() {
       return;
     }
 
-    // ======================
     // 🧮 INGRESSO + USCITA
     // ======================
 
@@ -10178,6 +10431,8 @@ async function checkNfcEntry() {
         nfcEntry:
           existing.nfcEntry || false,
         nfcExit: true,
+        nfcActualEnd: time,
+        actualEnd: time,
         source: "NFC",
         updatedAt: new Date()
       },
@@ -10797,6 +11052,47 @@ window.savePersonalWorkTime = async function() {
       }
     );
 
+    // Promemoria CFI/CFI-REP anche per l'ingresso manuale.
+    // Se esiste già, non ripetere una notifica già inviata.
+    try {
+      const reminderId = employee + "_" + date;
+      const reminderRef = firestore.doc(
+        db,
+        "cfiReminders",
+        reminderId
+      );
+      const existingReminderSnap =
+        await firestore.getDoc(reminderRef);
+      const alreadySent =
+        existingReminderSnap.exists()
+          ? existingReminderSnap.data()?.sent === true
+          : false;
+
+      const reminderDateTime = new Date(
+        date + "T" + minExit + ":00"
+      );
+
+      await firestore.setDoc(
+        reminderRef,
+        {
+          employee: employee,
+          date: date,
+          startTime: startTime,
+          minExit: minExit,
+          reminderAt: reminderDateTime,
+          shift: shift,
+          sent: alreadySent,
+          updatedAt: new Date()
+        },
+        { merge: true }
+      );
+    } catch (error) {
+      console.error(
+        "Errore salvataggio promemoria CFI manuale:",
+        error
+      );
+    }
+
     if (endTime) {
 
       if (endTime < minExit) {
@@ -10853,52 +11149,69 @@ window.savePersonalWorkTime = async function() {
   const endTime =
     endInput?.value || "";
 
-  // Se è presente solo l'uscita
-  // (ad esempio registrata prima tramite NFC),
-  // consentiamo di completare manualmente
-  // l'ingresso dal calendario.
-
+  // Se è presente solo l'uscita, conserviamo l'orario effettivo.
+  // Distinguiamo un'uscita NFC da una inserita manualmente.
   if (
     !startTime &&
     endTime &&
     shift !== "CFI" &&
     shift !== "CFI/REP"
   ) {
-
-    const employee =
-      window.CURRENT_EMPLOYEE;
+    const employee = window.CURRENT_EMPLOYEE;
 
     if (!employee) {
-
-      alert(
-        "Dipendente non identificato."
-      );
-
+      alert("Dipendente non identificato.");
       return;
     }
 
-    const personalWorkTimeId =
-      employee + "_" + date;
+    const existingPersonalTime = personalWorkTimes.find(item =>
+      item &&
+      item.employee === employee &&
+      item.date === date
+    );
 
-    const personalWorkTimeRef =
-      firestore.doc(
-        db,
-        "personalWorkTimes",
-        personalWorkTimeId
-      );
+    const personalWorkTimeId = employee + "_" + date;
+    const personalWorkTimeRef = firestore.doc(
+      db,
+      "personalWorkTimes",
+      personalWorkTimeId
+    );
 
+    const isNfcExit = existingPersonalTime?.nfcExit === true;
+    const actualEnd =
+      existingPersonalTime?.nfcActualEnd ||
+      existingPersonalTime?.actualEnd ||
+      endInput?.dataset.actualTime ||
+      endTime;
+    const actualStart =
+      existingPersonalTime?.nfcActualStart ||
+      existingPersonalTime?.actualStart ||
+      "";
 
     await firestore.setDoc(
       personalWorkTimeRef,
       {
         employee: employee,
         date: date,
-        start: "",
+        start: existingPersonalTime?.start || "",
         end: endTime,
-        type: "OPEN",
-        nfcEntry: false,
-        nfcExit: true,
-        source: "NFC",
+        type: "NORMAL",
+        workedMinutes: 480,
+        normalMinutes: 480,
+        differenceMinutes: 0,
+        nfcEntry: existingPersonalTime?.nfcEntry || false,
+        nfcExit: isNfcExit,
+        nfcActualStart: existingPersonalTime?.nfcActualStart || "",
+        nfcActualEnd: isNfcExit
+          ? actualEnd
+          : (existingPersonalTime?.nfcActualEnd || ""),
+        actualStart: actualStart,
+        actualEnd: actualEnd,
+        source: isNfcExit ? "NFC" : "MANUAL",
+        manualCalculationEnd:
+          endInput?.dataset.manualCalculationEdited === "true",
+        calculateLateExit:
+          document.getElementById("personalLateExit")?.checked === true,
         updatedAt: new Date()
       },
       {
@@ -10908,7 +11221,7 @@ window.savePersonalWorkTime = async function() {
 
     alert(
       "Uscita salvata alle " +
-      endTime +
+      actualEnd +
       ".\n\n" +
       "Inserisci anche l'orario di ingresso per completare la giornata."
     );
@@ -10964,16 +11277,22 @@ window.savePersonalWorkTime = async function() {
         date: date,
         start: startTime,
         end: existingPersonalTime?.end || "",
-        type: existingPersonalTime?.type || "OPEN",
+        type: "NORMAL",
+        workedMinutes: 480,
+        normalMinutes: 480,
+        differenceMinutes: 0,
         nfcEntry: existingPersonalTime?.nfcEntry || false,
         nfcExit: existingPersonalTime?.nfcExit || false,
         nfcActualStart: existingPersonalTime?.nfcActualStart || "",
         nfcActualEnd: existingPersonalTime?.nfcActualEnd || "",
         actualStart: existingPersonalTime?.actualStart ||
           startInput?.dataset.actualTime || startTime,
-        actualEnd: existingPersonalTime?.actualEnd || "",
+        actualEnd: existingPersonalTime?.nfcActualEnd ||
+          existingPersonalTime?.actualEnd || "",
         manualCalculationStart: startInput?.dataset.manualCalculationEdited === "true",
         manualCalculationEnd: endInput?.dataset.manualCalculationEdited === "true",
+        calculateEarlyEntry:
+          document.getElementById("personalEarlyEntry")?.checked === true,
         updatedAt: new Date()
       },
       {
@@ -11077,7 +11396,13 @@ window.savePersonalWorkTime = async function() {
           start: startTime,
           end: endTime,
           actualStart: startInput?.dataset.actualTime || startTime,
-          actualEnd: endInput?.dataset.actualTime || endTime,
+          actualEnd: endInput?.dataset.actualTime ||
+            personalWorkTimes.find(item =>
+              item && item.employee === employee && item.date === date
+            )?.nfcActualEnd ||
+            personalWorkTimes.find(item =>
+              item && item.employee === employee && item.date === date
+            )?.actualEnd || "",
           type: null,
           workedMinutes: result.workedMinutes,
           normalMinutes: result.normalMinutes,
@@ -11127,7 +11452,13 @@ window.savePersonalWorkTime = async function() {
         start: startTime,
         end: endTime,
         actualStart: startInput?.dataset.actualTime || startTime,
-        actualEnd: endInput?.dataset.actualTime || endTime,
+        actualEnd: endInput?.dataset.actualTime ||
+          personalWorkTimes.find(item =>
+            item && item.employee === employee && item.date === date
+          )?.nfcActualEnd ||
+          personalWorkTimes.find(item =>
+            item && item.employee === employee && item.date === date
+          )?.actualEnd || "",
         type: result.type,
         workedMinutes: result.workedMinutes,
         normalMinutes: result.normalMinutes,
